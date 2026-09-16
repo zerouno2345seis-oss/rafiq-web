@@ -97,9 +97,9 @@ h2{font-size:16px;font-weight:600}
 #nav .ic{font-size:19px;line-height:1}
 #fab{position:fixed;z-index:50;bottom:calc(var(--nav-h) + 18px);
   left:max(16px, calc(50% - 244px));width:56px;height:56px;border-radius:50%;
-  background:var(--accent);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.18)}
-@media(max-width:799px){#fab{left:max(16px, calc(50% - 244px))}}
+  background:var(--accent);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);border:none;line-height:1}
+@media(min-width:800px){#fab{left:max(16px, calc(50% - 364px))}}
 .overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
   padding:16px 16px calc(22px + env(safe-area-inset-bottom));max-height:86dvh;overflow-y:auto;animation:slideUp .22s ease}
@@ -172,6 +172,11 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .err{color:var(--error);font-size:13px;margin-top:8px}
 .info-msg{color:var(--info);font-size:13px;margin-top:8px}
 .logo{font-size:38px;text-align:center;display:block}
+.otp{display:flex;gap:8px;justify-content:center;direction:ltr;margin:4px 0}
+.otp-b{width:52px;height:60px;text-align:center;font-size:24px;font-weight:700;
+  border:1.5px solid var(--field-border);border-radius:14px;background:var(--field-bg);
+  color:var(--text-1);outline:none;padding:0}
+.otp-b:focus{border-color:var(--accent-2);background:var(--surface)}
 </style>
 </head>
 <body>
@@ -430,6 +435,14 @@ async function refreshAll(){
   let invites=[];
   const owned=circles.filter(c=>c.owner_id===me).map(c=>c.id);
   if(owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&select=*'); }catch(e){} }
+  const staleInv=invites.filter(i=>!/^[0-9]{6}$/.test(i.code));
+  for(const st of staleInv){
+    try{
+      await rest('PATCH','circle_invites',{revoked:true},'id=eq.'+st.id);
+      await rest('POST','circle_invites',{id:uuid(),circle_id:st.circle_id,code:genCode(),created_by:me,expires_at:daysAgoIso(-1),revoked:false},'return=minimal');
+    }catch(e){}
+  }
+  if(staleInv.length&&owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&select=*'); }catch(e){} }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
     items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites};
 }
