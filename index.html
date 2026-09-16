@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF1E8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>رفيق — الويب</title>
+<style>
+:root{
+  --bg-app:#FAF1E8; --surface:#FFFFFF; --surface-2:#F9F9F9; --surface-warm:#FBF5EE;
+  --divider:#F2EEEA; --border:#E8E3DE; --nav-border:#EEEAE6;
+  --text-1:#1D1D1F; --text-2:#7F7F78; --text-3:#A2A19C;
+  --accent-dark:#245045; --accent:#308A65; --accent-2:#6AB597; --accent-progress:#7BAD4B;
+  --accent-soft:#E8F4EE; --accent-verysoft:#F2F8F5;
+  --companion:#E7A261; --companion-light:#F0C691;
+  --success:#308A65; --warning:#E7A261; --error:#D94A4A; --info:#4C82B8;
+  --ring-track:#EDF0EC; --shadow:0 2px 12px rgba(0,0,0,.055);
+  --r-card:18px; --r-chip:12px; --r-btn:14px; --nav-h:64px;
+  --field-bg:#F3EBE1; --field-border:#CFC7BC;
+}
+html[data-accent="rose"]{
+  --accent-dark:#AE3C60; --accent:#E05789; --accent-2:#E896B5;
+  --accent-progress:#E05789; --accent-soft:#FDEAF1; --accent-verysoft:#FFF4F7;
+}
+html[data-theme="dark"]{
+  --bg-app:#121312; --surface:#1B1C1B; --surface-2:#1F201F; --surface-warm:#202220;
+  --divider:#2A2C2A; --border:#30322F; --nav-border:#30322F;
+  --text-1:#F6F6F4; --text-2:#AAA9A5; --text-3:#8A8984;
+  --ring-track:#2C2E2C; --shadow:0 2px 12px rgba(0,0,0,.45);
+  --field-bg:#232523; --field-border:#4A4C4A;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,'SF Arabic','Segoe UI','Geeza Pro','Noto Kufi Arabic',Tahoma,sans-serif;
+  background:#EDE7E0;color:var(--text-1);touch-action:manipulation}
+html[data-theme="dark"] body{background:#0C0D0C}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;font-size:14px}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--text-1)}
+a{color:var(--accent)}
+.hidden{display:none!important}
+#shell{max-width:520px;margin:0 auto;min-height:100dvh;background:var(--bg-app);position:relative}
+@media(min-width:800px){#shell{max-width:760px;box-shadow:0 0 0 1px var(--border)}}
+.screen{padding:14px 16px calc(var(--nav-h) + 26px);animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:.35}to{opacity:1}}
+h1{font-size:21px;font-weight:700}
+h2{font-size:16px;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--nav-border);border-radius:var(--r-card);
+  box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.card-head h2{flex:1}
+.link{font-size:13px;font-weight:500;color:var(--accent);min-height:32px;padding:0 4px}
+.sec{display:flex;align-items:center;gap:8px;margin:18px 2px 10px}
+.sec h2{font-size:18px;font-weight:700;flex:1}
+.greet{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.greet .g{flex:1}
+.greet .g p{font-size:13px;color:var(--text-2)}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent-dark);flex:0 0 auto}
+.avatar.comp{background:var(--companion-light);color:#7A4A1E}
+.avatar.sm{width:28px;height:28px;font-size:12px}
+.week{display:flex;gap:6px;margin-bottom:16px}
+.day{flex:1;height:54px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-2)}
+.day.today{background:var(--accent-soft);color:var(--accent-dark)}
+.day .dn{font-size:11px}.day .dd{font-size:14px;font-weight:600}
+.progress-row{display:flex;gap:12px;margin-bottom:16px}
+@media(min-width:640px){.progress-row{max-width:520px}}
+.pcard{flex:1;background:var(--surface);border:1px solid var(--nav-border);border-radius:var(--r-card);
+  box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pcard .who{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-2);align-self:flex-start}
+.ring{position:relative;width:80px;height:80px}
+.ring svg{transform:rotate(-90deg)}
+.ring .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700}
+.bar{height:7px;border-radius:8px;background:var(--ring-track);overflow:hidden;flex:1}
+.bar i{display:block;height:100%;border-radius:8px;background:var(--accent-progress);transition:width .35s ease}
+.bar.solo{width:80px;flex:0 0 auto}
+.row{display:flex;align-items:center;gap:10px;min-height:48px}
+.row+.row{border-top:1px solid var(--divider)}
+.hicon{width:34px;height:34px;border-radius:var(--r-chip);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+.htitle{flex:1;min-width:0;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hval{font-size:12px;color:var(--text-2);font-weight:500;white-space:nowrap}
+.hval.ok{color:var(--accent);font-weight:600}
+.check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:transparent;background:transparent;transition:all .18s ease}
+.check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mini{font-size:13px;font-weight:700;color:var(--accent-dark);background:var(--accent-soft);border-radius:10px;padding:6px 12px}
+.shop-meta{font-size:11px;color:var(--text-3)}
+.done-t{font-size:12px;font-weight:600;color:var(--text-3);padding:10px 0 2px}
+.add-item{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider)}
+.add-item input{flex:1;min-height:44px;border:1px solid var(--field-border);border-radius:var(--r-btn);background:var(--field-bg);padding:0 14px;outline:none}
+.add-item input:focus{border-color:var(--accent-2)}
+.add-item button{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;font-size:22px;flex:0 0 auto}
+#nav{position:fixed;bottom:0;left:0;right:0;z-index:55;display:flex;justify-content:center;pointer-events:none}
+#nav .in{pointer-events:auto;width:100%;max-width:520px;height:var(--nav-h);background:var(--surface);
+  border-top:1px solid var(--nav-border);display:flex}
+@media(min-width:800px){#nav .in{max-width:760px}}
+#nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:11px;font-weight:500}
+#nav button.on{color:var(--accent)}
+#nav .ic{font-size:19px;line-height:1}
+#fab{position:fixed;z-index:50;bottom:calc(var(--nav-h) + 18px);
+  left:max(16px, calc(50% - 244px));width:56px;height:56px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.18)}
+@media(max-width:799px){#fab{left:max(16px, calc(50% - 244px))}}
+.overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
+  padding:16px 16px calc(22px + env(safe-area-inset-bottom));max-height:86dvh;overflow-y:auto;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sheet-head h3{flex:1;font-size:17px;font-weight:700}
+.sheet-x{width:36px;height:36px;border-radius:12px;background:var(--surface-2);font-size:15px;color:var(--text-2)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;min-height:48px;border:1.5px solid var(--field-border);
+  border-radius:var(--r-btn);background:var(--field-bg);padding:10px 14px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-2);background:var(--surface)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{min-height:40px;display:inline-flex;align-items:center;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface);padding:0 12px;font-size:13px;font-weight:500;color:var(--text-2)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent-2);color:var(--accent-dark);font-weight:600}
+.vis-opt{display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 12px;border:1px solid var(--border);
+  border-radius:var(--r-btn);margin-bottom:8px;width:100%;text-align:start}
+.vis-opt.on{border-color:var(--accent);background:var(--accent-verysoft)}
+.vis-opt .vt{font-size:14px;font-weight:600}
+.vis-opt .vd{font-size:12px;color:var(--text-3)}
+.btn{width:100%;min-height:48px;border-radius:var(--r-btn);background:var(--accent);color:#fff;font-size:15px;font-weight:600}
+.btn:active{opacity:.85}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--text-2);font-weight:500;font-size:14px;min-height:44px}
+.btn.danger{color:var(--error);background:none;border:1px solid var(--border)}
+.badge{font-size:11px;color:var(--text-2);background:var(--surface-2);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;display:inline-block}
+.status{min-width:60px;height:28px;border-radius:999px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
+.s-TODO{background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)}
+.s-IN_PROGRESS{background:#E7F0F9;color:var(--info)}
+.s-DONE{background:var(--accent-soft);color:var(--accent-dark)}
+.empty{padding:26px 12px;text-align:center;color:var(--text-2);font-size:14px}
+.empty .e{font-size:28px;display:block;margin-bottom:8px}
+.foot{text-align:center;color:var(--text-3);font-size:11px;padding:16px 0 6px}
+#toast{position:fixed;bottom:calc(var(--nav-h) + 24px);left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text-1);color:var(--bg-app);font-size:13px;font-weight:500;padding:10px 18px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:all .2s ease;z-index:90;white-space:nowrap;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:110px;padding-top:6px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bcol .be{width:100%;max-width:26px;border-radius:8px 8px 4px 4px;background:var(--accent-2);opacity:.55}
+.bcol.t .be{background:var(--accent);opacity:1}
+.bcol .bl{font-size:10px;color:var(--text-3)}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.mini-stat{background:var(--surface-2);border-radius:var(--r-chip);padding:10px}
+.mini-stat b{display:block;font-size:16px;font-weight:700}
+.mini-stat span{font-size:11px;color:var(--text-3)}
+.qr{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;display:inline-block}
+.switch{width:46px;height:28px;border-radius:999px;background:var(--ring-track);position:relative;flex:0 0 auto}
+.switch i{position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .18s ease}
+.switch.on{background:var(--accent)}
+html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
+.setrow{display:flex;align-items:center;gap:10px;min-height:52px}
+.setrow+.setrow{border-top:1px solid var(--divider)}
+.setrow .st{flex:1;font-size:15px;font-weight:500}
+.circlerow{display:flex;align-items:center;gap:12px;min-height:58px;width:100%;text-align:start}
+.circlerow+.circlerow{border-top:1px solid var(--divider)}
+.cico{width:40px;height:40px;border-radius:var(--r-chip);display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto;background:var(--companion-light)}
+.cico.personal{background:var(--accent-soft)}
+.notif-row{display:flex;align-items:center;gap:10px;min-height:54px}
+.notif-row+.notif-row{border-top:1px solid var(--divider)}
+.nico{width:36px;height:36px;border-radius:50%;background:var(--accent-verysoft);display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.task-title{font-size:15px;font-weight:500;flex:1;min-width:0}
+.task-title.dn{color:var(--text-3);text-decoration:line-through}
+.task-row{display:flex;gap:10px;padding:10px 0;align-items:flex-start}
+.task-row+.task-row{border-top:1px solid var(--divider)}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.welc{background:var(--surface);border:1px solid var(--nav-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:14px 16px;margin:10px 0}
+.welc b{display:block;font-size:15px;font-weight:700}
+.welc span{font-size:13px;color:var(--text-2)}
+.err{color:var(--error);font-size:13px;margin-top:8px}
+.info-msg{color:var(--info);font-size:13px;margin-top:8px}
+.logo{font-size:38px;text-align:center;display:block}
+</style>
+</head>
+<body>
+<div id="shell"><div id="view"></div></div>
+<div id="nav"></div>
+<div id="fab" style="display:none">＋</div>
+<div id="sheet-root"></div>
+<div id="toast"></div>
+<script>
+'use strict';
+/* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
+const CFG = {
+  url: 'https://jnggbhyhqwbohpqwybbw.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuZ2diaHlocXdib2hwcXd5YmJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQyMzcsImV4cCI6MjEwNTE0MDIzN30.4cojsJDBpFEQ8tKv-L9Mi4dTN8apKICUaNbQvJGjCQE',
+};
+try{
+  const saved = JSON.parse(localStorage.getItem('rafiq_web_cfg')||'null');
+  if(saved && saved.url && saved.key){ CFG.url = saved.url; CFG.key = saved.key; }
+}catch(e){}
+function saveCfg(){ localStorage.setItem('rafiq_web_cfg', JSON.stringify({url:CFG.url,key:CFG.key})); }
+
+/* ================= طبقة Supabase REST (بدون أي مكتبات خارجية) ================= */
+let session = null;
+try{ session = JSON.parse(localStorage.getItem('rafiq_web_session')||'null'); }catch(e){ session=null; }
+function saveSession(){ if(session) localStorage.setItem('rafiq_web_session', JSON.stringify(session)); else localStorage.removeItem('rafiq_web_session'); }
+
+async function sb(path, opts={}, auth=true){
+  const headers = Object.assign({'apikey': CFG.key, 'Content-Type':'application/json'}, opts.headers||{});
+  if(auth){
+    if(!session || !session.access_token) throw new Error('NO_SESSION');
+    headers['Authorization'] = 'Bearer ' + session.access_token;
+  }
+  let res = await fetch(CFG.url + path, Object.assign({}, opts, {headers}));
+  if(res.status === 401 && auth && session && session.refresh_token){
+    const ok = await refreshSession();
+    if(ok){
+      headers['Authorization'] = 'Bearer ' + session.access_token;
+      res = await fetch(CFG.url + path, Object.assign({}, opts, {headers}));
+    }
+  }
+  return res;
+}
+async function refreshSession(){
+  try{
+    const res = await fetch(CFG.url + '/auth/v1/token?grant_type=refresh_token', {
+      method:'POST', headers:{'apikey':CFG.key,'Content-Type':'application/json'},
+      body: JSON.stringify({refresh_token: session.refresh_token})
+    });
+    if(!res.ok) return false;
+    const d = await res.json();
+    session = {access_token:d.access_token, refresh_token:d.refresh_token, expires_at:Date.now()+(d.expires_in||3600)*1000, user:d.user};
+    saveSession(); return true;
+  }catch(e){ return false; }
+}
+async function rest(method, table, query, body, prefer){
+  let q = query || '';
+  const headers = {};
+  if(prefer) headers['Prefer'] = prefer;
+  const res = await sb('/rest/v1/'+table+(q?('?'+q):''), {method, headers, body: body?JSON.stringify(body):undefined});
+  const text = await res.text();
+  let json = null; try{ json = text?JSON.parse(text):null; }catch(e){}
+  if(!res.ok){
+    const msg = json && (json.message||json.msg) ? json.message||json.msg : ('HTTP '+res.status);
+    throw new Error(msg);
+  }
+  return json;
+}
+const nowIso = () => new Date().toISOString();
+function daysAgoIso(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString(); }
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c=='x'?r:(r&0x3|0x8)).toString(16);}));
+</script>
+<script>
+'use strict';
+/* ================= مولّد QR داخلي (byte mode, EC M, v1-10) — بلا مكتبات خارجية ================= */
+const QR = (()=>{
+  const EXP=new Uint8Array(512), LOG=new Uint8Array(256);
+  (function(){ let x=1; for(let i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x<<=1; if(x&256) x^=0x11D; } for(let i=255;i<512;i++) EXP[i]=EXP[i-255]; })();
+  const mul=(a,b)=> (a&&b)? EXP[LOG[a]+LOG[b]] : 0;
+  function genPoly(deg){ let p=[1]; for(let i=0;i<deg;i++){ const r=EXP[i], n=new Array(p.length+1).fill(0);
+    for(let j=0;j<p.length;j++){ n[j]^=p[j]; n[j+1]^=mul(p[j],r); } p=n; } return p; }
+  function rsEnc(data,deg){ const g=genPoly(deg), out=new Array(data.length+deg).fill(0);
+    for(let i=0;i<data.length;i++){ out[i]=data[i]; }
+    for(let i=0;i<data.length;i++){ const f=out[i]; if(f) for(let j=1;j<g.length;j++) out[i+j]^=mul(g[j],f); }
+    return out.slice(data.length); }
+  const ECC=[-1,10,16,26,18,24,16,18,22,22,26], BLK=[-1,1,1,1,2,2,4,4,4,5,5];
+  function rawModules(ver){ let r=(16*ver+128)*ver+64;
+    if(ver>=2){ const na=Math.floor(ver/7)+2; r-=(25*na-10)*na-55; if(ver>=7) r-=36; } return Math.floor(r/8); }
+  function maskBit(k,r,c){ switch(k){
+    case 0: return (r+c)%2===0; case 1: return r%2===0; case 2: return c%3===0;
+    case 3: return (r+c)%3===0; case 4: return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+    case 5: return ((r*c)%2+(r*c)%3)===0; case 6: return (((r*c)%2)+((r*c)%3))%2===0;
+    default: return (((r+c)%2)+((r*c)%3))%2===0; } }
+  function build(text){
+    const bytes=new TextEncoder().encode(text);
+    let ver=0;
+    for(let v=1;v<=10;v++){ const cap=(rawModules(v)-BLK[v]*ECC[v])*8; const need=4+ (v<10?8:16) + bytes.length*8;
+      if(need<=cap){ ver=v; break; } }
+    if(!ver) throw new Error('طويل جدًا');
+    const cap=(rawModules(ver)-BLK[ver]*ECC[ver])*8;
+    const bits=[];
+    const push=(val,n)=>{ for(let i=n-1;i>=0;i--) bits.push((val>>>i)&1); };
+    push(4,4); push(bytes.length, ver<10?8:16);
+    bytes.forEach(b=>push(b,8));
+    const capData=Math.floor(cap/8)- (4+ (ver<10?8:16))/8 - bytes.length; // bytes of padding room
+    let term=Math.min(4, cap-bits.length); push(0,term);
+    while(bits.length%8!==0) bits.push(0);
+    const pads=[0xEC,0x11]; let pi=0;
+    while(bits.length < cap){ const b=pads[pi++%2]; push(b,8); }
+    // بتات → بايتات
+    const cw=[]; for(let i=0;i<bits.length;i+=8){ let b=0; for(let j=0;j<8;j++) b=(b<<1)|bits[i+j]; cw.push(b); }
+    // تقسيم الكتل + إكمان-سالومون
+    const nBlocks=BLK[ver], eccLen=ECC[ver];
+    const shortLen=Math.floor(cw.length/nBlocks), numLong=cw.length%nBlocks;
+    const blocks=[], eccs=[];
+    let off=0;
+    for(let b=0;b<nBlocks;b++){ const len=shortLen+(b < (cw.length%nBlocks)?1:0);
+      blocks.push(cw.slice(off,off+len)); off+=len; }
+    // تصحيح: numLong بايتات طويلة = cw.length % nBlocks … لكن الترتيب الرسمي: الكتل الأولى قصيرة
+    blocks.length=0; off=0;
+    const numShort=nBlocks-(cw.length%nBlocks), numFull=cw.length%nBlocks;
+    let idx=0;
+    for(let b=0;b<nBlocks;b++){ const isLong = b < numFull ? false : true; }
+    // إعادة حساب صحيحة: nBlocks - numFull كتل قصيرة أولًا ثم كتل طويلة
+    blocks.length=0;
+    const shortBlockLen=Math.floor(cw.length/nBlocks), numLongBlocks=cw.length%shortBlockLen===0?0:cw.length%Math.max(1,shortBlockLen+1);
+    // نهج أبسط وموثوق (نمط نايوكي): result = data split as [short+1 repeated numLong][short repeated rest]
+    const shortB=Math.floor(cw.length/nBlocks); const numL=cw.length-shortB*nBlocks;
+    blocks.length=0; idx=0;
+    for(let b=0;b<nBlocks;b++){ const len=shortB+(b<numL?1:0); blocks.push(cw.slice(idx,idx+len)); idx+=len; }
+    for(let b=0;b<nBlocks;b++) eccs.push(rsEnc(blocks[b],eccLen));
+    // تشابك
+    const interleaved=[];
+    const maxLen=shortB+ (numL?1:0);
+    for(let i=0;i<maxLen;i++) for(let b=0;b<nBlocks;b++) if(i<blocks[b].length) interleaved.push(blocks[b][i]);
+    for(let i=0;i<eccLen;i++) for(let b=0;b<nBlocks;b++) interleaved.push(eccs[b][i]);
+    // مصفوفة
+    const size=ver*4+17;
+    const m=Array.from({length:size},()=>new Array(size).fill(null));
+    const setF=(x,y,d)=>{ m[y][x]=d; };
+    function finder(r,c){ for(let dr=-1;dr<=7;dr++) for(let dc=-1;dc<=7;dc++){ const rr=r+dr,cc=c+dc;
+      if(rr<0||rr>=size||cc<0||cc>=size) continue;
+      const dark=(dr>=0&&dr<=6&&dc>=0&&dc<=6)&&(dr===0||dr===6||dc===0||dc===6||(dr>=2&&dr<=4&&dc>=2&&dc<=4));
+      m[rr][cc]=dark; } }
+    finder(0,0); finder(0,size-7); finder(size-7,0);
+    for(let i=8;i<size-8;i++){ m[6][i]=(i%2===0); m[i][6]=(i%2===0); }
+    if(ver>=2){ const na=Math.floor(ver/7)+2;
+      const step=Math.trunc((ver*4+na*2+1)/(na*2-2))*2;
+      const pos=[]; for(let p=size-7; pos.length<na; p-=step) pos.splice(0,0,p); pos[0]=6;
+      for(const rr of pos) for(const cc of pos){ if(m[rr][cc]===null)
+        for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) m[rr+dr][cc+dc]=(Math.max(Math.abs(dr),Math.abs(dc))!==1); } }
+    m[size-8][8]=true;
+    // حجز مناطق التنسيق والإصدار
+    for(let i=0;i<9;i++){ if(m[8][i]===null)m[8][i]=false; if(m[i][8]===null)m[i][8]=false; }
+    for(let i=0;i<8;i++){ if(m[8][size-1-i]===null)m[8][size-1-i]=false; if(m[size-1-i][8]===null)m[size-1-i][8]=false; }
+    if(ver>=7){ let rem=ver; for(let i=0;i<12;i++) rem=(rem<<1)^((rem>>>11)*0x1F25);
+      const vbits=(ver<<12)|rem;
+      for(let i=0;i<18;i++){ const bit=((vbits>>>i)&1)===1;
+        const a=size-11+i%3, b=Math.floor(i/3);
+        setF(a,b,bit); setF(b,a,bit); } }
+    // وضع البيانات
+    let bi=0;
+    for(let right=size-1; right>=1; right-=2){
+      if(right===6) right=5;
+      for(let vert=0; vert<size; vert++){
+        for(let j=0;j<2;j++){
+          const c=right-j;
+          const upward=((right+1)&2)===0;
+          const r= upward? size-1-vert : vert;
+          if(m[r][c]===null){
+            let dark=false;
+            if(bi<interleaved.length*8) dark=(((interleaved[Math.floor(bi/8)]>>>(7-(bi%8)))&1)===1);
+            dark = maskBit(0,r,c) ? !dark : dark; // mask 0: dark ^= maskBit
+            dark = !dark === false ? dark : dark; // keep
+            m[r][c]=dark; bi++;
+          }
+        }
+      }
+    }
+    // معلومات التنسيق (EC M → formatBits=0)
+    let d=0<<3|0, rem2=d;
+    for(let i=0;i<10;i++) rem2=(rem2<<1)^((rem2>>>9)*0x537);
+    const fbits=((d<<10)|rem2)^0x5412;
+    const gb=i=>((fbits>>>i)&1)===1;
+    for(let i=0;i<=5;i++) setF(8,i,gb(i));
+    setF(8,7,gb(6)); setF(8,8,gb(7)); setF(7,8,gb(8));
+    for(let i=9;i<15;i++) setF(14-i,8,gb(i));
+    for(let i=0;i<8;i++) setF(size-1-i,8,gb(i));
+    for(let i=8;i<15;i++) setF(8,size-15+i,gb(i));
+    setF(size-8,8,true);
+    // SVG
+    let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" width="180" height="180">`;
+    svg+=`<rect width="${size}" height="${size}" fill="#FFFFFF"/>`;
+    for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(m[r][c]) svg+=`<rect x="${c}" y="${r}" width="1" height="1" fill="#111111"/>`;
+    svg+='</svg>';
+    return svg;
+  }
+  return {build};
+})();
+</script>
+<script>
+'use strict';
+/* ================= حالة + مساعدات ================= */
+let data=null, view='home', pendingJoin=null;
+try{ pendingJoin=new URLSearchParams(location.search).get('join'); }catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const meId=()=>session&&session.user?session.user.id:null;
+const meProfile=()=>data&&data.profile;
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800); }
+function relAr(ts){ if(!ts) return ''; try{
+  const d=new Date(ts), diff=(Date.now()-d.getTime())/60000, m=Math.floor(diff);
+  if(m<1) return 'الآن'; if(m===1) return 'منذ دقيقة'; if(m===2) return 'منذ دقيقتين';
+  if(m<11) return 'منذ '+m+' دقائق'; if(m<60) return 'منذ '+m+' دقيقة';
+  const h=Math.floor(m/60); if(h===1) return 'منذ ساعة'; if(h===2) return 'منذ ساعتين'; if(h<11) return 'منذ '+h+' ساعات';
+  const dd=Math.floor(h/24); if(dd===1) return 'منذ يوم'; if(dd===2) return 'منذ يومين'; if(dd<11) return 'منذ '+dd+' أيام';
+  return 'منذ '+dd+' يومًا';
+}catch(e){ return ''; } }
+const DAYS=['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'];
+function last7(){ const a=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); a.push(d);} return a; }
+function dayShort(d){ return DAYS[d.getDay()===6?0:DAYS.indexOf(['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'][d.getDay()])]; }
+function dayNum(d){ return d.getDate(); }
+const HABIT_TYPES={HABIT:'🌱',QURAN:'📖',BOOK:'📘',LEARNING:'🎓',GOAL:'🎯'};
+const typeEmoji=k=>HABIT_TYPES[k]||'🌱';
+const visLabel=v=>v==='PRIVATE'?'🔒 خاص بي':v==='CIRCLE'?'👥 كل الدائرة':'@ أشخاص محددون';
+const stLabel=s=>s==='TODO'?'للتنفيذ':s==='IN_PROGRESS'?'جارية':'منجزة';
+const nextSt=s=>s==='TODO'?'IN_PROGRESS':(s==='DONE'?'TODO':'DONE');
+function trimN(v){ v=Number(v)||0; return Number.isInteger(v)?String(v):String(Math.round(v*10)/10); }
+
+/* ================= جلب اللقطة (نفس استعلامات تطبيق Android) ================= */
+async function refreshAll(){
+  const me=meId();
+  const profile=(await rest('GET','profiles','id=eq.'+me+'&select=*'))[0]||null;
+  const memberships=await rest('GET','circle_members','user_id=eq.'+me+'&select=*');
+  const myCircleIds=memberships.map(m=>m.circle_id);
+  if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[]}; return; }
+  const inC='circle_id=in.('+myCircleIds.join(',')+')';
+  const inC2='id=in.('+myCircleIds.join(',')+')';
+  const [circles,allMembers,items,tasks,sharedLists,activity]=await Promise.all([
+    rest('GET','circles',inC2+'&select=*'),
+    rest('GET','circle_members',inC+'&select=*'),
+    rest('GET','items',inC+'&order=created_at.desc&select=*'),
+    rest('GET','tasks',inC+'&order=created_at.desc&select=*'),
+    rest('GET','shared_lists',inC+'&select=*'),
+    rest('GET','activity_events',inC+'&order=created_at.desc&limit=40&select=*'),
+  ]);
+  const memberIds=[...new Set(allMembers.map(m=>m.user_id).filter(u=>u!==me))];
+  const peerProfiles=memberIds.length?(await rest('GET','profiles','id=in.('+memberIds.join(',')+')&select=*')):[];
+  const pById={}; peerProfiles.forEach(p=>pById[p.id]=p); pById[me]=profile;
+  const itemIds=items.map(i=>i.id), listIds=sharedLists.map(l=>l.id), evIds=activity.map(a=>a.id);
+  const [recipients,entries,shopping,reactions]=await Promise.all([
+    itemIds.length?rest('GET','item_recipients','item_id=in.('+itemIds.join(',')+')&select=*'):[],
+    itemIds.length?rest('GET','progress_entries','item_id=in.('+itemIds.join(',')+')&recorded_at=gte.'+daysAgoIso(30)+'&select=*'):[],
+    listIds.length?rest('GET','shared_list_items','list_id=in.('+listIds.join(',')+')&order=position.asc&select=*'):[],
+    evIds.length?rest('GET','reactions','event_id=in.('+evIds.join(',')+')&select=*'):[],
+  ]);
+  let invites=[];
+  const owned=circles.filter(c=>c.owner_id===me).map(c=>c.id);
+  if(owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&select=*'); }catch(e){} }
+  data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
+    items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites};
+}
+const circlesOf=()=>data?data.circles:[];
+const sharedFirst=()=>circlesOf().find(c=>c.circle.type==='SHARED')||null;
+const companionOf=()=>{ const s=sharedFirst(); return s? (s.members.find(x=>x.m.user_id!==meId())||{}).p : null; };
+function habitsFor(uid){ return data?data.items.filter(i=>i.owner_id===uid&&['HABIT','QURAN','BOOK','LEARNING','GOAL'].includes(i.type)):[]; }
+function habitProg(uid,item){
+  const today=new Date().toDateString();
+  const v=data.entries.filter(e=>e.item_id===item.id&&e.user_id===uid&&new Date(e.recorded_at).toDateString()===today).reduce((s,e)=>s+(+e.value||0),0);
+  const bin=item.target_value==null;
+  return {v,bin,done: bin? v>0 : v>=(+item.target_value||0), pct: bin? (v>0?100:0) : Math.min(100,Math.round(v/(+item.target_value||1)*100))};
+}
+function dailyPct(uid){
+  const hs=habitsFor(uid).filter(i=>i.visibility==='CIRCLE'||i.owner_id===uid);
+  if(!hs.length) return 0;
+  const done=hs.filter(i=>habitProg(uid,i).done).length;
+  return Math.round(done/hs.length*100);
+}
+function visibleTasks(){
+  const me=meId();
+  return (data?data.tasks:[]).filter(t=>{
+    if(t.owner_id===me) return true;
+    if(t.circle_id==='personal') return false;
+    if(t.visibility==='PRIVATE') return false;
+    if(t.visibility==='CIRCLE') return true;
+    if(t.visibility==='SELECTED_MEMBERS') return t.owner_id===me||(t.recipients||[]).includes(me);
+    return false;
+  });
+}
+
+/* ================= واجهة الدخول ================= */
+function renderAuth(){
+  document.documentElement.dataset.accent='green';
+  $('#nav').innerHTML=''; $('#fab').style.display='none';
+  const err=window._authErr||'', info=window._authInfo||'';
+  $('#view').innerHTML=`
+  <div class="screen" style="padding-top:40px">
+    <span class="logo">🌱</span>
+    <h1 style="text-align:center">رفيق</h1>
+    <p style="text-align:center;color:var(--text-2);font-size:14px">نتقدم معًا.</p>
+    <div class="welc"><b>مساحتك الخاصة لك وحدك.</b><span>وشارك فقط ما تختاره.</span></div>
+    <div class="welc"><b>عادات، قراءة، أهداف، مهام، قوائم مشتركة.</b><span>كل ذلك في مكان واحد هادئ.</span></div>
+    <div class="welc"><b>أنشئ دائرة مع من تحب.</b><span>وشاركوه التقدم لحظة بلحظة.</span></div>
+    <div id="authForms" style="margin-top:14px"></div>
+  </div>`;
+  renderAuthForms();
+}
+function renderAuthForms(){
+  const mode=window._authMode||0, err=window._authErr||'', info=window._authInfo||'';
+  const el=$('#authForms'); if(!el) return;
+  if(mode===0){
+    el.innerHTML=`<button class="btn" data-act="authMode" data-v="2">إنشاء حساب</button>
+      <div style="height:10px"></div><button class="btn ghost" data-act="authMode" data-v="1">تسجيل الدخول</button>`;
+  } else if(mode===1){
+    el.innerHTML=`<div class="card"><h2 style="margin-bottom:10px">تسجيل الدخول</h2>
+      <div class="field"><label>البريد الإلكتروني</label><input id="liEmail" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>كلمة المرور</label><input id="liPass" type="password" placeholder="••••••"></div>
+      <button class="btn" id="liBtn">دخول</button><div style="height:10px"></div>
+      <button class="btn ghost" data-act="authMode" data-v="0">رجوع</button>
+      ${err?`<div class="err">${esc(err)}</div>`:''}</div>`;
+    $('#liBtn').onclick=async()=>{ const b=$('#liBtn'); b.textContent='جارٍ...'; b.disabled=true;
+      const r=await signIn($('#liEmail').value.trim(),$('#liPass').value);
+      if(!r.ok){ window._authErr=arErr(r); window._authInfo=''; renderAuthForms(); } };
+  } else {
+    el.innerHTML=`<div class="card"><h2 style="margin-bottom:10px">إنشاء حساب جديد</h2>
+      <div class="field"><label>اسمك الظاهر</label><input id="suName" placeholder="مثال: زاهر"></div>
+      <div class="field"><label>لون هويتك</label><div class="chips">
+        <button class="chip ${window._acc!=='rose'?'on':''}" data-act="acc" data-v="green">🟢 أخضر</button>
+        <button class="chip ${window._acc==='rose'?'on':''}" data-act="acc" data-v="rose">🌸 وردي</button></div></div>
+      <div class="field"><label>البريد الإلكتروني</label><input id="suEmail" type="email"></div>
+      <div class="field"><label>كلمة المرور (6 أحرف فأكثر)</label><input id="suPass" type="password"></div>
+      <button class="btn" id="suBtn">إنشاء الحساب</button><div style="height:10px"></div>
+      <button class="btn ghost" data-act="authMode" data-v="0">رجوع</button>
+      ${err?`<div class="err">${esc(err)}</div>`:''}${info?`<div class="info-msg">${esc(info)}</div>`:''}</div>`;
+    $('#suBtn').onclick=async()=>{ const b=$('#suBtn'); if(!$('#suName').value.trim()){ toast('اكتب اسمك أولًا'); return; }
+      b.textContent='جارٍ...'; b.disabled=true;
+      const r=await signUp($('#suEmail').value.trim(),$('#suPass').value,$('#suName').value.trim(),window._acc||'green');
+      if(r.ok){ window._authErr=''; window._authInfo=''; await afterAuth(); }
+      else { window._authErr=arErr(r); window._authInfo=r.mode==='confirm_email'?'أُرسل رابط التأكيد إلى بريدك — أكّده ثم سجّل الدخول':''; renderAuthForms(); } };
+  }
+}
+function arErr(r){ const m=(r.msg||'').toLowerCase();
+  if(m.includes('invalid login')) return 'البريد أو كلمة المرور غير صحيحة';
+  if(m.includes('not confirmed')||m.includes('confirm')) return 'أكّد بريدك الإلكتروني أولًا ثم سجّل الدخول';
+  if(m.includes('already registered')) return 'هذا البريد مسجّل مسبقًا — سجّل الدخول';
+  if(m.includes('password')&&(m.includes('length')||m.includes('6'))) return 'كلمة المرور قصيرة — 6 أحرف فأكثر';
+  if(m.includes('failed to fetch')||m.includes('network')) return 'تعذر الاتصال — تحقق من الإنترنت';
+  return r.msg||'حدث خطأ غير متوقع';
+}
+async function afterAuth(){
+  window._authErr=''; window._authInfo='';
+  await ensureProfile(); await refreshAll(); startPolling(); renderApp();
+  if(pendingJoin){ openJoinSheet(pendingJoin); }
+}
+async function ensureProfile(){
+  try{ const me=meId(); const ex=await rest('GET','profiles','id=eq.'+me+'&select=*');
+    if(!ex.length){ const meta=session.user.user_metadata||{};
+      await rest('POST','profiles',{id:me,display_name:meta.display_name||'صديقي',accent_theme:meta.accent_theme||'green'},'return=representation'); } }catch(e){}
+}
+
+/* ================= الحساب: signUp / signIn / signOut ================= */
+async function signUp(email,password,displayName,accent){
+  try{
+    const res=await fetch(CFG.url+'/auth/v1/signup',{method:'POST',
+      headers:{'apikey':CFG.key,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password,data:{display_name:displayName,accent_theme:accent}})});
+    const d=await res.json();
+    if(!res.ok) return {ok:false,msg:d.msg||d.error_description||('HTTP '+res.status)};
+    if(d.access_token){ session={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Date.now()+(d.expires_in||3600)*1000,user:d.user}; saveSession(); return {ok:true}; }
+    return {ok:false,mode:'confirm_email',msg:''};
+  }catch(e){ return {ok:false,msg:'تعذر الاتصال — تحقق من الإنترنت'}; }
+}
+async function signIn(email,password){
+  try{
+    const res=await fetch(CFG.url+'/auth/v1/token?grant_type=password',{method:'POST',
+      headers:{'apikey':CFG.key,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})});
+    const d=await res.json();
+    if(!res.ok) return {ok:false,msg:d.error_description||d.msg||('HTTP '+res.status)};
+    session={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Date.now()+(d.expires_in||3600)*1000,user:d.user};
+    saveSession(); return {ok:true};
+  }catch(e){ return {ok:false,msg:'تعذر الاتصال — تحقق من الإنترنت'}; }
+}
+async function signOut(){ try{ await sb('/auth/v1/logout',{method:'POST'},true); }catch(e){}
+  session=null; saveSession(); data=null; stopPolling(); renderAuth(); }
+
+/* ================= المزامنة الحية ================= */
+let pollTimer=null;
+function startPolling(){ if(pollTimer) return; pollTimer=setInterval(()=>{
+  if(document.visibilityState==='visible'&&session&&data) refreshAll().then(()=>renderApp()).catch(()=>{}); },4000); }
+function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+</script>
+<script>
+'use strict';
+/* ================= الواجهة الرئيسية ================= */
+const TABS=[['home','الرئيسية','🏠'],['habits','العادات','🎯'],['stats','الإحصائيات','📊'],['tasks','المهام','✅'],['more','المزيد','⋯']];
+function renderNav(){
+  $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
+    `<button data-act="tab" data-v="${id}" class="${view===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
+  $('#fab').style.display='block';
+}
+function renderApp(){
+  const p=meProfile();
+  document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
+  document.documentElement.dataset.theme=(localStorage.getItem('rafiq_web_dark')==='on')?'dark':'light';
+  renderNav();
+  ({home:renderHome,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore})[view]();
+}
+function ringSVG(pct,cls){
+  const r=34,c=(2*Math.PI*r).toFixed(1),off=(c*(1-Math.min(100,Math.max(0,pct))/100)).toFixed(1);
+  return `<div class="ring"><svg width="80" height="80" viewBox="0 0 80 80">
+    <circle cx="40" cy="40" r="${r}" fill="none" stroke="var(--ring-track)" stroke-width="7"/>
+    <circle class="${cls}" cx="40" cy="40" r="${r}" fill="none" stroke-width="7" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" ${cls==='own'?`stroke="var(--accent)"`:`stroke="var(--companion)"`}/>
+  </svg><div class="lbl">${pct}%</div></div>`;
+}
+function renderHome(){
+  const me=meProfile(); if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
+  const comp=companionOf();
+  const myPct=dailyPct(meId()), hisPct=comp?dailyPct(comp.id):0;
+  const days=last7();
+  const habits=habitsFor(me.id);
+  const shop=shoppingFor();
+  $('#view').innerHTML=`
+  <div class="screen">
+    <div class="greet">
+      <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
+      <div class="avatar">${esc((me.display_name||'؟')[0])}</div>
+    </div>
+    <div class="week">${days.map(d=>`<div class="day ${d.toDateString()===new Date().toDateString()?'today':''}"><span class="dn">${dayShort(d)}</span><span class="dd">${dayNum(d)}</span></div>`).join('')}</div>
+    <div class="progress-row">
+      <div class="pcard"><div class="who"><div class="avatar sm">${esc((me.display_name||'؟')[0])}</div> أنت 👑</div>
+        ${ringSVG(myPct,'own')}
+        <div style="font-size:13px;font-weight:600">${habits.filter(h=>habitProg(me.id,h).done).length} / ${habits.length}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">من عادات اليوم</div></div>
+      ${comp?`<div class="pcard"><div class="who"><div class="avatar sm comp">${esc((comp.display_name||'؟')[0])}</div> رفيقك ❤️</div>
+        ${ringSVG(hisPct,'comp')}
+        <div style="font-size:13px;font-weight:600">${habitsFor(comp.id).filter(h=>habitProg(comp.id,h).done).length} / ${habitsFor(comp.id).length}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">من عادات اليوم</div></div>`
+      :`<div class="pcard" data-act="tab" data-v="more" style="cursor:pointer"><span style="font-size:24px">🤝</span>
+        <b style="font-size:13px">أضف رفيقًا</b><span style="font-size:11px;color:var(--text-3)">أنشئ دائرة مشتركة</span></div>`}
+    </div>
+    <div class="sec"><h2>عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
+    <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
+      `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
+    <div class="sec"><h2>قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
+    <div class="card">${shop?`
+      <div class="row" style="min-height:32px"><div class="bar"><i style="width:${shop.done*100/(shop.items.length||1)}%"></i></div>
+        <span style="font-size:12px;color:var(--text-2);font-weight:600">${shop.done} / ${shop.items.length} منجزة</span></div>
+      ${shop.items.map(si=>shopRow(si)).join('')}
+      <div class="add-item"><input id="shopIn" placeholder="أضف عنصرًا..." data-list="${shop.list.id}"><button data-act="addShop">＋</button></div>`
+    :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة مشتركة بعد.<br>تُنشأ تلقائيًا مع أول دائرة مشتركة.</div>`}</div>
+    <div class="foot">رفيق — نسخة الويب v1.0 • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
+  </div>`;
+}
+function shoppingFor(){
+  if(!data||!data.sharedLists.length) return null;
+  const list=data.sharedLists[0];
+  const items=data.shopping.filter(i=>i.list_id===list.id).sort((a,b)=>(a.completed-b.completed)||(a.position-b.position));
+  return {list,items,done:items.filter(i=>i.completed).length};
+}
+function habitRow(uid,item){
+  const hp=habitProg(uid,item);
+  return `<div class="row"><span class="hicon">${typeEmoji(item.type)}</span><span class="htitle">${esc(item.title)}</span>
+    ${hp.bin?`<button class="check ${hp.done?'on':''}" data-act="binHabit" data-id="${item.id}" data-on="${hp.done?0:1}">✓</button>`
+      :`<div class="bar solo"><i style="width:${hp.pct}%"></i></div><span class="hval ${hp.done?'ok':''}">${trimN(hp.v)} / ${trimN(item.target_value)} ${item.unit||''}</span>
+        <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}</div>`;
+}
+function shopRow(si){
+  const by=si.completed&&si.completed_by?nameOf(si.completed_by):null;
+  return `<div class="row"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
+    <div style="flex:1;min-width:0"><div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
+    ${si.completed&&by?`<div class="shop-meta">أنجزها ${esc(by)} • ${relAr(si.completed_at)}</div>`:''}</div></div>`;
+}
+function nameOf(uid){ if(uid===meId()) return 'أنت';
+  const m=(data.circles.flatMap(c=>c.members).find(x=>x.m.user_id===uid)||{}).p; return m?m.display_name:'رفيقك'; }
+
+/* ---------- العادات ---------- */
+function renderHabits(){
+  const me=meProfile(), habits=habitsFor(meId());
+  $('#view').innerHTML=`<div class="screen">
+    <div class="sec"><h2>عاداتي وأهدافي</h2><button class="link" data-act="openAddHabit">+ عادة جديدة</button></div>
+    ${habits.length?habits.map(item=>{ const hp=habitProg(meId(),item);
+      return `<div class="card"><div class="row"><span class="hicon">${typeEmoji(item.type)}</span>
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">${esc(item.title)}</div>
+        <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap">
+          <span class="badge">${visLabel(item.visibility)}</span>
+          ${item.visibility!=='PRIVATE'?`<span class="badge">${esc(circleName(item.circle_id))}</span>`:''}</div></div>
+        <button class="link" style="color:var(--error)" data-act="delItem" data-id="${item.id}">حذف</button></div>
+      <div class="row" style="border-top:none;padding-top:4px">
+        ${hp.bin?`<span class="htitle" style="color:${hp.done?'var(--accent)':'var(--text-2)'}">${hp.done?'✓ تم اليوم':'لم يُنجز بعد'}</span>
+          <button class="check ${hp.done?'on':''}" data-act="binHabit" data-id="${item.id}" data-on="${hp.done?0:1}">✓</button>`
+        :`<div class="bar"><i style="width:${hp.pct}%"></i></div>
+          <span class="hval">${trimN(hp.v)} / ${trimN(item.target_value)} ${item.unit||''}</span>
+          <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}
+      </div></div>`;}).join('')
+    :`<div class="card"><div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.<div style="height:12px"></div><button class="btn" style="max-width:220px;margin:0 auto" data-act="openAddHabit">+ إضافة</button></div></div>`}
+    <p class="foot">سجّل تقدمك بلمسة واحدة — رافقني، لا تراقبني.</p></div>`;
+}
+function circleName(cid){ const c=circlesOf().find(x=>x.circle.id===cid); return c?c.circle.name:''; }
+
+/* ---------- الإحصائيات + رحلتنا ---------- */
+function renderStats(){
+  const me=meProfile(), comp=companionOf();
+  const myPct=dailyPct(meId());
+  const habits=habitsFor(meId());
+  const myEntries=data.entries.filter(e=>e.user_id===meId());
+  const daysWith=new Set(myEntries.map(e=>new Date(e.recorded_at).toDateString()));
+  let streak=0; const today=new Date();
+  let cur=daysWith.has(today.toDateString())?today:new Date(today.getTime()-86400000);
+  if(daysWith.has(cur.toDateString())){ while(daysWith.has(cur.toDateString())){ streak++; cur=new Date(cur.getTime()-86400000); } }
+  const week=last7();
+  function dayPct(d){ if(!habits.length) return 0;
+    const done=habits.filter(item=>{ const v=myEntries.filter(e=>e.item_id===item.id&&new Date(e.recorded_at).toDateString()===d.toDateString()).reduce((s,e)=>s+(+e.value||0),0);
+      return item.target_value==null? v>0 : v>=(+item.target_value||0); }).length;
+    return Math.round(done/habits.length*100); }
+  const weekStart=new Date(); weekStart.setDate(weekStart.getDate()-6);
+  const sumU=(u,from)=>myEntries.filter(e=>new Date(e.recorded_at)>=from&&(e.unit||'').includes(u)).reduce((s,e)=>s+(+e.value||0),0);
+  const pagesW=sumU('صفح',weekStart), pagesM=(()=>{ const f=new Date(); f.setDate(f.getDate()-29); return sumU('صفح',f); })();
+  const minW=sumU('دقيق',weekStart)+sumU('دقيقة',weekStart)+sumU('دقائق',weekStart);
+  const tasks=visibleTasks(), tDone=tasks.filter(t=>t.status==='DONE').length;
+  $('#view').innerHTML=`<div class="screen">
+    <div class="sec"><h2>الإحصائيات</h2></div>
+    <div class="card" style="display:flex;align-items:center;gap:16px">${ringSVG(myPct,'own')}
+      <div><b style="font-size:16px">إنجاز اليوم</b>
+        <div style="font-size:13px;color:var(--text-2)">${habits.filter(h=>habitProg(meId(),h).done).length} / ${habits.length} من عاداتي</div>
+        ${streak?`<div style="font-size:13px;color:var(--warning);font-weight:600;margin-top:6px">🔥 ${streak} يومًا متتاليًا</div>`:''}</div></div>
+    <div class="card"><h2 style="margin-bottom:8px">هذا الأسبوع</h2>
+      <div class="bars">${week.map(d=>{ const p=dayPct(d);
+        return `<div class="bcol ${d.toDateString()===new Date().toDateString()?'t':''}"><div class="be" style="height:${Math.max(4,p)}%"></div><span class="bl">${dayShort(d)}</span></div>`;}).join('')}</div></div>
+    ${comp?`<div class="card"><h2 style="margin-bottom:8px">تقدمنا هذا الأسبوع</h2>
+      <div style="display:flex;align-items:center;gap:14px">${ringSVG(Math.round((myPct+dailyPct(comp.id))/2),'comp')}
+      <div><b style="font-size:14px">أنت + ${esc(comp.display_name)}</b><div style="font-size:11px;color:var(--text-3)">متوسط إنجاز اليوم</div></div></div></div>`:''}
+    <div class="card"><h2 style="margin-bottom:8px">إجمالياتي</h2>
+      <div class="mini-stats">
+        <div class="mini-stat"><b>${Math.round(pagesW)}</b><span>صفحات هذا الأسبوع</span></div>
+        <div class="mini-stat"><b>${Math.round(pagesM)}</b><span>صفحات هذا الشهر</span></div>
+        <div class="mini-stat"><b>${Math.floor(minW/60)}س ${Math.round(minW%60)}د</b><span>وقت التعلم</span></div>
+        <div class="mini-stat"><b>${tDone} / ${tasks.length}</b><span>المهام المنجزة</span></div></div></div>
+    <div class="sec"><h2>رحلتنا</h2></div>
+    ${data.activity.length?data.activity.map(ev=>{
+      const rs=data.reactions.filter(r=>r.event_id===ev.id);
+      return `<div class="card"><div class="row" style="min-height:40px"><span class="nico">${evEmoji(ev.kind)}</span>
+        <div style="flex:1"><div style="font-size:13.5px">${evText(ev.kind,nameOf(ev.user_id),ev.payload)}</div>
+        <div class="shop-meta">${relAr(ev.created_at)}</div></div></div>
+        <div style="display:flex;gap:6px;margin-top:8px">${['❤️','👏','🌟','🚀','🤲'].map(e=>{
+          const n=rs.filter(r=>r.emoji===e).length, mine=rs.some(r=>r.emoji===e&&r.user_id===meId());
+          return `<button class="chip ${mine?'on':''}" style="min-height:32px" data-act="react" data-id="${ev.id}" data-v="${e}">${e}${n?' '+n:''}</button>`;}).join('')}</div></div>`;
+    }).join(''):`<div class="card"><div class="empty"><span class="e">✨</span>لا نشاط بعد — ابدأوا وسيوثّق كل شيء هنا.</div></div>`}
+    <div style="height:8px"></div></div>`;
+}
+function evEmoji(k){ return {ITEM_COMPLETED:'🌱',TASK_DONE:'✅',SHOP_ADDED:'🛒',CIRCLE_CREATED:'🤝',JOINED:'🎉'}[k]||'✨'; }
+function evText(k,who,payload){ if(k==='ITEM_COMPLETED') return who+' أكمل «'+payload+'» 🌱';
+  if(k==='TASK_DONE') return who+' أنجز المهمة «'+payload+'»'; if(k==='SHOP_ADDED') return who+' أضاف «'+payload+'» للتسوق';
+  if(k==='CIRCLE_CREATED') return 'أُنشئت دائرة «'+payload+'»'; if(k==='JOINED') return payload; return payload; }
+</script>
+<script>
+'use strict';
+/* ---------- المهام ---------- */
+function renderTasks(){
+  const tasks=visibleTasks();
+  const f=window._taskFilter||'ALL';
+  const list=tasks.filter(t=>f==='ALL'||t.status===f).sort((a,b)=>(a.status==='DONE')-(b.status==='DONE'));
+  $('#view').innerHTML=`<div class="screen">
+    <div class="sec"><h2>المهام</h2><button class="link" data-act="openAddTask">+ مهمة جديدة</button></div>
+    <div class="chips" style="margin-bottom:10px">${[['ALL','الكل'],['TODO','للتنفيذ'],['IN_PROGRESS','جارية'],['DONE','منجزة']].map(([k,l])=>
+      `<button class="chip ${f===k?'on':''}" data-act="taskFilter" data-v="${k}">${l}</button>`).join('')}</div>
+    ${list.length?list.map(t=>{
+      const cn=circleName(t.circle_id);
+      return `<div class="card"><div class="task-row">
+        <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
+        <div style="flex:1;min-width:0"><div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+        <div class="badges">${cn?`<span class="badge">${esc(cn)}</span>`:''}<span class="badge">${visLabel(t.visibility)}</span>
+        ${t.assigned_to?`<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>`:''}
+        ${t.due_at?`<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>`:''}</div></div></div></div>`;
+    }).join(''):`<div class="card"><div class="empty"><span class="e">📝</span>لا توجد مهام هنا.<br>أضف أول مهمة وابدأ الإنجاز.</div></div>`}
+    <p class="foot">اضغط حالة المهمة لتبديلها: للتنفيذ ← جارية ← منجزة</p></div>`;
+}
+/* ---------- المزيد ---------- */
+function renderMore(){
+  const me=meProfile(); const dark=localStorage.getItem('rafiq_web_dark')||'auto';
+  $('#view').innerHTML=`<div class="screen">
+    <div class="sec"><h2>المزيد</h2></div>
+    <div class="card"><div class="greet" style="margin:0"><div class="avatar">${esc((me.display_name||'؟')[0])}</div>
+      <div style="flex:1"><b style="font-size:16px">${esc(me.display_name||'بدون اسم')}</b>
+      <div style="font-size:12px;color:var(--text-2)">${me.accent_theme==='rose'?'🌸 هوية وردية':'🟢 هوية خضراء'}</div></div>
+      <button class="link" data-act="editProfile">تعديل</button></div></div>
+    <div class="card">
+      <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
+        <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
+        <button class="link" data-act="openCfg">تعديل</button></div>
+      <div class="setrow"><span class="st" style="color:var(--error)">تسجيل الخروج</span><button class="link" style="color:var(--error)" data-act="signOut">خروج</button></div>
+    </div>
+    <div class="sec"><h2>الدوائر</h2><button class="link" data-act="openCreateCircle">+ دائرة جديدة</button></div>
+    <div class="card">
+      ${circlesOf().map(ci=>`<button class="circlerow" data-act="openCircle" data-id="${ci.circle.id}">
+        <span class="cico ${ci.circle.type==='PERSONAL'?'personal':''}">${ci.circle.type==='PERSONAL'?'🔒':'👥'}</span>
+        <span style="flex:1;min-width:0"><b style="font-size:15px">${esc(ci.circle.name)}</b>
+        <span style="font-size:12px;color:var(--text-3);display:block">${ci.circle.type==='PERSONAL'?'دائرة شخصية • لا يراها أحد':'دائرة مشتركة • '+ci.members.length+' أعضاء'}</span></span>
+        <span class="badge">${ci.circle.type}</span></button>`).join('')}
+      <div style="padding-top:10px"><button class="btn ghost" data-act="openJoinSheet">🔑 الانضمام برمز أو QR</button></div>
+    </div>
+    <p class="foot">رفيق — نسخة الويب v1.0 • يعمل على الهاتف والآيباد والحاسوب<br>«رافقني، لا تراقبني.»</p></div>`;
+}
+</script>
+<script>
+'use strict';
+/* ---------- النوافذ ---------- */
+function openSheet(html){ $('#sheet-root').innerHTML=`<div class="overlay" data-ov="1"><div class="sheet">${html}</div></div>`;
+  $('#sheet-root .overlay').addEventListener('click',e=>{ if(e.target.dataset.ov) closeSheet(); }); }
+function closeSheet(){ $('#sheet-root').innerHTML=''; }
+function sheetHead(t){ return `<div class="sheet-head"><h3>${esc(t)}</h3><button class="sheet-x" data-act="closeSheet">✕</button></div>`; }
+function visOptions(sel,circle){
+  const opts=[['PRIVATE','🔒 خاص بي','يراه صاحبه فقط'],['CIRCLE','👥 كل الدائرة',circle?'يراه جميع أعضاء «'+circle.circle.name+'»':'يراه الجميع في دائرتك'],['SELECTED_MEMBERS','@ أشخاص محددون','يراه من تختاره فقط']];
+  return opts.map(([v,t,d])=>`<button class="vis-opt ${sel===v?'on':''}" data-act="pickVis" data-v="${v}">
+    <span style="flex:1"><span class="vt">${t}</span><br><span class="vd">${d}</span></span>${sel===v?'<span style="color:var(--accent)">✓</span>':''}</button>`).join('');
+}
+window._visSel='PRIVATE'; window._visMembers=[];
+function visWrap(id,sel,circle){ return `<div id="${id}">${visOptions(sel,circle)}${sel==='SELECTED_MEMBERS'&&circle?memberPick(circle):''}</div>`; }
+function memberPick(circle){ return `<div style="border:1px solid var(--divider);border-radius:14px;padding:4px 12px;margin-bottom:12px">
+  ${circle.members.filter(x=>x.m.user_id!==meId()).map(x=>`<label style="display:flex;align-items:center;gap:8px;min-height:42px">
+    <input type="checkbox" class="memcb" value="${x.m.user_id}"> ${esc(x.p.display_name||'عضو')}</label>`).join('')}</div>`; }
+
+function openAddTask(){
+  const s=sharedFirst();
+  openSheet(sheetHead('مهمة جديدة')+`
+    <div class="field"><label>عنوان المهمة</label><input id="tTitle" placeholder="ما الذي تريد إنجازه؟"></div>
+    <div class="field"><label>وصف اختياري</label><textarea id="tDesc" rows="2"></textarea></div>
+    <div class="field"><label>الدائرة</label><div class="chips" id="tCircle">
+      <button class="chip on" data-c="personal">مساحتي الخاصة</button>
+      ${s?`<button class="chip" data-c="${s.circle.id}">${esc(s.circle.name)}</button>`:''}</div></div>
+    <div class="field"><label>من يراها؟</label>${visWrap('tVis',window._visSel='PRIVATE',null)}</div>
+    ${s?`<div class="field"><label>التعيين (اختياري)</label><select id="tAssign"><option value="">بدون</option>
+      ${s.members.map(x=>`<option value="${x.m.user_id}">${esc(x.p.display_name||'عضو')}</option>`).join('')}</select></div>`:''}
+    <div class="field"><label>الموعد النهائي (اختياري)</label><input id="tDue" type="date"></div>
+    <button class="btn" data-act="saveTask">حفظ المهمة</button>`);
+  window._taskCircle='personal';
+  const wc=$('#tCircle'); if(wc) wc.addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b) return;
+    window._taskCircle=b.dataset.c; wc.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    $('#tVis').innerHTML=visOptions(window._visSel,window._taskCircle==='personal'?null:s); });
+  const wv=$('#tVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
+    window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,window._taskCircle==='personal'?null:s); });
+}
+async function saveTask(){
+  const title=$('#tTitle').value.trim(); if(!title){ toast('اكتب العنوان'); return; }
+  try{
+    const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
+    const due=$('#tDue').value?new Date($('#tDue').value+'T12:00:00').toISOString():null;
+    const me=meId();
+    let circleId=window._taskCircle;
+    if(circleId==='personal'){ const p=circlesOf().find(c=>c.circle.type==='PERSONAL'); circleId=p?p.circle.id:null; }
+    if(!circleId){ toast('لا توجد دائرة متاحة'); return; }
+    const row={id:uuid(),owner_id:me,circle_id:circleId,title,description:$('#tDesc').value.trim()||null,
+      visibility:window._visSel,assigned_to:$('#tAssign')?($('#tAssign').value||null):null,status:'TODO',due_at:due,
+      recipients:window._visSel==='SELECTED_MEMBERS'?(recips.length?recips:[otherId()]):null,created_at:nowIso(),updated_at:nowIso()};
+    await rest('POST','tasks',row,'return=minimal');
+    closeSheet(); await refreshAll(); renderApp(); toast('أُضيفت المهمة ✓');
+  }catch(e){ toast(friendly(e)); }
+}
+function otherId(){ return (sharedFirst()?sharedFirst().members.find(x=>x.m.user_id!==meId()):{}).m?.user_id||null; }
+
+function openAddHabit(){
+  const s=sharedFirst();
+  openSheet(sheetHead('عادة / هدف جديد')+`
+    <div class="field"><label>النوع</label><div class="chips" id="hType">
+      ${Object.entries(HABIT_TYPES).map(([k,e],i)=>`<button class="chip ${i===0?'on':''}" data-t="${k}">${e} ${{HABIT:'عادة',QURAN:'قرآن',BOOK:'كتاب',LEARNING:'تعلم',GOAL:'هدف'}[k]}</button>`).join('')}</div></div>
+    <div class="field"><label>الاسم</label><input id="hTitle" placeholder="مثال: قراءة القرآن"></div>
+    <div id="qFields">
+      <div class="field"><label>الهدف اليومي + الوحدة</label><div style="display:flex;gap:8px">
+        <input id="hTarget" type="number" value="10" min="1" style="flex:1">
+        <input id="hUnit" value="صفحات" style="flex:1"></div></div>
+    </div>
+    <div class="field"><label>الدائرة</label><div class="chips" id="hCircle">
+      <button class="chip on" data-c="personal">مساحتي الخاصة</button>
+      ${s?`<button class="chip" data-c="${s.circle.id}">${esc(s.circle.name)}</button>`:''}</div></div>
+    <div class="field"><label>من يراها؟</label>${visWrap('hVis',window._visSel='PRIVATE',null)}</div>
+    <button class="btn" data-act="saveHabit">إضافة</button>`);
+  window._hType='HABIT'; window._hCircle='personal';
+  $('#hType').addEventListener('click',e=>{ const b=e.target.closest('[data-t]'); if(!b) return;
+    window._hType=b.dataset.t; $('#hType').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+  const wc=$('#hCircle'); wc.addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b) return;
+    window._hCircle=b.dataset.c; wc.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    $('#hVis').innerHTML=visOptions(window._visSel,window._hCircle==='personal'?null:s); });
+  const wv=$('#hVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
+    window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,window._hCircle==='personal'?null:s); });
+}
+async function saveHabit(){
+  const title=$('#hTitle').value.trim(); if(!title){ toast('اكتب الاسم'); return; }
+  try{
+    const me=meId();
+    let circleId=window._hCircle;
+    if(circleId==='personal'){ const p=circlesOf().find(c=>c.circle.type==='PERSONAL'); circleId=p?p.circle.id:null; }
+    if(!circleId){ toast('لا توجد دائرة متاحة'); return; }
+    const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
+    const isBin=false; // v1: كل العادات بهدف كمي (تم/لم يتم = هدف 1)
+    const row={id:uuid(),owner_id:me,circle_id:circleId,type:window._hType,title,
+      visibility:window._visSel,unit:$('#hUnit')?$('#hUnit').value:'مرات',
+      target_value:Math.max(1,parseFloat($('#hTarget')?$('#hTarget').value:'1')||1),frequency:'DAILY',status:'ACTIVE',created_at:nowIso()};
+    await rest('POST','items',row,'return=minimal');
+    if(window._visSel==='SELECTED_MEMBERS'&&recips.length){ for(const r of recips)
+      await rest('POST','item_recipients',{id:uuid(),item_id:row.id,user_id:r},'return=minimal'); }
+    closeSheet(); await refreshAll(); renderApp(); toast('أُضيفت ✓');
+  }catch(e){ toast(friendly(e)); }
+}
+async function incHabit(id){
+  const item=data.items.find(i=>i.id===id); if(!item) return;
+  const amount=prompt('كم تريد إضافة إلى «'+item.title+'»؟ (الوحدة: '+(item.unit||'')+')','1');
+  if(amount==null) return; const n=parseFloat(amount); if(!n||n<=0) return;
+  try{ await rest('POST','progress_entries',{id:uuid(),item_id:id,user_id:meId(),value:n,unit:item.unit,recorded_at:nowIso()},'return=minimal');
+    if(item.target_value&&n>=(+item.target_value)) logAct(item.circle_id,'ITEM_COMPLETED',item.title);
+    await refreshAll(); renderApp(); toast('سُجل التقدم ✓');
+  }catch(e){ toast(friendly(e)); }
+}
+async function binHabit(id,on){
+  const item=data.items.find(i=>i.id===id); if(!item) return;
+  try{
+    if(on) await rest('POST','progress_entries',{id:uuid(),item_id:id,user_id:meId(),value:item.target_value||1,unit:item.unit,recorded_at:nowIso()},'return=minimal');
+    else await rest('DELETE','progress_entries',null,null).catch(()=>{});
+    if(on) logAct(item.circle_id,'ITEM_COMPLETED',item.title);
+    await refreshAll(); renderApp();
+  }catch(e){ toast(friendly(e)); }
+}
+/* الحذف الصحيح لسجلات اليوم (للتراجع عن الثنائية) — يُنفذ عبر استعلام */
+async function deleteTodayEntries(itemId){
+  const todays=data.entries.filter(e=>e.item_id===itemId&&e.user_id===meId()&&new Date(e.recorded_at).toDateString()===new Date().toDateString());
+  for(const e of todays){ await rest('DELETE','progress_entries','id=eq.'+e.id); }
+}
+async function logAct(circleId,kind,payload){ try{ await rest('POST','activity_events',
+  {id:uuid(),circle_id:circleId,user_id:meId(),kind,payload:payload||'',created_at:nowIso()},'return=minimal'); }catch(e){} }
+async function addShop(){
+  const inp=$('#shopIn'); const v=inp.value.trim(); if(!v) return;
+  try{ await rest('POST','shared_list_items',{id:uuid(),list_id:inp.dataset.list,title:v,completed:false},'return=minimal');
+    const list=data.sharedLists.find(l=>l.id===inp.dataset.list);
+    if(list) logAct(list.circle_id,'SHOP_ADDED',v);
+    await refreshAll(); renderApp(); toast('أُضيف ✓'); }catch(e){ toast(friendly(e)); }
+}
+async function toggleShop(id){
+  const it=data.shopping.find(i=>i.id===id); if(!it) return;
+  try{
+    if(it.completed) await rest('PATCH','shared_list_items',{completed:false,completed_by:null,completed_at:null},'id=eq.'+id);
+    else await rest('PATCH','shared_list_items',{completed:true,completed_by:meId(),completed_at:nowIso()},'id=eq.'+id);
+    await refreshAll(); renderApp();
+  }catch(e){ toast(friendly(e)); }
+}
+/* ---------- الدوائر + الدعوة (رمز + رابط + QR) ---------- */
+function joinUrl(code){
+  try{ if(location.protocol.startsWith('http')) return location.origin+location.pathname+'?join='+encodeURIComponent(code); }catch(e){}
+  return code;
+}
+function openCreateCircle(){
+  openSheet(sheetHead('إنشاء دائرة مشتركة')+`
+    <div class="field"><label>اسم الدائرة</label><input id="cName" placeholder="مثال: بيتنا"></div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">بعد الإنشاء ستحصل على رمز دعوة صالح 24 ساعة مع رابط وQR — شاركهما مع من تحب.</p>
+    <button class="btn" data-act="doCreateCircle">إنشاء</button>`);
+}
+async function doCreateCircle(){
+  const name=$('#cName').value.trim(); if(!name){ toast('اكتب الاسم'); return; }
+  try{
+    const me=meId(); const cid=uuid();
+    await rest('POST','circles',{id:cid,owner_id:me,name,type:'SHARED'},'return=minimal');
+    await rest('POST','circle_members',{id:uuid(),circle_id:cid,user_id:me,role:'OWNER'},'return=minimal');
+    await rest('POST','shared_lists',{id:uuid(),owner_id:me,circle_id:cid,title:'مشتريات البيت',visibility:'CIRCLE'},'return=minimal');
+    const inv=await rest('POST','circle_invites',{id:uuid(),circle_id:cid,code:genCode(),created_by:me,expires_at:daysAgoIso(-1),revoked:false},'return=representation');
+    await logAct(cid,'CIRCLE_CREATED',name);
+    await refreshAll(); closeSheet(); view='more'; renderApp();
+    showInvite(name,inv[0].code);
+  }catch(e){ toast(friendly(e)); }
+}
+function genCode(){ return (''+Math.floor(Math.random()*1000000)).padStart(6,'0'); }
+function showInvite(name,code){
+  const url=joinUrl(code);
+  let qr=''; try{ qr=QR.build(url.startsWith('http')?url:'https://rafiq.app/join/'+code); }catch(e){ try{ qr=QR.build(code); }catch(e2){} }
+  openSheet(sheetHead('دعوة إلى «'+name+'»')+`
+    <div style="text-align:center">${qr?`<div class="qr">${qr}</div>`:''}
+    <div style="font-size:26px;font-weight:800;letter-spacing:3px;margin:10px 0;direction:ltr">${esc(code)}</div>
+    <div style="font-size:12px;color:var(--text-3);margin-bottom:12px">صالح 24 ساعة • قابل للإبطال</div>
+    <button class="btn ghost" data-act="copyLink" data-v="${esc(url)}">📋 نسخ رابط الدعوة</button>
+    <div style="height:8px"></div>
+    <p style="font-size:12.5px;color:var(--text-2)">يمكن لرفيقك مسح QR من كاميرا الهاتف، أو فتح الرابط، أو إدخال الرمز يدويًا — كلها تنضم لنفس الدائرة.</p></div>`);
+}
+async function copyInvite(url){
+  try{ await navigator.clipboard.writeText(url); toast('نُسخ الرابط ✓'); }
+  catch(e){ toast('انسخ يدويًا: '+url); }
+}
+function openJoinSheet(prefill){
+  const pre=(prefill||'').replace(/[^0-9]/g,'').slice(0,6);
+  openSheet(sheetHead('الانضمام برمز أو رابط أو QR')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">أدخل رمز الدعوة المكوَّن من 6 أرقام:</p>
+    <div class="otp" id="otp" style="direction:ltr">${[0,1,2,3,4,5].map(i=>`<input class="otp-b" id="ob${i}" maxlength="1" inputmode="numeric" autocomplete="one-time-code" value="${pre[i]||''}">`).join('')}</div>
+    <button class="btn" data-act="doJoin" style="margin-top:14px">انضمام</button>
+    <p style="font-size:12.5px;color:var(--text-2);margin-top:10px">أو امسح رمز QR من كاميرا هاتفك، أو افتح رابط الدعوة — كلها تنضم لنفس الدائرة.</p>`);
+  setupOtp();
+  if(pre.length===6) setTimeout(()=>doJoin(),300);
+}
+function setupOtp(){
+  const boxes=[...document.querySelectorAll('.otp-b')];
+  boxes.forEach((b,i)=>{
+    b.addEventListener('input',()=>{ b.value=b.value.replace(/[^0-9]/g,'').slice(-1);
+      if(b.value&&i<5) boxes[i+1].focus();
+      if(boxes.every(x=>x.value)) doJoin(); });
+    b.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!b.value&&i>0) boxes[i-1].focus(); });
+    b.addEventListener('paste',e=>{ e.preventDefault();
+      const d=(e.clipboardData.getData('text')||'').replace(/[^0-9]/g,'').slice(0,6);
+      d.split('').forEach((ch,j)=>{ if(boxes[j]) boxes[j].value=ch; });
+      boxes[Math.min(d.length,5)].focus();
+      if(d.length===6) doJoin(); });
+  });
+  boxes[0].focus();
+}
+async function doJoin(){
+  const code=$('#jCode').value.trim().toUpperCase(); if(!code) return;
+  try{
+    const inv=(await rest('GET','circle_invites','code=eq.'+encodeURIComponent(code)+'&select=*')).filter(i=>!i.revoked)[0];
+    if(!inv){ toast('رمز غير صحيح'); return; }
+    if(new Date(inv.expires_at)<new Date()){ toast('انتهت صلاحية الرمز'); return; }
+    const mine=await rest('GET','circle_members','circle_id=eq.'+inv.circle_id+'&user_id=eq.'+meId()+'&select=*');
+    if(!mine.length) await rest('POST','circle_members',{id:uuid(),circle_id:inv.circle_id,user_id:meId(),role:'MEMBER'},'return=minimal');
+    const c=(await rest('GET','circles','id=eq.'+inv.circle_id+'&select=*'))[0];
+    await logAct(inv.circle_id,'JOINED','انضم عضو جديد إلى الدائرة 🎉');
+    pendingJoin=null; try{ history.replaceState(null,'',location.pathname); }catch(e){}
+    await refreshAll(); closeSheet(); view='home'; renderApp(); toast('أصبحت عضوًا في «'+(c?c.name:'الدائرة')+'» 🎉');
+  }catch(e){ toast(friendly(e)); }
+}
+function openCircleDetail(id){
+  if(id==='personal'||!data) return;
+  const ci=circlesOf().find(c=>c.circle.id===id); if(!ci) return;
+  const me=meId(); const myRole=(ci.members.find(x=>x.m.user_id===me)||{}).m?.role;
+  const invites=data.invites.filter(i=>i.circle_id===id&&!i.revoked&&!((new Date(i.expires_at))<new Date()));
+  openSheet(sheetHead(ci.circle.name)+`
+    ${ci.members.map(x=>`<div class="row"><div class="avatar sm ${x.m.user_id===me?'':'comp'}">${esc((x.p.display_name||'؟')[0])}</div>
+      <span style="flex:1;font-size:15px">${esc(x.p.display_name||'عضو')}${x.m.user_id===me?' (أنت)':''}</span>
+      <span class="badge">${x.m.role==='OWNER'?'👑 المالك':'عضو'}</span></div>`).join('')}
+    ${myRole==='OWNER'?`<div style="margin-top:14px"><button class="btn ghost" data-act="newInvite" data-id="${id}">+ توليد رمز دعوة جديد (مع QR ورابط)</button></div>`:''}
+    ${invites.length?invites.map(iv=>`<div class="row" style="margin-top:8px">
+      <span style="font-weight:800;letter-spacing:2px;direction:ltr">${esc(iv.code)}</span>
+      <span style="flex:1;font-size:11px;color:var(--text-3)">ينتهي ${relAr(iv.expires_at)}</span>
+      ${myRole==='OWNER'?`<button class="link" style="color:var(--error)" data-act="revokeInvite" data-id="${iv.id}">إبطال</button>`:''}</div>`).join(''):''}
+    ${myRole!=='OWNER'?`<div style="margin-top:14px"><button class="btn danger" data-act="leaveCircle" data-id="${id}">مغادرة الدائرة</button></div>`:''}`);
+}
+async function newInviteFor(cid){ try{ const inv=await rest('POST','circle_invites',
+  {id:uuid(),circle_id:cid,code:genCode(),created_by:meId(),expires_at:daysAgoIso(-1),revoked:false},'return=representation');
+  await refreshAll(); showInvite(circleName(cid),inv[0].code); }catch(e){ toast(friendly(e)); } }
+/* ---------- الإشعارات + الإعدادات ---------- */
+function openNotifs(){
+  const evs=(data?data.activity:[]).slice(0,6);
+  openSheet(sheetHead('الإشعارات')+(evs.length?evs.map(ev=>`<div class="notif-row"><span class="nico">${evEmoji(ev.kind)}</span>
+    <div style="flex:1"><div style="font-size:13.5px">${evText(ev.kind,nameOf(ev.user_id),ev.payload)}</div>
+    <div class="shop-meta">${relAr(ev.created_at)}</div></div></div>`).join(''):
+    `<div class="empty"><span class="e">🌿</span>لا إشعارات بعد.</div>`)+`<p class="foot">تشجيع… تفاعل… رحلة مشتركة 💚</p>`);
+}
+function openEditProfile(){
+  const me=meProfile();
+  openSheet(sheetHead('الملف الشخصي')+`
+    <div class="field"><label>الاسم</label><input id="pName" value="${esc(me.display_name||'')}"></div>
+    <div class="field"><label>لون الهوية</label><div class="chips" id="pAcc">
+      <button class="chip ${me.accent_theme!=='rose'?'on':''}" data-v="green">🟢 أخضر</button>
+      <button class="chip ${me.accent_theme==='rose'?'on':''}" data-v="rose">🌸 وردي</button></div></div>
+    <button class="btn" data-act="saveProfile">حفظ</button>`);
+  window._pAcc=me.accent_theme;
+  $('#pAcc').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    window._pAcc=b.dataset.v; $('#pAcc').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+}
+function openCfg(){
+  openSheet(sheetHead('اتصال Supabase')+`
+    <div class="field"><label>Project URL</label><input id="cUrl" value="${esc(CFG.url)}" style="direction:ltr"></div>
+    <div class="field"><label>anon / publishable key</label><input id="cKey" value="${esc(CFG.key)}" style="direction:ltr"></div>
+    <button class="btn" data-act="saveCfg">حفظ وإعادة تحميل</button>
+    <p style="font-size:12px;color:var(--text-3);margin-top:8px">القيم الحالية مدمجة من إعدادات المشروع — عدّلها فقط عند تغيير المشروع.</p>`);
+}
+function friendly(e){ const m=String(e.message||e);
+  if(m==='NO_SESSION') return 'انتهت الجلسة — سجّل الدخول من جديد';
+  if(m.includes('Failed to fetch')||m.includes('NetworkError')) return 'تعذر الاتصال — تحقق من الإنترنت';
+  if(m.includes('row-level security')||m.includes('42501')) return 'لا تملك صلاحية لهذه العملية';
+  if(m.includes('JWT')||m.includes('401')) return 'انتهت الجلسة — حدّث الصفحة وسجّل الدخول';
+  return 'تعذر إتمام العملية — سنحاول مجددًا';
+}
+</script>
+<script>
+'use strict';
+/* ---------- الأحداث + الإقلاع ---------- */
+document.addEventListener('click', async e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const act=el.dataset.act, v=el.dataset.v;
+  try{
+    switch(act){
+      case 'tab': view=v; renderApp(); break;
+      case 'authMode': window._authMode=parseInt(v,10); window._authErr=''; renderAuthForms(); break;
+      case 'acc': window._acc=v; renderAuthForms(); break;
+      case 'openAddTask': openAddTask(); break;
+      case 'openAddHabit': openAddHabit(); break;
+      case 'saveTask': await saveTask(); break;
+      case 'saveHabit': await saveHabit(); break;
+      case 'incHabit': await incHabit(el.dataset.id); break;
+      case 'binHabit': {
+        const on=el.dataset.on==='1';
+        if(on){ await (async()=>{ const item=data.items.find(i=>i.id===el.dataset.id);
+          await rest('POST','progress_entries',{id:uuid(),item_id:el.dataset.id,user_id:meId(),value:item.target_value||1,unit:item.unit,recorded_at:nowIso()},'return=minimal');
+          logAct(item.circle_id,'ITEM_COMPLETED',item.title); })(); }
+        else await deleteTodayEntries(el.dataset.id);
+        await refreshAll(); renderApp(); break; }
+      case 'delItem': if(confirm('حذف هذا العنصر؟')){ await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); } break;
+      case 'shopAll': openShopAllSheet(); break;
+      case 'addShop': await addShop(); break;
+      case 'toggleShop': await toggleShop(el.dataset.id); break;
+      case 'taskFilter': window._taskFilter=v; renderTasks(); break;
+      case 'cycleTask': { const t=data.tasks.find(x=>x.id===el.dataset.id); const ns=nextSt(t.status);
+        const patch={status:ns,updated_at:nowIso()};
+        if(ns==='IN_PROGRESS') patch.started_at=nowIso();
+        if(ns==='DONE'){ patch.completed_at=nowIso(); patch.completed_by=meId(); }
+        if(ns==='TODO'){ patch.started_at=null; patch.completed_at=null; patch.completed_by=null; }
+        await rest('PATCH','tasks',patch,'id=eq.'+t.id);
+        if(ns==='DONE'&&t.status!=='DONE') logAct(t.circle_id,'TASK_DONE',t.title);
+        await refreshAll(); renderTasks(); break; }
+      case 'react': await rest('POST','reactions',{id:uuid(),event_id:el.dataset.id,user_id:meId(),emoji:v},'return=minimal').catch(async ex=>{
+          const mine=data.reactions.filter(r=>r.event_id===el.dataset.id&&r.user_id===meId()&&r.emoji===v);
+          if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
+        await refreshAll(); renderStats(); break;
+      case 'openNotifs': openNotifs(); break;
+      case 'openCreateCircle': openCreateCircle(); break;
+      case 'doCreateCircle': await doCreateCircle(); break;
+      case 'openJoinSheet': openJoinSheet(); break;
+      case 'doJoin': await doJoin(); break;
+      case 'openCircle': openCircleDetail(el.dataset.id); break;
+      case 'newInvite': await newInviteFor(el.dataset.id); break;
+      case 'revokeInvite': await rest('PATCH','circle_invites',{revoked:true},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); toast('أُبطل الرمز'); break;
+      case 'leaveCircle': await rest('DELETE','circle_members','circle_id=eq.'+el.dataset.id+'&user_id=eq.'+meId()); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('غادرت الدائرة'); break;
+      case 'copyLink': await copyInvite(el.dataset.v||''); break;
+      case 'editProfile': openEditProfile(); break;
+      case 'saveProfile': await rest('PATCH','profiles',{display_name:$('#pName').value.trim(),accent_theme:window._pAcc,updated_at:nowIso()},'id=eq.'+meId());
+        await refreshAll(); closeSheet(); renderApp(); toast('حُفظ ✓'); break;
+      case 'toggleDark': { const cur=localStorage.getItem('rafiq_web_dark')||'auto';
+        localStorage.setItem('rafiq_web_dark', cur==='on'?'auto':'on');
+        document.documentElement.dataset.theme=localStorage.getItem('rafiq_web_dark')==='on'?'dark':'light'; renderMore(); break; }
+      case 'openCfg': openCfg(); break;
+      case 'saveCfg': { const u=$('#cUrl').value.trim().replace(/\/+$/,''), k=$('#cKey').value.trim();
+        if(!u.startsWith('https://')||!k){ toast('تحقق من القيم'); return; }
+        CFG.url=u; CFG.key=k; saveCfg(); session=null; saveSession(); location.reload(); break; }
+      case 'signOut': await signOut(); break;
+      case 'closeSheet': closeSheet(); break;
+    }
+  }catch(err){ toast(friendly(err)); }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target&&e.target.id==='shopIn'){ e.preventDefault(); addShop(); }
+  if(e.key==='Escape') closeSheet();
+});
+function openShopAllSheet(){
+  const shop=shoppingFor();
+  openSheet(sheetHead('قائمة التسوق المشتركة')+(shop?
+    shop.items.map(si=>shopRow(si)).join('')+
+    `<div class="add-item"><input id="shopIn" placeholder="أضف عنصرًا..." data-list="${shop.list.id}"><button data-act="addShop">＋</button></div>`
+    :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة بعد.</div>`));
+}
+/* ---------- boot ---------- */
+window.addEventListener('error',e=>{ console.error(e.message); });
+(async function boot(){
+  if(!session){ renderAuth(); return; }
+  try{
+    if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession();
+    await ensureProfile(); await refreshAll(); renderApp(); startPolling();
+    if(pendingJoin){ setTimeout(()=>openJoinSheet(pendingJoin),400); }
+  }catch(e){
+    // الجلسة غير صالحة (مثلًا مفتاح متغير) — عودة للدخول
+    session=null; saveSession(); renderAuth();
+    window._authErr='انتهت الجلسة — سجّل الدخول من جديد';
+    renderAuthForms();
+  }
+})();
+// التنقل بالسحب داخل النوافذ يعمل تلقائيًا عبر overflow-y:auto
+</script>
+</body>
+</html>
