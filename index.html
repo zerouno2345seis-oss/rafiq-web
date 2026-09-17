@@ -1004,19 +1004,28 @@ function setupOtp(){
   });
   boxes[0].focus();
 }
+function otpValue(){ return [...document.querySelectorAll('.otp-b')].map(b=>b.value).join(''); }
 async function doJoin(){
-  const code=$('#jCode').value.trim().toUpperCase(); if(!code) return;
+  const legacy=$('#jCode');
+  const code=(otpValue() || (legacy?legacy.value:'') || '').replace(/[^0-9]/g,'').slice(0,6);
+  if(code.length<6){ toast('أكمل الرمز المكوَّن من 6 أرقام'); return; }
   try{
-    const inv=(await rest('GET','circle_invites','code=eq.'+encodeURIComponent(code)+'&select=*')).filter(i=>!i.revoked)[0];
-    if(!inv){ toast('رمز غير صحيح'); return; }
-    if(new Date(inv.expires_at)<new Date()){ toast('انتهت صلاحية الرمز'); return; }
+    const invList=await rest('GET','circle_invites','code=eq.'+code+'&select=*');
+    const inv=(invList||[]).filter(i=>!i.revoked)[0];
+    if(!inv){ toast('رمز الدعوة غير صحيح'); return; }
+    if(new Date(inv.expires_at)<new Date()){ toast('انتهت صلاحية رمز الدعوة'); return; }
     const mine=await rest('GET','circle_members','circle_id=eq.'+inv.circle_id+'&user_id=eq.'+meId()+'&select=*');
-    if(!mine.length) await rest('POST','circle_members',{id:uuid(),circle_id:inv.circle_id,user_id:meId(),role:'MEMBER'},'return=minimal');
+    if(!mine||!mine.length){
+      await rest('POST','circle_members',{id:uuid(),circle_id:inv.circle_id,user_id:meId(),role:'MEMBER'});
+    }
     const c=(await rest('GET','circles','id=eq.'+inv.circle_id+'&select=*'))[0];
-    await logAct(inv.circle_id,'JOINED','انضم عضو جديد إلى الدائرة 🎉');
+    try{ await rest('POST','activity_events',{id:uuid(),circle_id:inv.circle_id,user_id:meId(),kind:'JOINED',payload:'انضم عضو جديد إلى الدائرة 🎉',created_at:nowIso()}); }catch(e){}
     pendingJoin=null; try{ history.replaceState(null,'',location.pathname); }catch(e){}
-    await refreshAll(); closeSheet(); view='home'; renderApp(); toast('أصبحت عضوًا في «'+(c?c.name:'الدائرة')+'» 🎉');
-  }catch(e){ toast(friendly(e)); }
+    await refreshAll(); closeSheet(); view='home'; renderApp();
+    toast('أصبحت عضوًا في «'+(c&&c.name?c.name:'الدائرة')+'» 🎉');
+  }catch(e){
+    toast('تعذر الانضمام: '+(e&&e.message?e.message:'خطأ غير معروف'));
+  }
 }
 function openCircleDetail(id){
   if(id==='personal'||!data) return;
@@ -1069,6 +1078,7 @@ function friendly(e){ const m=String(e.message||e);
   if(m.includes('Failed to fetch')||m.includes('NetworkError')) return 'تعذر الاتصال — تحقق من الإنترنت';
   if(m.includes('row-level security')||m.includes('42501')) return 'لا تملك صلاحية لهذه العملية';
   if(m.includes('JWT')||m.includes('401')) return 'انتهت الجلسة — حدّث الصفحة وسجّل الدخول';
+  if(!/Cannot read|undefined|null|is not a function|TypeError/i.test(m)) return 'تعذرت العملية: '+m;
   return 'تعذر إتمام العملية — سنحاول مجددًا';
 }
 </script>
