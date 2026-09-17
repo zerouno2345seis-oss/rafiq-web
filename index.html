@@ -742,6 +742,27 @@ function renderHome(){
       <div class="shop-meta">يصل كتذكير بارز في الأعلى مع موعد اختياري</div></div>
       <span class="badge">فتح ➜</span></div>
     </div>
+    ${(()=>{ const od=overdueTasks(); return od.length? `<div class="card" data-act="tab" data-v="tasks" style="cursor:pointer">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:20px">⏰</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:var(--error)">لديك ${od.length} مهمة متأخرة</div>
+      <div class="shop-meta">${od.slice(0,2).map(t=>esc(t.title)).join(' • ')}</div></div><span class="badge">فتح ➜</span></div></div>`:''; })()}
+    <div class="card">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🌤</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">شعورنا اليوم</div>
+      <div class="shop-meta">${(()=>{ const t=new Date().toISOString().slice(0,10);
+        const m=moodsOf().filter(x=>x.day===t); return m.length? m.map(x=>x.emoji+' '+esc(x.feeling)).join(' • ') : 'كيف تشعر اليوم؟ اختر شعورًا واكتب السبب'; })()}</div></div>
+      <button class="link" data-act="openAddMood">＋ شعور</button></div>
+      ${moodsOf().slice(0,4).map(m=>`<div class="row" style="min-height:36px">
+        <span style="font-size:17px">${m.emoji}</span>
+        <span style="font-size:14px;font-weight:500">${esc(m.feeling)}</span>
+        <span class="shop-meta" style="flex:1;text-align:start;margin-inline-start:8px">${esc((m.reason||'')+(m.item.owner_id!==meId()?' • رفيقك':''))} • ${esc(m.day||'')}</span></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🗓</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">مراجعتنا الأسبوعية</div>
+      <div class="shop-meta">${(()=>{ const w=weekStats(); return 'أنا: '+w.myE+' تسجيل • '+w.myT+' مهمة | رفيقي: '+w.hisE+' تسجيل • '+w.hisT+' مهمة'+(w.overdue?(' • متأخرة: '+w.overdue):''); })()}</div></div>
+      <button class="link" data-act="openReview">فتح</button></div>
+    </div>
     <div class="card">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">💊</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">أدويتنا</div>
@@ -996,6 +1017,100 @@ async function saveMed(){
     await refreshAll(); closeSheet(); view='home'; renderApp(); toast('أُضيف الدواء 💊');
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
 }
+
+/* ---------- الشعور اليومي ---------- */
+const FEELINGS=[['😊','فرح'],['🙏','حمد'],['💚','امتنان'],['😄','سعادة'],['😌','رضا'],['🕊','طمأنينة'],
+ ['🔥','حماس'],['🌅','أمل'],['🏆','فخر'],['❤️','حب'],['🤗','حنان'],['💭','شوق'],['🌿','هدوء'],['🎯','تركيز'],
+ ['⚡','طاقة'],['😤','غضب'],['😒','انزعاج'],['😞','إحباط'],['😢','حزن'],['😰','قلق'],['😨','خوف'],['😮‍💨','تعب'],
+ ['🥱','إرهاق'],['😑','ملل']];
+function parseMood(it){ const f=it.frequency||''; if(!f.startsWith('MOOD|')) return null;
+  const p=f.slice(5).split('|');
+  return {item:it, emoji:p[0]||'🙂', feeling:it.title, reason:it.description||null,
+    day:(it.created_at||'').slice(0,10)}; }
+function moodsOf(){ const me=meId(); if(!data) return [];
+  return (data.items||[]).map(parseMood).filter(Boolean)
+    .filter(m=>m.item.owner_id===me||m.item.visibility!=='PRIVATE')
+    .sort((a,b)=>(b.item.created_at||'').localeCompare(a.item.created_at||'')); }
+function openAddMood(){
+  openSheet(sheetHead('🌤 كيف تشعر اليوم؟')+`
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:8px">اختر شعورًا أو أضف مخصصًا + سبب بسيط.</p>
+    <div class="chips" id="moodGrid" style="max-height:230px;overflow-y:auto">
+      ${FEELINGS.map(([e,f],i)=>`<button class="chip ${i===0?'on':''}" data-e="${e}" data-f="${f}">${e} ${f}</button>`).join('')}
+      <button class="chip" data-f="__custom__" data-e="🫶">✍️ مخصص</button>
+    </div>
+    <div class="field" id="moodCustomWrap" style="display:none;margin-top:10px"><label>اسم الشعور</label><input id="moodCustom"></div>
+    <div class="field" style="margin-top:10px"><label>السبب بإيجاز (اختياري)</label><input id="moodReason" placeholder="مثال: لأن اليوم كان هادئًا"></div>
+    <div class="field"><label>من يرى هذا الشعور؟</label>${visWrap('moodVis',window._visSel='PRIVATE',null)}</div>
+    <button class="btn" data-act="saveMood">حفظ الشعور</button>`);
+  window._moodE='😊'; window._moodF='فرح';
+  const g=$('#moodGrid'); g.addEventListener('click',e=>{ const b=e.target.closest('[data-f]'); if(!b) return;
+    g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    window._moodF=b.dataset.f; window._moodE=b.dataset.e;
+    $('#moodCustomWrap').style.display=(b.dataset.f==='__custom__')?'block':'none'; });
+  const wv=$('#moodVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
+    window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,sharedFirst()); });
+}
+async function saveMood(){
+  try{
+    let f=window._moodF; if(f==='__custom__') f=(($('#moodCustom')||{}).value||'').trim();
+    if(!f){ toast('اكتب اسم الشعور'); return; }
+    const reason=(($('#moodReason')||{}).value||'').trim();
+    const me=meId();
+    let cid=((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id
+      || (sharedFirst()?sharedFirst().circle.id:null);
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
+    const moodId=uuid();
+    await rest('POST','items',{id:moodId,owner_id:me,circle_id:cid,type:'MOOD',title:f,
+      description:reason||null,visibility:window._visSel||'PRIVATE',unit:window._moodE||'🙂',
+      frequency:'MOOD|'+(window._moodE||'🙂')+'|'+f},'return=minimal');
+    if(window._visSel==='SELECTED_MEMBERS'&&recips.length){
+      for(const r of recips){ try{ await rest('POST','item_recipients',{id:uuid(),item_id:moodId,user_id:r},'return=minimal'); }catch(e){} } }
+    await refreshAll(); closeSheet(); renderApp(); toast('سُجّل الشعور 🌤');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
+
+/* ---------- المهام المتكررة + المتأخرة ---------- */
+function recurrenceOf(t){ try{ const m=(t.description||'').match(/RECUR:([a-z:0-9]+)/); return m?m[1]:null; }catch(e){ return null; } }
+function cleanDesc(t){ try{ return (t.description||'').replace(/\s*\|?RECUR:[a-z:0-9]+/,'').trim()||null; }catch(e){ return t.description; } }
+function recurrenceAr(r){ if(r==='daily') return 'يوميًا';
+  if(r.startsWith('weekly:')) return 'كل '+['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'][+r.slice(7)];
+  if(r.startsWith('monthly:')) return 'يوم '+r.slice(8)+' من كل شهر'; return r; }
+function nextOccurrence(iso,recur){ try{
+  let d=new Date(iso||Date.now()); const today=new Date(); today.setHours(0,0,0,0); let g=0;
+  while(d<=today && g<400){ if(recur==='daily') d.setDate(d.getDate()+1);
+    else if(recur.startsWith('weekly:')) d.setDate(d.getDate()+7);
+    else if(recur.startsWith('monthly:')) d.setMonth(d.getMonth()+1); else d.setDate(d.getDate()+1); g++; }
+  d.setHours(9,0,0,0); return d.toISOString(); }catch(e){ return null; } }
+function overdueTasks(){ const now=Date.now();
+  return visibleTasks().filter(t=>t.priority!=='EVENT'&&t.status!=='DONE'&&t.due_at&&new Date(t.due_at).getTime()<now); }
+async function completeRecurring(t){
+  try{ const recur=recurrenceOf(t); if(!recur) return; const next=nextOccurrence(t.due_at,recur);
+    await rest('PATCH','tasks',{status:'DONE',completed_at:new Date().toISOString(),completed_by:meId()},'id=eq.'+t.id);
+    const copy=Object.assign({},t,{id:uuid(),status:'TODO',started_at:null,completed_at:null,completed_by:null,due_at:next,created_at:new Date().toISOString()});
+    await rest('POST','tasks',copy,'return=minimal');
+    try{ await rest('POST','activity_events',{id:uuid(),circle_id:t.circle_id,user_id:meId(),kind:'TASK_DONE',payload:t.title}); }catch(e){}
+    await refreshAll(); renderApp(); toast('أُنجزت الدورة — وجهّزت التالية 🔁');
+  }catch(e){ toast('تعذر: '+(e&&e.message?e.message:'')); } }
+
+/* ---------- المراجعة الأسبوعية ---------- */
+async function saveReview(){
+  try{
+    const note=(($('#rvNote')||{}).value||'').trim(); if(!note){ toast('اكتب ملاحظتك'); return; }
+    const sh=sharedFirst(); if(!sh){ toast('تحتاج دائرة مشتركة'); return; }
+    await rest('POST','activity_events',{id:uuid(),circle_id:sh.circle.id,user_id:meId(),kind:'WEEKLY_REVIEW',payload:note});
+    const done=($('#rvDone')||{checked:false}).checked;
+    if(done){ await rest('POST','activity_events',{id:uuid(),circle_id:sh.circle.id,user_id:meId(),kind:'WEEKLY_REVIEW_DONE',payload:note.slice(0,40)}); }
+    await refreshAll(); closeSheet(); renderApp(); toast('حُفظت ملاحظة المراجعة 🗓');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
+function weekStats(){ const me=meId(); const start=new Date(); start.setDate(start.getDate()-7);
+  const entries=(data.entries||[]).filter(e=>new Date(e.recorded_at)>=start);
+  const tasks=(data.tasks||[]).filter(t=>t.priority!=='EVENT');
+  const doneT=tasks.filter(t=>t.completed_at&&new Date(t.completed_at)>=start);
+  const myE=entries.filter(e=>e.user_id===me).length, hisE=entries.filter(e=>e.user_id!==me).length;
+  return {myE,hisE,myT:doneT.filter(t=>t.completed_by===me).length,hisT:doneT.filter(t=>t.completed_by&&t.completed_by!==me).length,
+    overdue:overdueTasks().length}; }
 /* ---------- العادات ---------- */
 function renderHabits(){
   const me=meProfile(), habits=habitsFor(meId());
@@ -1094,7 +1209,9 @@ function renderTasks(){
         <div style="flex:1;min-width:0"><div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
         <div class="badges">${cn?`<span class="badge">${esc(cn)}</span>`:''}<span class="badge">${visLabel(t.visibility)}</span>
         ${t.assigned_to?`<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>`:''}
-        ${t.due_at?`<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>`:''}</div></div></div></div>`;
+        ${t.due_at?`<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>`:''}
+        ${recurrenceOf(t)?`<span class="badge">🔁 ${recurrenceAr(recurrenceOf(t))}</span>`:''}</div></div>
+        ${t.status!=='DONE'&&recurrenceOf(t)?`<div style="display:flex;justify-content:flex-end;padding-top:6px"><button class="mini" data-act="completeRecurring" data-id="${t.id}">✅ أنجزت هذه الدورة</button></div>`:''}</div></div>`;
     }).join(''):`<div class="card"><div class="empty"><span class="e">📝</span>لا توجد مهام هنا.<br>أضف أول مهمة وابدأ الإنجاز.</div></div>`}
     <p class="foot">اضغط حالة المهمة لتبديلها: للتنفيذ ← جارية ← منجزة</p></div>`;
 }
@@ -1597,6 +1714,29 @@ function openRename(id,cur){
     <div class="field"><label>الاسم</label><input id="rnTitle" value="${esc(cur||'')}"></div>
     <button class="btn" data-act="saveRename" data-id="${id}">حفظ التسمية</button>`);
 }
+/* ---------- المراجعة الأسبوعية ---------- */
+function openReview(){
+  const w=weekStats();
+  const reviews=(data.activity||[]).filter(a=>a.kind==='WEEKLY_REVIEW').slice(0,8);
+  openSheet(sheetHead('🗓 مراجعتنا الأسبوعية')+`
+    <div class="card" style="box-shadow:none;margin:0 0 10px">
+      <div class="mini-stats">
+        <div class="mini-stat"><b>${w.myE}</b><span>تسجيلاتي (7 أيام)</span></div>
+        <div class="mini-stat"><b>${w.hisE}</b><span>تسجيلات رفيقي</span></div>
+        <div class="mini-stat"><b>${w.myT}</b><span>مهام أنجزتها</span></div>
+        <div class="mini-stat"><b>${w.hisT}</b><span>مهام أنجزها رفيقي</span></div>
+      </div>
+      ${w.overdue?`<div style="margin-top:8px;font-size:13px;color:var(--error)">⏰ متأخرة: ${w.overdue} مهمة</div>`:''}
+    </div>
+    <div class="field"><label>ملاحظتك للمراجعة (ما نجح؟ ما نريد تحسينه؟)</label><textarea id="rvNote" rows="3"></textarea></div>
+    <label style="display:flex;align-items:center;gap:8px;min-height:40px"><input type="checkbox" id="rvDone"> أنهينا المراجعة معًا ✓</label>
+    <button class="btn" data-act="saveReview">حفظ ملاحظة المراجعة</button>
+    ${reviews.length?`<div class="sec" style="margin-top:14px"><h2>ملاحظات سابقة</h2></div>`+
+      reviews.map(r=>`<div class="row" style="min-height:44px"><div style="flex:1;min-width:0">
+        <div style="font-size:13.5px">${esc(r.payload)}</div>
+        <div class="shop-meta">${esc(nameOf(r.user_id))} • ${relAr(r.created_at)}</div></div></div>`).join(''):''}
+  `);
+}
 /* ---------- قائمة الإضافة (+) ---------- */
 function openAddMenu(){
   const today=new Date().toISOString().slice(0,10);
@@ -1608,6 +1748,7 @@ function openAddMenu(){
     <button class="vis-opt" data-act="addEvent" data-day="${today}"><span style="font-size:20px">📅</span><span style="flex:1"><span class="vt">موعد في جدولي</span><br><span class="vd">بتاريخ ووقت — خاص أو للدائرة أو لأشخاص</span></span></button>
     <button class="vis-opt" data-act="openRemind"><span style="font-size:20px">🔔</span><span style="flex:1"><span class="vt">ذكّر رفيقي</span><br><span class="vd">تذكير بارز مع إشعار</span></span></button>
     <button class="vis-opt" data-act="openMealSheet"><span style="font-size:20px">🍽</span><span style="flex:1"><span class="vt">وجبة اليوم</span><br><span class="vd">سجّل فطورك/غداءك/عشاءك أو اختر من أطباقكم</span></span></button>
+    <button class="vis-opt" data-act="openAddMood"><span style="font-size:20px">🌤</span><span style="flex:1"><span class="vt">شعور اليوم</span><br><span class="vd">فرح، حمد، امتنان… أو مخصص + سبب بسيط</span></span></button>
     <button class="vis-opt" data-act="addMedia"><span style="font-size:20px">🎬</span><span style="flex:1"><span class="vt">رابط جميل (مقطع/صوتية)</span><br><span class="vd">يوتيوب أو إنستغرام — يُحفظ في مقاطعنا الجميلة</span></span></button>
     <button class="vis-opt" data-act="openAddMed"><span style="font-size:20px">💊</span><span style="flex:1"><span class="vt">دواء (تذكير مشترك)</span><br><span class="vd">مرات يومية أو أسبوعية — مؤقت أو مستمر مدى الحياة</span></span></button>
     <button class="vis-opt" data-act="openCreateCircle"><span style="font-size:20px">👥</span><span style="flex:1"><span class="vt">دائرة جديدة</span><br><span class="vd">أنشئ دائرة وشارك رمز الدعوة</span></span></button>`);
@@ -1833,6 +1974,11 @@ document.addEventListener('click', async e=>{
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
       case 'addMenu': openAddMenu(); break;
+      case 'openAddMood': openAddMood(); break;
+      case 'saveMood': await saveMood(); break;
+      case 'openReview': openReview(); break;
+      case 'saveReview': await saveReview(); break;
+      case 'completeRecurring': { const t=(data.tasks||[]).find(x=>x.id===el.dataset.id); if(t) await completeRecurring(t); break; }
       case 'addMedia': openAddMedia(); break;
       case 'saveMedia': await saveMedia(); break;
       case 'renameItem': openRename(el.dataset.id, el.dataset.t); break;
