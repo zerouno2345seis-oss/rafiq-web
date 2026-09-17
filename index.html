@@ -509,8 +509,10 @@ function renderAuth(){
     <div class="welc"><b>أنشئ دائرة مع من تحب.</b><span>وشاركوه التقدم لحظة بلحظة.</span></div>
     <div id="authForms" style="margin-top:14px"></div>
     <div style="margin-top:14px;text-align:center">
-      <a class="btn ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="${APP_APK}" download>📱 حمّل تطبيق Android (v${APP_VERSION} — آخر إصدار)</a>
-      <p style="font-size:11px;color:var(--text-3);margin-top:6px">نفس البيانات تُفتح من الهاتف والويب معًا</p>
+      ${IS_IOS ? `<p style="font-size:12.5px;color:var(--text-2);line-height:1.9">📱 إصدار Android متاح للهواتف فقط —<br>أنت الآن على الموقع وتعمل بكامل المزايا على الآيباد/الآيفون.<br><span style="font-size:11.5px;color:var(--text-3)">لتحميل التطبيق: افتح هذا الرابط من هاتف أندرويد</span></p>
+      <a class="link" href="${APP_APK}" style="font-size:12px">رابط ملف التطبيق (للأندرويد)</a>`
+      : `<a class="btn ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="${APP_APK}">📱 حمّل تطبيق Android (v${APP_VERSION} — آخر إصدار)</a>
+      <p style="font-size:11px;color:var(--text-3);margin-top:6px">نفس البيانات تُفتح من الهاتف والويب معًا</p>`}
     </div>
   </div>`;
   renderAuthForms();
@@ -639,11 +641,11 @@ function askGeo(){
 /* ================= المزامنة الحية ================= */
 let pollTimer=null;
 function startPolling(){ if(pollTimer) return; pollTimer=setInterval(()=>{
-  if(document.visibilityState==='visible'&&session&&data){ refreshAll().then(()=>{
+  if(document.visibilityState==='visible'&&session&&data&&!document.querySelector('.overlay')){ refreshAll().then(()=>{
     const sig=dataSignature();
     if(sig!==dataSig){ dataSig=sig; renderApp(); }
     checkNotify();
-  }).catch(()=>{}); } },5000); }
+  }).catch(()=>{}); } },8000); }
 function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 </script>
 <script>
@@ -1974,6 +1976,7 @@ document.addEventListener('click', async e=>{
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
       case 'addMenu': openAddMenu(); break;
+      case 'openAddMed': openAddMed(); break;
       case 'openAddMood': openAddMood(); break;
       case 'saveMood': await saveMood(); break;
       case 'openReview': openReview(); break;
@@ -2074,7 +2077,20 @@ function openShopAllSheet(){
     :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة بعد.</div>`));
 }
 /* ---------- boot ---------- */
-window.addEventListener('error',e=>{ console.error(e.message); });
+window.addEventListener('error',e=>{ console.error(e.message); bootFailed(e.message); });
+window.addEventListener('unhandledrejection',e=>{ bootFailed((e.reason&&e.reason.message)||'promise'); });
+let __bootFailShown=false;
+function bootFailed(msg){
+  if(__bootFailShown) return; __bootFailShown=true;
+  try{
+    const v=document.getElementById('view'); if(!v) return;
+    v.innerHTML='<div class="screen" style="padding-top:60px;text-align:center"><span style="font-size:38px">🌱</span>'+
+      '<h1 style="margin:10px 0">تعذر فتح التطبيق</h1>'+
+      '<p style="font-size:13px;color:var(--text-2);margin-bottom:14px">حدث خطأ غير متوقع — أعد التحميل وسيعمل.</p>'+
+      '<button class="btn" style="max-width:240px;margin:0 auto" onclick="location.reload()">إعادة التحميل</button>'+
+      '<p style="font-size:11px;color:var(--text-3);margin-top:12px">تفصيل: '+String(msg||'').slice(0,120)+'</p></div>';
+  }catch(e){}
+}
 (async function boot(){
   if(!session){ renderAuth(); return; }
   try{
