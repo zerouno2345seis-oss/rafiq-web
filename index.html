@@ -96,9 +96,10 @@ h2{font-size:16px;font-weight:600}
 #nav button.on{color:var(--accent)}
 #nav .ic{font-size:19px;line-height:1}
 #fab{position:fixed;z-index:50;bottom:calc(var(--nav-h) + 18px);
-  left:max(16px, calc(50% - 244px));width:56px;height:56px;border-radius:50%;
-  background:var(--accent);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.18);border:none;line-height:1}
+  left:max(16px, calc(50% - 244px));width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;padding:0}
+#fab svg{display:block}
 @media(min-width:800px){#fab{left:max(16px, calc(50% - 364px))}}
 .overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
@@ -182,7 +183,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 <body>
 <div id="shell"><div id="view"></div></div>
 <div id="nav"></div>
-<div id="fab" style="display:none">＋</div>
+<div id="fab" style="display:none"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></div>
 <div id="sheet-root"></div>
 <div id="toast"></div>
 <script>
