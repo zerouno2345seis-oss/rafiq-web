@@ -415,12 +415,18 @@ function trimN(v){ v=Number(v)||0; return Number.isInteger(v)?String(v):String(M
 /* ================= جلب اللقطة (نفس استعلامات تطبيق Android) ================= */
 async function refreshAll(){
   const me=meId();
-  const profile=(await rest('GET','profiles','id=eq.'+me+'&select=*'))[0]||null;
-  const memberships=await rest('GET','circle_members','user_id=eq.'+me+'&select=*');
+  // جولة 1: الملف + العضويات بالتوازي
+  const [profileArr, memberships]=await Promise.all([
+    rest('GET','profiles','id=eq.'+me+'&select=*'),
+    rest('GET','circle_members','user_id=eq.'+me+'&select=*'),
+  ]);
+  const profile=profileArr[0]||null;
   const myCircleIds=memberships.map(m=>m.circle_id);
-  if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[]}; return; }
+  if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[]}; saveSnap(); return; }
   const inC='circle_id=in.('+myCircleIds.join(',')+')';
   const inC2='id=in.('+myCircleIds.join(',')+')';
+  const owned=[]; // تُحسب بعد جلب الدوائر
+  // جولة 2: كل الجداول الرئيسية بالتوازي (لا تعتمد على بعضها)
   const [circles,allMembers,items,tasks,sharedLists,activity]=await Promise.all([
     rest('GET','circles',inC2+'&select=*'),
     rest('GET','circle_members',inC+'&select=*'),
@@ -430,29 +436,36 @@ async function refreshAll(){
     rest('GET','activity_events',inC+'&order=created_at.desc&limit=40&select=*'),
   ]);
   const memberIds=[...new Set(allMembers.map(m=>m.user_id).filter(u=>u!==me))];
-  const peerProfiles=memberIds.length?(await rest('GET','profiles','id=in.('+memberIds.join(',')+')&select=*')):[];
-  const pById={}; peerProfiles.forEach(p=>pById[p.id]=p); pById[me]=profile;
   const itemIds=items.map(i=>i.id), listIds=sharedLists.map(l=>l.id), evIds=activity.map(a=>a.id);
-  const [recipients,entries,shopping,reactions]=await Promise.all([
+  const ownedIds=circles.filter(c=>c.owner_id===me).map(c=>c.id);
+  // جولة 3: التوابع بالتوازي
+  const [peerProfiles,recipients,entries,shopping,reactions,invitesRaw]=await Promise.all([
+    memberIds.length?rest('GET','profiles','id=in.('+memberIds.join(',')+')&select=*'):[],
     itemIds.length?rest('GET','item_recipients','item_id=in.('+itemIds.join(',')+')&select=*'):[],
     itemIds.length?rest('GET','progress_entries','item_id=in.('+itemIds.join(',')+')&recorded_at=gte.'+daysAgoIso(30)+'&select=*'):[],
     listIds.length?rest('GET','shared_list_items','list_id=in.('+listIds.join(',')+')&order=position.asc&select=*'):[],
     evIds.length?rest('GET','reactions','event_id=in.('+evIds.join(',')+')&select=*'):[],
+    ownedIds.length?rest('GET','circle_invites','circle_id=in.('+ownedIds.join(',')+')&revoked=eq.false&order=created_at.desc&select=*'):[],
   ]);
-  let invites=[];
-  const owned=circles.filter(c=>c.owner_id===me).map(c=>c.id);
-  if(owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&order=created_at.desc&select=*'); }catch(e){} }
+  const pById={}; peerProfiles.forEach(p=>pById[p.id]=p); pById[me]=profile;
+  // ترحيل تلقائي: رموز منتهية أو بصيغة قديمة → تجديد
+  let invites=invitesRaw||[];
   const staleInv=invites.filter(i=>!/^[0-9]{6}$/.test(i.code) || (new Date(i.expires_at) < new Date()));
-  for(const st of staleInv){
-    try{
-      await rest('PATCH','circle_invites',{revoked:true},'id=eq.'+st.id);
-      await rest('POST','circle_invites',{id:uuid(),circle_id:st.circle_id,code:genCode(),created_by:me,expires_at:daysAgoIso(-1),revoked:false},'return=minimal');
-    }catch(e){}
+  if(staleInv.length){
+    for(const st of staleInv){
+      try{
+        await rest('PATCH','circle_invites',{revoked:true},'id=eq.'+st.id);
+        await rest('POST','circle_invites',{id:uuid(),circle_id:st.circle_id,code:genCode(),created_by:me,expires_at:daysAgoIso(-7),revoked:false},'return=minimal');
+      }catch(e){}
+    }
+    try{ invites=await rest('GET','circle_invites','circle_id=in.('+ownedIds.join(',')+')&revoked=eq.false&order=created_at.desc&select=*'); }catch(e){}
   }
-  if(staleInv.length&&owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&order=created_at.desc&select=*'); }catch(e){} }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
     items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites};
+  saveSnap();
 }
+function saveSnap(){ try{ localStorage.setItem('rafiq_snap', JSON.stringify({t:Date.now(),d:data})); }catch(e){} }
+function loadSnap(){ try{ const s=JSON.parse(localStorage.getItem('rafiq_snap')||'null'); if(s&&s.d) return s.d; }catch(e){} return null; }
 const circlesOf=()=>data?data.circles:[];
 const sharedFirst=()=>circlesOf().find(c=>c.circle.type==='SHARED')||null;
 const companionOf=()=>{ const s=sharedFirst(); return s? (s.members.find(x=>x.m.user_id!==meId())||{}).p : null; };
@@ -580,7 +593,7 @@ async function signOut(){ try{ await sb('/auth/v1/logout',{method:'POST'},true);
 /* ================= المزامنة الحية ================= */
 let pollTimer=null;
 function startPolling(){ if(pollTimer) return; pollTimer=setInterval(()=>{
-  if(document.visibilityState==='visible'&&session&&data) refreshAll().then(()=>renderApp()).catch(()=>{}); },4000); }
+  if(document.visibilityState==='visible'&&session&&data) refreshAll().then(()=>renderApp()).catch(()=>{}); },5000); }
 function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 </script>
 <script>
@@ -810,6 +823,7 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
       <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
       <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
         <button class="link" data-act="openCfg">تعديل</button></div>
@@ -1100,6 +1114,126 @@ function openCircleDetail(id){
 async function newInviteFor(cid){ try{ const inv=await rest('POST','circle_invites',
   {id:uuid(),circle_id:cid,code:genCode(),created_by:meId(),expires_at:daysAgoIso(-7),revoked:false},'return=representation');
   await refreshAll(); showInvite(circleName(cid),inv[0].code); }catch(e){ toast(friendly(e)); } }
+/* ---------- التقرير الجميل (HTML → PDF) + النسخ الاحتياطي ---------- */
+function reportHTML(){
+  const me=meProfile()||{}; const evs=eventsOf(); const habits=habitsFor(meId());
+  const tasks=(data.tasks||[]).filter(t=>t.priority!=='EVENT');
+  const done=tasks.filter(t=>t.status==='DONE').length;
+  const shop=shoppingFor(); const pl=placesOf();
+  const myPct=dailyPct(meId());
+  const rows=(arr,fn)=>arr.map(fn).join('');
+  const today=new Date();
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير رفيق</title>
+  <style>
+    body{font-family:-apple-system,'SF Arabic','Segoe UI',Tahoma,sans-serif;background:#FAF1E8;color:#1D1D1F;margin:0;padding:28px}
+    .wrap{max-width:820px;margin:0 auto;background:#fff;border-radius:18px;padding:26px}
+    h1{font-size:26px;margin:0 0 4px}
+    .sub{color:#7F7F78;font-size:13px;margin-bottom:18px}
+    h2{font-size:18px;margin:22px 0 8px;color:#245045;border-bottom:2px solid #E8F4EE;padding-bottom:6px}
+    table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
+    th,td{border:1px solid #E8E3DE;padding:7px 9px;text-align:right}
+    th{background:#F2F8F5;color:#245045}
+    .cards{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+    .card2{flex:1;min-width:150px;background:#F9F9F9;border:1px solid #EEEAE6;border-radius:14px;padding:12px}
+    .card2 b{display:block;font-size:20px;color:#308A65}
+    .card2 span{font-size:12px;color:#7F7F78}
+    .badge{display:inline-block;background:#E8F4EE;color:#245045;border-radius:999px;padding:2px 9px;font-size:11.5px;margin-inline-start:4px}
+    .foot{color:#A2A19C;font-size:11px;margin-top:22px;text-align:center}
+  </style></head><body><div class="wrap">
+  <h1>🌱 تقرير رفيق</h1>
+  <div class="sub">${esc(me.display_name||'')} • ${today.toLocaleDateString('ar')} • ${today.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</div>
+  <div class="cards">
+    <div class="card2"><b>${myPct}%</b><span>إنجاز عادات اليوم</span></div>
+    <div class="card2"><b>${habits.filter(h=>habitProg(meId(),h).done).length} / ${habits.length}</b><span>عادات أُنجزت اليوم</span></div>
+    <div class="card2"><b>${done} / ${tasks.length}</b><span>مهام منجزة</span></div>
+    <div class="card2"><b>${shop?shop.done+' / '+shop.items.length:'—'}</b><span>عناصر التسوق</span></div>
+  </div>
+  <h2>📅 عاداتي وأهدافي</h2>
+  <table><tr><th>العادة</th><th>اليوم</th><th>الهدف</th><th>الحالة</th></tr>
+  ${rows(habits,h=>{ const hp=habitProg(meId(),h); return `<tr><td>${typeEmoji(h.type)} ${esc(h.title)}</td><td>${trimN(hp.v)}</td><td>${trimN(h.target_value||0)} ${esc(h.unit||'')}</td><td>${hp.done?'✅ مكتمل':'⏳ مستمر'}</td></tr>`; })}
+  </table>
+  <h2>✅ المهام</h2>
+  <table><tr><th>المهمة</th><th>الحالة</th><th>المسؤول</th><th>الموعد</th></tr>
+  ${tasks.length?rows(tasks,t=>`<tr><td>${esc(t.title)}</td><td>${stLabel(t.status)}</td><td>${esc(nameOf(t.assigned_to||t.owner_id))}</td><td>${t.due_at?new Date(t.due_at).toLocaleDateString('ar'):'—'}</td></tr>`):'<tr><td colspan="4">لا مهام</td></tr>'}
+  </table>
+  ${evs.length?`<h2>📅 المواعيد القادمة</h2>
+  <table><tr><th>الموعد</th><th>التاريخ</th><th>الوقت</th><th>الرؤية</th></tr>
+  ${rows(evs.slice(0,15),t=>`<tr><td>${esc(t.title)}</td><td>${new Date(t.due_at).toLocaleDateString('ar')}</td><td>${evTimeText(t)}</td><td>${t.visibility==='PRIVATE'?'🔒 خاص':t.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون'}</td></tr>`)}
+  </table>`:''}
+  ${pl.items.length?`<h2>📍 أماكننا المحفوظة</h2><table><tr><th>المكان</th><th>الرابط</th></tr>
+  ${rows(pl.items,i=>`<tr><td>${esc(i.title)}</td><td style="direction:ltr;font-size:11px">${esc((i.note||'').slice(0,60))}</td></tr>`)}</table>`:''}
+  ${shop?`<h2>🛒 قائمة التسوق</h2><table><tr><th>العنصر</th><th>الحالة</th><th>أنجزه</th></tr>
+  ${rows(shop.items,i=>`<tr><td>${esc(i.title)}</td><td>${i.completed?'✅':'☐'}</td><td>${i.completed_by?esc(nameOf(i.completed_by)):'—'}</td></tr>`)}</table>`:''}
+  <h2>👥 الدوائر</h2><table><tr><th>الدائرة</th><th>النوع</th><th>الأعضاء</th></tr>
+  ${rows((data.circles||[]),c=>`<tr><td>${esc(c.circle.name)}</td><td>${c.circle.type==='PERSONAL'?'شخصية':'مشتركة'}</td><td>${c.members.map(x=>esc(x.p.display_name||'')).join('، ')}</td></tr>`)}
+  </table>
+  <div class="foot">رافقني، لا تراقبني — رفيق • ${today.toLocaleDateString('ar')}</div>
+  </div></body></html>`;
+}
+function openReport(){
+  openSheet(sheetHead('📄 تصدير التقرير')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">تقرير ملون بالكامل: الإحصائيات، العادات، المهام، المواعيد، التسوق، الأماكن، الدوائر — يمكنك حفظه PDF من نافذة الطباعة.</p>
+    <button class="btn" data-act="printReport">🖨 عرض وحفظ PDF</button>
+    <div style="height:8px"></div>
+    <button class="btn ghost" data-act="openBackup">💾 نسخة احتياطية (JSON) / استرداد</button>`);
+}
+function doPrintReport(){
+  const html=reportHTML();
+  const f=document.createElement('iframe');
+  f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;z-index:200;background:#fff';
+  document.body.appendChild(f);
+  const close=document.createElement('button');
+  close.textContent='✕ إغلاق'; close.style.cssText='position:fixed;top:14px;inset-inline-end:14px;z-index:210;background:#1D1D1F;color:#fff;border:0;border-radius:999px;padding:8px 16px;font-size:13px';
+  close.onclick=()=>{ f.remove(); close.remove(); };
+  document.body.appendChild(close);
+  f.srcdoc=html;
+  setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast('تعذر فتح الطباعة'); } },600);
+}
+function openBackup(){
+  openSheet(sheetHead('💾 نسخة احتياطية')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">تُنزّل كل بياناتك في ملف JSON واحد يمكنك حفظه في iCloud/Drive، واسترداده لاحقًا.</p>
+    <button class="btn" data-act="downloadBackup">⬇ تنزيل النسخة الاحتياطية</button>
+    <div style="height:10px"></div>
+    <label class="btn ghost" style="display:flex;align-items:center;justify-content:center;cursor:pointer">⬆ استرداد من ملف
+      <input type="file" id="bkFile" accept="application/json" style="display:none"></label>
+    <p style="font-size:11px;color:var(--text-3);margin-top:8px">الاسترداد يضيف/يحدّث العناصر بالمعرّفات نفسها — لا يمسح شيئًا غير موجود في الملف.</p>`);
+  const inp=$('#bkFile');
+  if(inp) inp.onchange=e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
+    rd.onload=()=>restoreBackup(rd.result); rd.readAsText(file); };
+}
+function doDownloadBackup(){
+  try{
+    const payload={app:'rafiq',version:1,exported_at:new Date().toISOString(),
+      profile:data.profile,circles:(data.circles||[]).map(c=>c.circle),members:(data.circles||[]).flatMap(c=>c.members.map(x=>x.m)),
+      items:data.items,recipients:data.recipients,entries:data.entries,tasks:data.tasks,
+      sharedLists:data.sharedLists,shopping:data.shopping,activity:data.activity,reactions:data.reactions,invites:data.invites};
+    const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='rafiq-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('نُزّلت النسخة الاحتياطية ✓');
+  }catch(e){ toast('تعذر التنزيل'); }
+}
+async function restoreBackup(text){
+  try{
+    const b=JSON.parse(text); if(!b||b.app!=='rafiq'){ toast('ملف غير صالح'); return; }
+    let ok=0,fail=0;
+    async function up(table,rows){
+      for(const r of (rows||[])){
+        try{ await rest('POST',table,r,'resolution=merge-duplicates,return=minimal'); ok++; }catch(e){ fail++; }
+      }
+    }
+    await up('profiles', b.profile?[b.profile]:[]);
+    await up('circles', b.circles); await up('circle_members', b.members);
+    await up('items', b.items); await up('item_recipients', b.recipients);
+    await up('progress_entries', b.entries); await up('tasks', b.tasks);
+    await up('shared_lists', b.sharedLists); await up('shared_list_items', b.shopping);
+    await up('activity_events', b.activity);
+    await refreshAll(); closeSheet(); renderApp();
+    toast('استُرد: '+ok+' عنصرًا'+(fail?(' • فشل '+fail):''));
+  }catch(e){ toast('تعذر الاسترداد: '+(e&&e.message?e.message:'')); }
+}
 /* ---------- أماكننا المحفوظة ---------- */
 const PLACES_TITLE='أماكننا المحفوظة';
 function placesOf(){ const l=(data&&data.sharedLists||[]).find(x=>x.title===PLACES_TITLE);
@@ -1293,6 +1427,10 @@ document.addEventListener('click', async e=>{
           if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
+      case 'openReport': openReport(); break;
+      case 'printReport': doPrintReport(); break;
+      case 'openBackup': openBackup(); break;
+      case 'downloadBackup': doDownloadBackup(); break;
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'goHome': view='home'; renderApp(); break;
       case 'prevMonth': { schedMonth=new Date(schedMonth.getFullYear(),schedMonth.getMonth()-1,1); renderSchedule(); break; }
@@ -1361,7 +1499,9 @@ window.addEventListener('error',e=>{ console.error(e.message); });
   if(!session){ renderAuth(); return; }
   try{
     if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession();
-    await ensureProfile(); await refreshAll(); renderApp(); startPolling();
+    await ensureProfile();
+    const snap=loadSnap(); if(snap){ data=snap; renderApp(); }   // عرض فوري من آخر لقطة
+    await refreshAll(); renderApp(); startPolling();
     if(pendingJoin){ setTimeout(()=>openJoinSheet(pendingJoin),400); }
   }catch(e){
     // الجلسة غير صالحة (مثلًا مفتاح متغير) — عودة للدخول
