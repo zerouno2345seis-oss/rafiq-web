@@ -469,7 +469,8 @@ function loadSnap(){ try{ const s=JSON.parse(localStorage.getItem('rafiq_snap')|
 const circlesOf=()=>data?data.circles:[];
 const sharedFirst=()=>circlesOf().find(c=>c.circle.type==='SHARED')||null;
 const companionOf=()=>{ const s=sharedFirst(); return s? (s.members.find(x=>x.m.user_id!==meId())||{}).p : null; };
-function habitsFor(uid){ return data?data.items.filter(i=>i.owner_id===uid&&['HABIT','QURAN','BOOK','LEARNING','GOAL'].includes(i.type)):[]; }
+function isSpecialItem(it){ const f=it.frequency||''; return f.startsWith('MED|')||f.startsWith('MOOD|'); }
+function habitsFor(uid){ return data?data.items.filter(i=>i.owner_id===uid&&['HABIT','QURAN','BOOK','LEARNING','GOAL'].includes(i.type)&&!isSpecialItem(i)):[]; }
 function habitProg(uid,item){
   const today=new Date().toDateString();
   const v=data.entries.filter(e=>e.item_id===item.id&&e.user_id===uid&&new Date(e.recorded_at).toDateString()===today).reduce((s,e)=>s+(+e.value||0),0);
@@ -1012,7 +1013,7 @@ async function saveMed(){
     const vis=(patient==='companion'&&comp)?'SELECTED_MEMBERS':'CIRCLE';
     const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
     const medId=uuid();
-    await rest('POST','items',{id:medId,owner_id:meId(),circle_id:cid,type:'MEDICINE',title:name.trim(),
+    await rest('POST','items',{id:medId,owner_id:meId(),circle_id:cid,type:'HABIT',title:name.trim(),
       description:desc,visibility:vis,unit:dose,target_value:perDay,frequency:'MED|'+schedule,status:'ACTIVE'},'return=minimal');
     if(vis==='SELECTED_MEMBERS'&&comp){ try{ await rest('POST','item_recipients',{id:uuid(),item_id:medId,user_id:comp.user_id},'return=minimal'); }catch(e){} }
     try{ await rest('POST','activity_events',{id:uuid(),circle_id:cid,user_id:meId(),kind:'MED_ADDED',payload:name.trim()}); }catch(e){}
@@ -1063,7 +1064,7 @@ async function saveMood(){
     if(!cid){ toast('لا توجد دائرة متاحة'); return; }
     const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
     const moodId=uuid();
-    await rest('POST','items',{id:moodId,owner_id:me,circle_id:cid,type:'MOOD',title:f,
+    await rest('POST','items',{id:moodId,owner_id:me,circle_id:cid,type:'HABIT',title:f,
       description:reason||null,visibility:window._visSel||'PRIVATE',unit:window._moodE||'🙂',
       frequency:'MOOD|'+(window._moodE||'🙂')+'|'+f},'return=minimal');
     if(window._visSel==='SELECTED_MEMBERS'&&recips.length){
