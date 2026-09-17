@@ -498,7 +498,7 @@ function visibleTasks(){
 /* ================= واجهة الدخول ================= */
 function renderAuth(){
   document.documentElement.dataset.accent='green';
-  $('#nav').innerHTML=''; $('#fab').style.display='none';
+  $('#nav').innerHTML='';
   const err=window._authErr||'', info=window._authInfo||'';
   $('#view').innerHTML=`
   <div class="screen" style="padding-top:40px">
@@ -656,7 +656,6 @@ const TABS=[['home','الرئيسية','🏠'],['habits','العادات','🎯'
 function renderNav(){
   $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
     `<button data-act="tab" data-v="${id}" class="${view===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
-  $('#fab').style.display='block';
 }
 function renderApp(){
   const p=meProfile();
@@ -991,11 +990,11 @@ function openAddMed(){
   window._mdPer=1; window._mdWeekly=false; window._mdOngoing=true; window._mdPatient='me';
   const wp=$('#mdPer'); wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
     wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    if(b.dataset.n==='w'){ window._mdWeekly=true; $('#mdWeeklyWrap').style.display='block'; }
-    else { window._mdWeekly=false; window._mdPer=parseInt(b.dataset.n,10); $('#mdWeeklyWrap').style.display='none'; } });
+    if(b.dataset.n==='w'){ window._mdWeekly=true; setDisplay('mdWeeklyWrap','block'); }
+    else { window._mdWeekly=false; window._mdPer=parseInt(b.dataset.n,10); setDisplay('mdWeeklyWrap','none'); } });
   const wd=$('#mdDur'); wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
     wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    window._mdOngoing=(b.dataset.v==='ongoing'); $('#mdEndWrap').style.display=window._mdOngoing?'none':'block'; });
+    window._mdOngoing=(b.dataset.v==='ongoing'); setDisplay('mdEndWrap', window._mdOngoing?'none':'block'); });
   const wm=$('#mdPatient'); wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
     wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._mdPatient=b.dataset.v; });
 }
@@ -1049,7 +1048,7 @@ function openAddMood(){
   const g=$('#moodGrid'); g.addEventListener('click',e=>{ const b=e.target.closest('[data-f]'); if(!b) return;
     g.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
     window._moodF=b.dataset.f; window._moodE=b.dataset.e;
-    $('#moodCustomWrap').style.display=(b.dataset.f==='__custom__')?'block':'none'; });
+    setDisplay('moodCustomWrap', (b.dataset.f==='__custom__')?'block':'none'); });
   const wv=$('#moodVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
     window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,sharedFirst()); });
 }
@@ -1256,6 +1255,7 @@ function renderMore(){
 <script>
 'use strict';
 /* ---------- النوافذ ---------- */
+function setDisplay(id,val){ const el=document.getElementById(id); if(el&&el.style) el.style.display=val; }
 function openSheet(html){ $('#sheet-root').innerHTML=`<div class="overlay" data-ov="1"><div class="sheet">${html}</div></div>`;
   $('#sheet-root .overlay').addEventListener('click',e=>{ if(e.target.dataset.ov) closeSheet(); }); }
 function closeSheet(){ $('#sheet-root').innerHTML=''; }
@@ -2089,12 +2089,22 @@ function openShopAllSheet(){
     :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة بعد.</div>`));
 }
 /* ---------- boot ---------- */
-window.addEventListener('error',e=>{ console.error(e.message); bootFailed(e.message); });
-window.addEventListener('unhandledrejection',e=>{ bootFailed((e.reason&&e.reason.message)||'promise'); });
-let __bootFailShown=false;
-function bootFailed(msg){
-  if(__bootFailShown) return; __bootFailShown=true;
+window.addEventListener('error',e=>{
+  console.error(e.message);
+  bootFailed(e.message, e.filename);
+});
+window.addEventListener('unhandledrejection',e=>{
+  bootFailed((e.reason&&e.reason.message)||'promise', '');
+});
+let __bootOk=false, __bootFailShown=false;
+function bootFailed(msg, src){
   try{
+    // نتجاهل أخطاء الإضافات أو أي مصدر خارجي، وأي خطأ بعد نجاح الإقلاع
+    if(__bootOk) { console.warn('تجاهل خطأ خارجي:', msg); return; }
+    if(src && src.indexOf('chrome-extension')>=0) return;
+    if(src && /^https?:/.test(src) && location.host && src.indexOf(location.host)<0) return;
+    if(src==='' && __bootOk) return;
+    if(__bootFailShown) return; __bootFailShown=true;
     const v=document.getElementById('view'); if(!v) return;
     v.innerHTML='<div class="screen" style="padding-top:60px;text-align:center"><span style="font-size:38px">🌱</span>'+
       '<h1 style="margin:10px 0">تعذر فتح التطبيق</h1>'+
@@ -2108,11 +2118,11 @@ function bootFailed(msg){
   try{
     // 1) عرض فوري من آخر لقطة (بلا أي انتظار شبكة)
     const snap=loadSnap();
-    if(snap && snap.profile){ data=snap; renderApp(); renderNav(); }
+    if(snap && snap.profile){ data=snap; renderApp(); __bootOk=true; }
     // 2) الشبكة في الخلفية
     if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession();
     await ensureProfile();
-    await refreshAll(); renderApp(); startPolling();
+    await refreshAll(); renderApp(); __bootOk=true; startPolling();
     if(pendingJoin){ setTimeout(()=>openJoinSheet(pendingJoin),400); }
   }catch(e){
     // الجلسة غير صالحة (مثلًا مفتاح متغير) — عودة للدخول
