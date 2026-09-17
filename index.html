@@ -231,15 +231,22 @@ async function refreshSession(){
     saveSession(); return true;
   }catch(e){ return false; }
 }
-async function rest(method, table, query, body, prefer){
-  let q = query || '';
-  const headers = {};
-  if(prefer) headers['Prefer'] = prefer;
-  const res = await sb('/rest/v1/'+table+(q?('?'+q):''), {method, headers, body: body?JSON.stringify(body):undefined});
+async function rest(method, table, a3, a4, a5){
+  let query='', body=null, prefer=null;
+  for(const a of [a3,a4,a5]){
+    if(a===null||a===undefined) continue;
+    if(typeof a==='string'){
+      if(a.startsWith('return=')||a.startsWith('resolution=')) prefer=a; else query=a;
+    } else body=a;
+  }
+  const headers={};
+  if(prefer) headers['Prefer']=prefer;
+  else if(method==='POST') headers['Prefer']='return=minimal';
+  const res = await sb('/rest/v1/'+table+(query?('?'+query):''), {method, headers, body: body?JSON.stringify(body):undefined});
   const text = await res.text();
   let json = null; try{ json = text?JSON.parse(text):null; }catch(e){}
   if(!res.ok){
-    const msg = json && (json.message||json.msg) ? json.message||json.msg : ('HTTP '+res.status);
+    const msg = json && (json.message||json.msg) ? (json.message||json.msg) : ('HTTP '+res.status);
     throw new Error(msg);
   }
   return json;
@@ -785,7 +792,10 @@ function renderMore(){
         <span style="flex:1;min-width:0"><b style="font-size:15px">${esc(ci.circle.name)}</b>
         <span style="font-size:12px;color:var(--text-3);display:block">${ci.circle.type==='PERSONAL'?'دائرة شخصية • لا يراها أحد':'دائرة مشتركة • '+ci.members.length+' أعضاء'}</span></span>
         <span class="badge">${ci.circle.type}</span></button>`).join('')}
-      <div style="padding-top:10px"><button class="btn ghost" data-act="openJoinSheet">🔑 الانضمام برمز أو QR</button></div>
+      <div style="display:flex;gap:8px;padding-top:12px">
+        <button class="btn ghost" data-act="openCreateCircle" style="flex:1">＋ إنشاء دائرة</button>
+        <button class="btn ghost" data-act="openJoinSheet" style="flex:1">🔑 انضمام برمز/QR</button>
+      </div>
     </div>
     <p class="foot">رفيق — نسخة الويب v1.0 • يعمل على الهاتف والآيباد والحاسوب<br>«رافقني، لا تراقبني.»</p></div>`;
 }
