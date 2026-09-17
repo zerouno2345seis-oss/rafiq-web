@@ -597,7 +597,7 @@ function renderApp(){
   document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
   document.documentElement.dataset.theme=(localStorage.getItem('rafiq_web_dark')==='on')?'dark':'light';
   renderNav();
-  ({home:renderHome,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore})[view]();
+  ({home:renderHome,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore,schedule:renderSchedule})[view]();
 }
 function ringSVG(pct,cls){
   const r=34,c=(2*Math.PI*r).toFixed(1),off=(c*(1-Math.min(100,Math.max(0,pct))/100)).toFixed(1);
@@ -649,6 +649,12 @@ function renderHome(){
         <div style="flex:1;min-width:0"><div class="htitle" style="color:var(--text-1)">${esc(r.title)}</div>
         <div class="shop-meta">${r.due_at?('الموعد '+new Date(r.due_at).toLocaleDateString('ar')+' • '):''}${esc(nameOf(r.owner_id))}</div></div>
         <button class="mini" data-act="doneReminder" data-id="${r.id}">تم ✓</button></div>`).join('')}</div>` : ''; })()}
+    <div class="card" data-act="openSchedule" style="cursor:pointer">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">📅</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">جدولي — مواعيدك لهذا الشهر</div>
+      <div class="shop-meta">${(()=>{ const n=eventsOf().length; return n? ('عندك '+n+' موعدًا — اضغط للعرض') : 'لا مواعيد قادمة — أضف موعدًا وحدّد من يراه'; })()}</div></div>
+      <span class="badge">فتح ➜</span></div>
+    </div>
     <div class="card" data-act="openRemind" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🔔</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">ذكّرني — ذكّر رفيقك بشيء مهم</div>
@@ -804,6 +810,7 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
       <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
         <button class="link" data-act="openCfg">تعديل</button></div>
       <div class="setrow"><span class="st" style="color:var(--error)">تسجيل الخروج</span><button class="link" style="color:var(--error)" data-act="signOut">خروج</button></div>
@@ -1133,6 +1140,51 @@ function openAddPlace(){
       {enableHighAccuracy:false,timeout:8000});
   };
 }
+/* ---------- جدولي: نافذة اليوم + إضافة موعد ---------- */
+function openSchedDay(iso){
+  const day=new Date(iso+'T12:00:00');
+  const list=eventsOf().filter(t=>evDate(t)&&evDate(t).toDateString()===day.toDateString());
+  openSheet(sheetHead('مواعيد '+day.toLocaleDateString('ar'))+(list.length?list.sort((a,b)=>new Date(a.due_at)-new Date(b.due_at)).map(t=>`
+    <div class="row"><b style="min-width:52px;color:var(--accent-dark)">${evTimeText(t)}</b>
+      <div style="flex:1;min-width:0"><div class="htitle">${esc(t.title)}</div>
+      <div class="shop-meta">${esc(nameOf(t.owner_id))} • ${t.visibility==='PRIVATE'?'🔒 خاص':t.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون'}</div></div>
+      ${t.owner_id===meId()?`<button class="link" style="color:var(--error)" data-act="delEvent" data-id="${t.id}">حذف</button>`:''}</div>`).join('')
+   :'<div class="empty"><span class="e">📅</span>لا مواعيد في هذا اليوم.</div>')+
+   `<div style="height:12px"></div><button class="btn" data-act="addEvent" data-day="${iso}">+ إضافة موعد في هذا اليوم</button>`);
+}
+function openAddEvent(iso){
+  const sh=sharedFirst();
+  openSheet(sheetHead('موعد جديد — '+new Date(iso+'T12:00:00').toLocaleDateString('ar'))+`
+    <div class="field"><label>عنوان الموعد</label><input id="evTitle" placeholder="مثال: موعد الطبيب"></div>
+    <div class="field"><label>الوقت</label><div class="chips" id="evTime">
+      ${[['09:00','صباحًا 9'],['13:00','ظهرًا 1'],['17:00','عصرًا 5'],['21:00','مساءً 9']].map(([v,l],i)=>`<button class="chip ${i===3?'on':''}" data-v="${v}">${l}</button>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:8px"><input id="evTimeCustom" placeholder="أو HH:MM" style="direction:ltr;min-height:44px;border:1.5px solid var(--field-border);border-radius:var(--r-btn);background:var(--field-bg);padding:0 12px;flex:1"></div></div>
+    <div class="field"><label>الدائرة</label><div class="chips" id="evCircle">
+      <button class="chip ${sh?'':'on'}" data-c="personal">مساحتي الخاصة</button>
+      ${sh?`<button class="chip ${sh?'on':''}" data-c="${sh.circle.id}">${esc(sh.circle.name)}</button>`:''}</div></div>
+    <div class="field"><label>من يرى هذا الموعد؟</label>${visWrap('evVis',window._visSel='PRIVATE',null)}</div>
+    <button class="btn" data-act="saveEvent" data-day="${iso}">حفظ الموعد</button>`);
+  window._evTime='21:00'; window._evCircle=(sh?sh.circle.id:'personal');
+  const wt=$('#evTime'); wt.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    window._evTime=b.dataset.v; wt.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+  const wc=$('#evCircle'); if(wc) wc.addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b) return;
+    window._evCircle=b.dataset.c; wc.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    $('#evVis').innerHTML=visOptions(window._visSel,window._evCircle==='personal'?null:sh); });
+  const wv=$('#evVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
+    window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,window._evCircle==='personal'?null:sh); });
+}
+async function sendEvent(dayIso,title,time,circleId,visibility,recipients){
+  try{
+    let cid=circleId;
+    if(cid==='personal'){ const p=(data.circles||[]).find(c=>c.circle.type==='PERSONAL'); cid=p?p.circle.id:null; }
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const iso=new Date(dayIso+'T'+(time||'21:00')+':00').toISOString();
+    await rest('POST','tasks',{id:uuid(),owner_id:meId(),circle_id:cid,title,description:null,
+      visibility:visibility,assigned_to:null,priority:'EVENT',status:'TODO',due_at:iso,
+      recipients:visibility==='SELECTED_MEMBERS'?(recipients&&recipients.length?recipients:[otherId()]):null},'return=minimal');
+    await refreshAll(); closeSheet(); view='schedule'; renderApp(); toast('أُضيف الموعد 📅');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
 /* ---------- ذكّرني ---------- */
 async function sendReminder(text,due){
   try{
@@ -1241,6 +1293,18 @@ document.addEventListener('click', async e=>{
           if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
+      case 'openSchedule': view='schedule'; renderApp(); break;
+      case 'goHome': view='home'; renderApp(); break;
+      case 'prevMonth': { schedMonth=new Date(schedMonth.getFullYear(),schedMonth.getMonth()-1,1); renderSchedule(); break; }
+      case 'nextMonth': { schedMonth=new Date(schedMonth.getFullYear(),schedMonth.getMonth()+1,1); renderSchedule(); break; }
+      case 'schedDay': openSchedDay(el.dataset.day); break;
+      case 'addEvent': openAddEvent(el.dataset.day); break;
+      case 'saveEvent': { const t=($('#evTitle')||{}).value||''; if(!t.trim()){ toast('اكتب عنوان الموعد'); break; }
+        const custom=($('#evTimeCustom')||{}).value||''; const time=/^\d{1,2}:\d{2}$/.test(custom)?custom:(window._evTime||'21:00');
+        const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
+        const dayIso=el.dataset.day; closeSheet(); await sendEvent(dayIso,t.trim(),time,window._evCircle,window._visSel,recips); break; }
+      case 'delEvent': { if(!confirm('حذف هذا الموعد؟')) break;
+        await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='schedule'; renderApp(); toast('حُذف الموعد'); break; }
       case 'removeMember': { if(!confirm('إزالة هذا العضو من الدائرة؟ سيُخرج ولا يرى عناصرها.')) break;
         await rest('DELETE','circle_members','circle_id=eq.'+el.dataset.cid+'&user_id=eq.'+el.dataset.uid);
         await refreshAll(); closeSheet(); view='more'; renderApp(); toast('أُزيل العضو'); break; }
