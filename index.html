@@ -643,6 +643,28 @@ function renderHome(){
       ${shop.items.map(si=>shopRow(si)).join('')}
       <div class="add-item"><input id="shopIn" placeholder="أضف عنصرًا..." data-list="${shop.list.id}"><button data-act="addShop">＋</button></div>`
     :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة مشتركة بعد.<br>تُنشأ تلقائيًا مع أول دائرة مشتركة.</div>`}</div>
+    ${(()=>{ const rs=(data.tasks||[]).filter(t=>t.priority==='REMINDER'&&t.assigned_to===meId()&&t.status!=='DONE');
+      return rs.length? `<div class="sec"><h2>🔔 تذكيرات موجّهة إليك</h2></div>
+      <div class="card">${rs.map(r=>`<div class="row"><span style="font-size:19px">🔔</span>
+        <div style="flex:1;min-width:0"><div class="htitle" style="color:var(--text-1)">${esc(r.title)}</div>
+        <div class="shop-meta">${r.due_at?('الموعد '+new Date(r.due_at).toLocaleDateString('ar')+' • '):''}${esc(nameOf(r.owner_id))}</div></div>
+        <button class="mini" data-act="doneReminder" data-id="${r.id}">تم ✓</button></div>`).join('')}</div>` : ''; })()}
+    <div class="card" data-act="openRemind" style="cursor:pointer">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🔔</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">ذكّرني — ذكّر رفيقك بشيء مهم</div>
+      <div class="shop-meta">يصل كتذكير بارز في الأعلى مع موعد اختياري</div></div>
+      <span class="badge">فتح ➜</span></div>
+    </div>
+    <div class="sec"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
+    <div class="card">${(()=>{ const pl=placesOf();
+      return pl.items.length? pl.items.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
+        <a href="${esc(pp.note||'#')}" target="_blank" style="flex:1;min-width:0">
+          <div class="htitle" style="color:var(--text-1)">${esc(pp.title)}</div>
+          <div class="shop-meta">${esc((pp.note||'').slice(0,52))}</div>
+        </a><span class="badge">فتح ➜</span></div>`).join('')
+      : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
+      <div style="padding-top:10px"><button class="btn ghost" data-act="addPlace">＋ إضافة مكان (اسم + رابط)</button></div>
+    </div>
     <div class="foot">رفيق — نسخة الويب v1.0 • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
   </div>`;
 }
@@ -742,8 +764,9 @@ function renderStats(){
     }).join(''):`<div class="card"><div class="empty"><span class="e">✨</span>لا نشاط بعد — ابدأوا وسيوثّق كل شيء هنا.</div></div>`}
     <div style="height:8px"></div></div>`;
 }
-function evEmoji(k){ return {ITEM_COMPLETED:'🌱',TASK_DONE:'✅',SHOP_ADDED:'🛒',CIRCLE_CREATED:'🤝',JOINED:'🎉'}[k]||'✨'; }
-function evText(k,who,payload){ if(k==='ITEM_COMPLETED') return who+' أكمل «'+payload+'» 🌱';
+function evEmoji(k){ return {REMINDER:'🔔',ITEM_COMPLETED:'🌱',TASK_DONE:'✅',SHOP_ADDED:'🛒',CIRCLE_CREATED:'🤝',JOINED:'🎉'}[k]||'✨'; }
+function evText(k,who,payload){ if(k==='REMINDER') return who+' يذكّرك: «'+payload+'» 🔔';
+  if(k==='ITEM_COMPLETED') return who+' أكمل «'+payload+'» 🌱';
   if(k==='TASK_DONE') return who+' أنجز المهمة «'+payload+'»'; if(k==='SHOP_ADDED') return who+' أضاف «'+payload+'» للتسوق';
   if(k==='CIRCLE_CREATED') return 'أُنشئت دائرة «'+payload+'»'; if(k==='JOINED') return payload; return payload; }
 </script>
@@ -1066,6 +1089,77 @@ function openCircleDetail(id){
 async function newInviteFor(cid){ try{ const inv=await rest('POST','circle_invites',
   {id:uuid(),circle_id:cid,code:genCode(),created_by:meId(),expires_at:daysAgoIso(-7),revoked:false},'return=representation');
   await refreshAll(); showInvite(circleName(cid),inv[0].code); }catch(e){ toast(friendly(e)); } }
+/* ---------- أماكننا المحفوظة ---------- */
+const PLACES_TITLE='أماكننا المحفوظة';
+function placesOf(){ const l=(data&&data.sharedLists||[]).find(x=>x.title===PLACES_TITLE);
+  if(!l) return {list:null,items:[]};
+  return {list:l,items:(data.shopping||[]).filter(i=>i.list_id===l.id)}; }
+async function ensurePlacesList(){
+  const sh=sharedFirst(); if(!sh) return null;
+  const ex=(data.sharedLists||[]).find(x=>x.title===PLACES_TITLE); if(ex) return ex;
+  const dto={id:uuid(),owner_id:meId(),circle_id:sh.circle.id,title:PLACES_TITLE,visibility:'CIRCLE'};
+  await rest('POST','shared_lists',dto,'return=minimal');
+  await refreshAll();
+  return (data.sharedLists||[]).find(x=>x.title===PLACES_TITLE)||dto;
+}
+async function addPlace(name,link){
+  try{
+    const l=await ensurePlacesList();
+    if(!l){ toast('أنشئ دائرة مشتركة أولًا'); return; }
+    const url=(link||'').trim()||('https://maps.google.com/?q='+encodeURIComponent(name));
+    await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:name,note:url,completed:false,position:0},'return=minimal');
+    await refreshAll(); renderApp(); toast('حُفظ ✓ سيظهر عند رفيقك');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
+function openAddPlace(){
+  openSheet(sheetHead('إضافة مكان محفوظ')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">مثال: مطعم الأعشاب — يُحفظ باسم ويفتح مباشرة في خرائط Google، ويراه رفيقك فورًا.</p>
+    <div class="field"><label>اسم المكان</label><input id="plName" placeholder="مثال: مطعم الأعشاب"></div>
+    <div class="field"><label>رابط خرائط Google (اختياري — إن تركه سيُبنى من الاسم)</label><input id="plLink" placeholder="https://maps.app.goo.gl/..." style="direction:ltr"></div>
+    <button class="btn ghost" id="plLoc">📍 استخدم موقعي الحالي</button>
+    <div style="height:10px"></div>
+    <button class="btn" data-act="savePlace">حفظ للدائرة (يراه رفيقك)</button>`);
+  const locBtn=$('#plLoc');
+  if(locBtn) locBtn.onclick=()=>{
+    if(!navigator.geolocation){ toast('المتصفح لا يدعم تحديد الموقع'); return; }
+    locBtn.textContent='جارٍ تحديد موقعك...';
+    navigator.geolocation.getCurrentPosition(
+      pos=>{ const u='https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude; const i=$('#plLink'); if(i){ i.value=u; } locBtn.textContent='📍 استخدم موقعي الحالي'; toast('أُضيف موقعك الحالي'); },
+      err=>{ locBtn.textContent='📍 استخدم موقعي الحالي'; toast('تعذر الحصول على الموقع — الصق الرابط يدويًا'); },
+      {enableHighAccuracy:false,timeout:8000});
+  };
+}
+/* ---------- ذكّرني ---------- */
+async function sendReminder(text,due){
+  try{
+    const sh=sharedFirst(); if(!sh){ toast('أنشئ دائرة مشتركة أولًا'); return; }
+    const other=(sh.members.find(x=>x.m.user_id!==meId())||{}).m;
+    if(!other){ toast('لا يوجد رفيق في الدائرة بعد'); return; }
+    const row={id:uuid(),owner_id:meId(),circle_id:sh.circle.id,title:text,description:null,
+      visibility:'CIRCLE',assigned_to:other.user_id,priority:'REMINDER',status:'TODO',
+      due_at:due||null,recipients:null};
+    await rest('POST','tasks',row,'return=minimal');
+    try{ await rest('POST','activity_events',{id:uuid(),circle_id:sh.circle.id,user_id:meId(),kind:'REMINDER',payload:text}); }catch(e){}
+    await refreshAll(); renderApp(); toast('أُرسل التذكير 🔔');
+  }catch(e){ toast('تعذر الإرسال: '+(e&&e.message?e.message:'')); }
+}
+function openRemind(){
+  const sh=sharedFirst();
+  const other=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).p : null;
+  if(!sh||!other){ toast('تحتاج دائرة مشتركة مع رفيقك أولًا'); return; }
+  openSheet(sheetHead('🔔 ذكرني — تذكير بارز')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">سيصل لـ ${esc(other.display_name||'رفيقك')} كتذكير بارز في الأعلى + إشعار في رحلتكما.</p>
+    <div class="field"><label>بماذا أذكّرك؟</label><input id="rmText" placeholder="مثال: موعد الطبيب غدًا 5 مساءً"></div>
+    <div class="field"><label>الموعد</label><div class="chips" id="rmDue">
+      <button class="chip on" data-d="none">بدون</button>
+      <button class="chip" data-d="today">اليوم</button>
+      <button class="chip" data-d="tomorrow">غدًا</button>
+      <button class="chip" data-d="week">بعد أسبوع</button></div></div>
+    <button class="btn" data-act="saveRemind">أرسل التذكير لـ ${esc(other.display_name||'رفيقك')}</button>`);
+  window._rmDue='none';
+  const w=$('#rmDue'); w.addEventListener('click',e=>{ const b=e.target.closest('[data-d]'); if(!b) return;
+    window._rmDue=b.dataset.d; w.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+}
 /* ---------- الإشعارات + الإعدادات ---------- */
 function openNotifs(){
   const evs=(data?data.activity:[]).slice(0,6);
@@ -1143,6 +1237,15 @@ document.addEventListener('click', async e=>{
           if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
+      case 'addPlace': openAddPlace(); break;
+      case 'savePlace': { const n=($('#plName')||{}).value||''; if(!n.trim()){ toast('اكتب اسم المكان'); break; }
+        const lk=($('#plLink')||{}).value||''; closeSheet(); await addPlace(n.trim(),lk); break; }
+      case 'openRemind': openRemind(); break;
+      case 'saveRemind': { const t=($('#rmText')||{}).value||''; if(!t.trim()){ toast('اكتب نص التذكير'); break; }
+        const d=window._rmDue||'none'; let due=null;
+        if(d!=='none'){ const dt=new Date(); if(d==='tomorrow') dt.setDate(dt.getDate()+1); if(d==='week') dt.setDate(dt.getDate()+7); dt.setHours(12,0,0,0); due=dt.toISOString(); }
+        closeSheet(); await sendReminder(t.trim(),due); break; }
+      case 'doneReminder': { const t=(data.tasks||[]).find(x=>x.id===el.dataset.id); if(t){ await rest('PATCH','tasks',{status:'DONE',completed_at:nowIso(),completed_by:meId()},'id=eq.'+t.id); await refreshAll(); renderHome(); toast('✓'); } break; }
       case 'openCreateCircle': openCreateCircle(); break;
       case 'doCreateCircle': await doCreateCircle(); break;
       case 'openJoinSheet': openJoinSheet(); break;
