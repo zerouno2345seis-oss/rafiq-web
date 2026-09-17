@@ -442,7 +442,7 @@ async function refreshAll(){
   let invites=[];
   const owned=circles.filter(c=>c.owner_id===me).map(c=>c.id);
   if(owned.length){ try{ invites=await rest('GET','circle_invites','circle_id=in.('+owned.join(',')+')&revoked=eq.false&select=*'); }catch(e){} }
-  const staleInv=invites.filter(i=>!/^[0-9]{6}$/.test(i.code));
+  const staleInv=invites.filter(i=>!/^[0-9]{6}$/.test(i.code) || (new Date(i.expires_at) < new Date()));
   for(const st of staleInv){
     try{
       await rest('PATCH','circle_invites',{revoked:true},'id=eq.'+st.id);
@@ -947,7 +947,7 @@ function joinUrl(code){
 function openCreateCircle(){
   openSheet(sheetHead('إنشاء دائرة مشتركة')+`
     <div class="field"><label>اسم الدائرة</label><input id="cName" placeholder="مثال: بيتنا"></div>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">بعد الإنشاء ستحصل على رمز دعوة صالح 24 ساعة مع رابط وQR — شاركهما مع من تحب.</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">بعد الإنشاء ستحصل على رمز دعوة صالح 7 أيام مع رابط وQR — شاركهما مع من تحب.</p>
     <button class="btn" data-act="doCreateCircle">إنشاء</button>`);
 }
 async function doCreateCircle(){
@@ -957,7 +957,7 @@ async function doCreateCircle(){
     await rest('POST','circles',{id:cid,owner_id:me,name,type:'SHARED'},'return=minimal');
     await rest('POST','circle_members',{id:uuid(),circle_id:cid,user_id:me,role:'OWNER'},'return=minimal');
     await rest('POST','shared_lists',{id:uuid(),owner_id:me,circle_id:cid,title:'مشتريات البيت',visibility:'CIRCLE'},'return=minimal');
-    const inv=await rest('POST','circle_invites',{id:uuid(),circle_id:cid,code:genCode(),created_by:me,expires_at:daysAgoIso(-1),revoked:false},'return=representation');
+    const inv=await rest('POST','circle_invites',{id:uuid(),circle_id:cid,code:genCode(),created_by:me,expires_at:daysAgoIso(-7),revoked:false},'return=representation');
     await logAct(cid,'CIRCLE_CREATED',name);
     await refreshAll(); closeSheet(); view='more'; renderApp();
     showInvite(name,inv[0].code);
@@ -970,7 +970,8 @@ function showInvite(name,code){
   openSheet(sheetHead('دعوة إلى «'+name+'»')+`
     <div style="text-align:center">${qr?`<div class="qr">${qr}</div>`:''}
     <div style="font-size:26px;font-weight:800;letter-spacing:3px;margin:10px 0;direction:ltr">${esc(code)}</div>
-    <div style="font-size:12px;color:var(--text-3);margin-bottom:12px">صالح 24 ساعة • قابل للإبطال</div>
+    <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">صالح 7 أيام • قابل للإبطال</div>
+    <div style="margin-bottom:10px;word-break:break-all"><a href="${esc(url)}" target="_blank">${esc(url)}</a></div>
     <button class="btn ghost" data-act="copyLink" data-v="${esc(url)}">📋 نسخ رابط الدعوة</button>
     <div style="height:8px"></div>
     <p style="font-size:12.5px;color:var(--text-2)">يمكن لرفيقك مسح QR من كاميرا الهاتف، أو فتح الرابط، أو إدخال الرمز يدويًا — كلها تنضم لنفس الدائرة.</p></div>`);
@@ -1036,6 +1037,16 @@ function openCircleDetail(id){
     ${ci.members.map(x=>`<div class="row"><div class="avatar sm ${x.m.user_id===me?'':'comp'}">${esc((x.p.display_name||'؟')[0])}</div>
       <span style="flex:1;font-size:15px">${esc(x.p.display_name||'عضو')}${x.m.user_id===me?' (أنت)':''}</span>
       <span class="badge">${x.m.role==='OWNER'?'👑 المالك':'عضو'}</span></div>`).join('')}
+    ${invites.length?(()=>{ const iv=invites[0]; const link=joinUrl(iv.code); let qr='';
+      try{ qr=QR.build(link.startsWith('http')?link:('https://rafiq.app/join/'+iv.code)); }catch(e){ try{ qr=QR.build(iv.code); }catch(e2){} }
+      return `<div style="text-align:center;margin-top:14px;padding:14px;border-radius:16px;background:var(--accent-verysoft)">
+        ${qr?`<div class="qr">${qr}</div>`:''}
+        <div style="font-size:26px;font-weight:800;letter-spacing:3px;margin:10px 0;direction:ltr">${esc(iv.code)}</div>
+        <div style="font-size:12px;color:var(--text-3)">صالح 7 أيام • امسح الرمز بكاميرا الهاتف أو افتح الرابط</div>
+        <div style="margin-top:10px"><a href="${esc(link)}" target="_blank" style="font-size:13px;word-break:break-all">${esc(link)}</a></div>
+        <div style="height:8px"></div>
+        <button class="btn ghost" data-act="copyLink" data-v="${esc(link)}">📋 نسخ رابط الدعوة</button>
+      </div>`; })():''}
     ${myRole==='OWNER'?`<div style="margin-top:14px"><button class="btn ghost" data-act="newInvite" data-id="${id}">+ توليد رمز دعوة جديد (مع QR ورابط)</button></div>`:''}
     ${invites.length?invites.map(iv=>`<div class="row" style="margin-top:8px">
       <span style="font-weight:800;letter-spacing:2px;direction:ltr">${esc(iv.code)}</span>
@@ -1044,7 +1055,7 @@ function openCircleDetail(id){
     ${myRole!=='OWNER'?`<div style="margin-top:14px"><button class="btn danger" data-act="leaveCircle" data-id="${id}">مغادرة الدائرة</button></div>`:''}`);
 }
 async function newInviteFor(cid){ try{ const inv=await rest('POST','circle_invites',
-  {id:uuid(),circle_id:cid,code:genCode(),created_by:meId(),expires_at:daysAgoIso(-1),revoked:false},'return=representation');
+  {id:uuid(),circle_id:cid,code:genCode(),created_by:meId(),expires_at:daysAgoIso(-7),revoked:false},'return=representation');
   await refreshAll(); showInvite(circleName(cid),inv[0].code); }catch(e){ toast(friendly(e)); } }
 /* ---------- الإشعارات + الإعدادات ---------- */
 function openNotifs(){
