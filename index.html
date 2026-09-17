@@ -1068,7 +1068,9 @@ function openCircleDetail(id){
   openSheet(sheetHead(ci.circle.name)+`
     ${ci.members.map(x=>`<div class="row"><div class="avatar sm ${x.m.user_id===me?'':'comp'}">${esc((x.p.display_name||'؟')[0])}</div>
       <span style="flex:1;font-size:15px">${esc(x.p.display_name||'عضو')}${x.m.user_id===me?' (أنت)':''}</span>
-      <span class="badge">${x.m.role==='OWNER'?'👑 المالك':'عضو'}</span></div>`).join('')}
+      <span class="badge">${x.m.role==='OWNER'?'👑 المالك':'عضو'}</span>
+      ${(myRole==='OWNER'&&x.m.user_id!==me)?`<button class="link" style="color:var(--error);margin-inline-start:6px" data-act="removeMember" data-cid="${id}" data-uid="${x.m.user_id}">إزالة</button>`:''}
+      </div>`).join('')}
     ${invites.length?(()=>{ const iv=invites[0]; const link=joinUrl(iv.code); let qr='';
       try{ qr=QR.build(link.startsWith('http')?link:('https://rafiq.app/join/'+iv.code)); }catch(e){ try{ qr=QR.build(iv.code); }catch(e2){} }
       return `<div style="text-align:center;margin-top:14px;padding:14px;border-radius:16px;background:var(--accent-verysoft)">
@@ -1084,6 +1086,8 @@ function openCircleDetail(id){
       <span style="font-weight:800;letter-spacing:2px;direction:ltr">${esc(iv.code)}</span>
       <span style="flex:1;font-size:11px;color:var(--text-3)">ينتهي ${relAr(iv.expires_at)}</span>
       ${myRole==='OWNER'?`<button class="link" style="color:var(--error)" data-act="revokeInvite" data-id="${iv.id}">إبطال</button>`:''}</div>`).join(''):''}
+    ${myRole==='OWNER'?`<div style="margin-top:16px"><button class="btn danger" data-act="deleteCircle" data-id="${id}">🗑 حذف الدائرة نهائيًا</button></div>
+      <p style="font-size:11px;color:var(--text-3);margin-top:6px">يزيل الدائرة وكل عناصرها المشتركة عند الطرفين — لا يمكن التراجع.</p>`:''}
     ${myRole!=='OWNER'?`<div style="margin-top:14px"><button class="btn danger" data-act="leaveCircle" data-id="${id}">مغادرة الدائرة</button></div>`:''}`);
 }
 async function newInviteFor(cid){ try{ const inv=await rest('POST','circle_invites',
@@ -1237,6 +1241,12 @@ document.addEventListener('click', async e=>{
           if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
+      case 'removeMember': { if(!confirm('إزالة هذا العضو من الدائرة؟ سيُخرج ولا يرى عناصرها.')) break;
+        await rest('DELETE','circle_members','circle_id=eq.'+el.dataset.cid+'&user_id=eq.'+el.dataset.uid);
+        await refreshAll(); closeSheet(); view='more'; renderApp(); toast('أُزيل العضو'); break; }
+      case 'deleteCircle': { if(!confirm('حذف الدائرة نهائيًا مع كل عناصرها؟ لا يمكن التراجع.')) break;
+        await rest('DELETE','circles','id=eq.'+el.dataset.id);
+        await refreshAll(); closeSheet(); view='more'; renderApp(); toast('حُذفت الدائرة'); break; }
       case 'addPlace': openAddPlace(); break;
       case 'savePlace': { const n=($('#plName')||{}).value||''; if(!n.trim()){ toast('اكتب اسم المكان'); break; }
         const lk=($('#plLink')||{}).value||''; closeSheet(); await addPlace(n.trim(),lk); break; }
