@@ -183,6 +183,8 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 <script>
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
+const APP_APK = '/rafiq.apk';
+const APP_VERSION = '1.0.1';
 const CFG = {
   url: 'https://jnggbhyhqwbohpqwybbw.supabase.co',
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuZ2diaHlocXdib2hwcXd5YmJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQyMzcsImV4cCI6MjEwNTE0MDIzN30.4cojsJDBpFEQ8tKv-L9Mi4dTN8apKICUaNbQvJGjCQE',
@@ -506,6 +508,10 @@ function renderAuth(){
     <div class="welc"><b>عادات، قراءة، أهداف، مهام، قوائم مشتركة.</b><span>كل ذلك في مكان واحد هادئ.</span></div>
     <div class="welc"><b>أنشئ دائرة مع من تحب.</b><span>وشاركوه التقدم لحظة بلحظة.</span></div>
     <div id="authForms" style="margin-top:14px"></div>
+    <div style="margin-top:14px;text-align:center">
+      <a class="btn ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="${APP_APK}" download>📱 حمّل تطبيق Android (v${APP_VERSION} — آخر إصدار)</a>
+      <p style="font-size:11px;color:var(--text-3);margin-top:6px">نفس البيانات تُفتح من الهاتف والويب معًا</p>
+    </div>
   </div>`;
   renderAuthForms();
 }
@@ -1104,6 +1110,7 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">📱 تحميل تطبيق Android (آخر إصدار v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
       <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
       <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
       <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
