@@ -750,6 +750,22 @@ function renderHome(){
                  :`<span class="badge">✅ اكتمل اليوم</span>`}
         </div>`; }).join('')}
     </div>
+    <div class="card">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🎬</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">مقاطعنا الجميلة</div>
+      <div class="shop-meta">${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
+        const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id).length : 0;
+        return n? (n+' مقطع/رابط محفوظ') : 'احفظ روابط يوتيوب/إنستغرام الجميلة'; })()}</div></div>
+      <button class="link" data-act="addMedia">＋ رابط</button></div>
+      ${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
+        const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id) : [];
+        return its.map(i=>`<div class="row" style="min-height:46px">
+          <a href="${esc(i.note||'#')}" target="_blank" style="flex:1;min-width:0;text-decoration:none">
+            <div class="htitle" style="color:var(--text-1)">🎬 ${esc(i.title)}</div>
+            <div class="shop-meta">${esc((i.note||'').slice(0,50))}</div></a>
+          <button class="link" data-act="renameItem" data-id="${i.id}" data-t="${esc(i.title)}">تسمية</button>
+          <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`).join(''); })()}
+    </div>
     <div class="sec"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
     <div class="card">${(()=>{ const pl=placesOf();
       return pl.items.length? pl.items.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
@@ -1373,6 +1389,18 @@ function openCircleDetail(id){
       <span style="font-weight:800;letter-spacing:2px;direction:ltr">${esc(iv.code)}</span>
       <span style="flex:1;font-size:11px;color:var(--text-3)">ينتهي ${relAr(iv.expires_at)}</span>
       ${myRole==='OWNER'?`<button class="link" style="color:var(--error)" data-act="revokeInvite" data-id="${iv.id}">إبطال</button>`:''}</div>`).join(''):''}
+    ${myRole==='OWNER'?`
+      <div class="field" style="margin-top:14px"><label>اسم الدائرة</label><input id="crName" value="${esc(ci.circle.name)}"></div>
+      <button class="btn ghost" data-act="renameCircle" data-id="${id}">✏️ حفظ الاسم الجديد</button>`:''}
+    <div style="margin-top:14px"><b style="font-size:15px">إدارة محتوى الدائرة</b>
+      <div class="shop-meta">عناصر: ${(data.items||[]).filter(i=>i.circle_id===id).length} • مهام: ${(data.tasks||[]).filter(t=>t.circle_id===id).length} • قوائم: ${(data.sharedLists||[]).filter(l=>l.circle_id===id).length}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="chip" data-act="manageCircle" data-id="${id}" data-k="items">العادات/العناصر</button>
+        <button class="chip" data-act="manageCircle" data-id="${id}" data-k="tasks">المهام</button>
+        <button class="chip" data-act="manageCircle" data-id="${id}" data-k="lists">قوائم ومحتواها</button>
+      </div>
+      <div id="crManage"></div>
+    </div>
     ${myRole==='OWNER'?`<div style="margin-top:16px"><button class="btn danger" data-act="deleteCircle" data-id="${id}">🗑 حذف الدائرة نهائيًا</button></div>
       <p style="font-size:11px;color:var(--text-3);margin-top:6px">يزيل الدائرة وكل عناصرها المشتركة عند الطرفين — لا يمكن التراجع.</p>`:''}
     ${myRole!=='OWNER'?`<div style="margin-top:14px"><button class="btn danger" data-act="leaveCircle" data-id="${id}">مغادرة الدائرة</button></div>`:''}`);
@@ -1536,6 +1564,32 @@ function openAddPlace(){
       {enableHighAccuracy:false,timeout:8000});
   };
 }
+/* ---------- المقاطع الجميلة ---------- */
+const MEDIA_TITLE='مقاطعنا الجميلة';
+function openAddMedia(){
+  openSheet(sheetHead('🎬 رابط جميل جديد')+`
+    <div class="field"><label>الرابط (يوتيوب/إنستغرام/أي رابط)</label><input id="mvUrl" placeholder="https://..." style="direction:ltr"></div>
+    <div class="field"><label>الاسم (اختياري — يُسمّى تلقائيًا)</label><input id="mvTitle" placeholder="مثال: مقطع تحفيزي"></div>
+    <button class="btn" data-act="saveMedia">حفظ</button>`);
+}
+async function saveMedia(){
+  try{
+    const u=($('#mvUrl')||{}).value||''; const t=($('#mvTitle')||{}).value||'';
+    if(!/^https?:/.test(u.trim())){ toast('الصق رابطًا صحيحًا'); return; }
+    const auto=(u.includes('youtube')||u.includes('youtu.be'))?('مقطع يوتيوب — '+new Date().toISOString().slice(0,10)):
+      (u.includes('instagram')?('مقطع إنستغرام — '+new Date().toISOString().slice(0,10)):('رابط — '+new Date().toISOString().slice(0,10)));
+    const sh=sharedFirst(); const cid=sh?sh.circle.id:((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const l=await ensureList(MEDIA_TITLE,cid);
+    await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:(t.trim()||auto),note:u.trim(),completed:false,position:0},'return=minimal');
+    await refreshAll(); closeSheet(); renderApp(); toast('حُفظ ✓');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
+function openRename(id,cur){
+  openSheet(sheetHead('تسمية')+`
+    <div class="field"><label>الاسم</label><input id="rnTitle" value="${esc(cur||'')}"></div>
+    <button class="btn" data-act="saveRename" data-id="${id}">حفظ التسمية</button>`);
+}
 /* ---------- قائمة الإضافة (+) ---------- */
 function openAddMenu(){
   const today=new Date().toISOString().slice(0,10);
@@ -1547,6 +1601,7 @@ function openAddMenu(){
     <button class="vis-opt" data-act="addEvent" data-day="${today}"><span style="font-size:20px">📅</span><span style="flex:1"><span class="vt">موعد في جدولي</span><br><span class="vd">بتاريخ ووقت — خاص أو للدائرة أو لأشخاص</span></span></button>
     <button class="vis-opt" data-act="openRemind"><span style="font-size:20px">🔔</span><span style="flex:1"><span class="vt">ذكّر رفيقي</span><br><span class="vd">تذكير بارز مع إشعار</span></span></button>
     <button class="vis-opt" data-act="openMealSheet"><span style="font-size:20px">🍽</span><span style="flex:1"><span class="vt">وجبة اليوم</span><br><span class="vd">سجّل فطورك/غداءك/عشاءك أو اختر من أطباقكم</span></span></button>
+    <button class="vis-opt" data-act="addMedia"><span style="font-size:20px">🎬</span><span style="flex:1"><span class="vt">رابط جميل (مقطع/صوتية)</span><br><span class="vd">يوتيوب أو إنستغرام — يُحفظ في مقاطعنا الجميلة</span></span></button>
     <button class="vis-opt" data-act="openAddMed"><span style="font-size:20px">💊</span><span style="flex:1"><span class="vt">دواء (تذكير مشترك)</span><br><span class="vd">مرات يومية أو أسبوعية — مؤقت أو مستمر مدى الحياة</span></span></button>
     <button class="vis-opt" data-act="openCreateCircle"><span style="font-size:20px">👥</span><span style="flex:1"><span class="vt">دائرة جديدة</span><br><span class="vd">أنشئ دائرة وشارك رمز الدعوة</span></span></button>`);
 }
@@ -1771,7 +1826,26 @@ document.addEventListener('click', async e=>{
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
       case 'addMenu': openAddMenu(); break;
-      case 'openAddMed': openAddMed(); break;
+      case 'addMedia': openAddMedia(); break;
+      case 'saveMedia': await saveMedia(); break;
+      case 'renameItem': openRename(el.dataset.id, el.dataset.t); break;
+      case 'saveRename': { const t=($('#rnTitle')||{}).value||''; if(!t.trim()){ toast('اكتب الاسم'); break; }
+        await rest('PATCH','shared_list_items',{title:t.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُفظت التسمية ✓'); break; }
+      case 'delMedia': { if(!confirm('حذف هذا الرابط؟')) break;
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُذف'); break; }
+      case 'renameCircle': { const n=($('#crName')||{}).value||''; if(!n.trim()){ toast('اكتب الاسم'); break; }
+        await rest('PATCH','circles',{name:n.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('تم تعديل الاسم ✓'); break; }
+      case 'manageCircle': { const cid=el.dataset.id, k=el.dataset.k; const box=$('#crManage'); if(!box) break;
+        let html='';
+        if(k==='items'){ html=(data.items||[]).filter(i=>i.circle_id===cid).map(i=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(i.title)}</span><button class="link" style="color:var(--error)" data-act="delAnyItem" data-id="${i.id}">حذف</button></div>`).join('')||'<div class="shop-meta">لا عناصر</div>'; }
+        else if(k==='tasks'){ html=(data.tasks||[]).filter(t=>t.circle_id===cid).map(t=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(t.title)}</span><button class="link" style="color:var(--error)" data-act="delAnyTask" data-id="${t.id}">حذف</button></div>`).join('')||'<div class="shop-meta">لا مهام</div>'; }
+        else { const ls=(data.sharedLists||[]).filter(l=>l.circle_id===cid);
+          html=ls.map(l=>`<div style="margin-top:6px"><b style="font-size:13.5px">${esc(l.title)}</b>`+
+            ((data.shopping||[]).filter(si=>si.list_id===l.id).map(si=>`<div class="row" style="min-height:36px"><span class="htitle" style="flex:1">${esc(si.title)}</span><button class="link" style="color:var(--error)" data-act="delAnyItem2" data-id="${si.id}">حذف</button></div>`).join('')||'<div class="shop-meta">فارغة</div>')+`</div>`).join('')||'<div class="shop-meta">لا قوائم</div>'; }
+        box.innerHTML=html; break; }
+      case 'delAnyItem': { if(!confirm('حذف؟')) break; await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); openCircleDetail(el.dataset.cid||''); break; }
+      case 'delAnyTask': { if(!confirm('حذف؟')) break; await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); break; }
+      case 'delAnyItem2': { if(!confirm('حذف؟')) break; await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); break; }
       case 'saveMed': await saveMed(); break;
       case 'logDose': await logDose(el.dataset.id); break;
       case 'medDetail': openMedDetail(el.dataset.id); break;
