@@ -55,6 +55,7 @@ h2{font-size:16px;font-weight:600}
 .greet{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .greet .g{flex:1}
 .greet .g p{font-size:13px;color:var(--text-2)}
+.hicon-btn{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto;background:none}
 .avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent-dark);flex:0 0 auto}
 .avatar.comp{background:var(--companion-light);color:#7A4A1E}
 .avatar.sm{width:28px;height:28px;font-size:12px}
@@ -95,12 +96,6 @@ h2{font-size:16px;font-weight:600}
 #nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:11px;font-weight:500}
 #nav button.on{color:var(--accent)}
 #nav .ic{font-size:19px;line-height:1}
-#fab{position:fixed;z-index:50;bottom:calc(var(--nav-h) + 18px);
-  left:max(16px, calc(50% - 244px));width:56px;height:56px;
-  display:flex;align-items:center;justify-content:center;
-  background:none;border:none;padding:0}
-#fab svg{display:block}
-@media(min-width:800px){#fab{left:max(16px, calc(50% - 364px))}}
 .overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
   padding:16px 16px calc(22px + env(safe-area-inset-bottom));max-height:86dvh;overflow-y:auto;animation:slideUp .22s ease}
@@ -183,7 +178,6 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 <body>
 <div id="shell"><div id="view"></div></div>
 <div id="nav"></div>
-<div id="fab" style="display:none"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></div>
 <div id="sheet-root"></div>
 <div id="toast"></div>
 <script>
@@ -660,8 +654,10 @@ function renderHome(){
   $('#view').innerHTML=`
   <div class="screen">
     <div class="greet">
-      <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
+      <button class="hicon-btn" data-act="openNotifs" aria-label="الإشعارات">🔔</button>
       <div class="avatar">${esc((me.display_name||'؟')[0])}</div>
+      <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
+      <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
     </div>
     <div class="week">${days.map(d=>`<div class="day ${d.toDateString()===new Date().toDateString()?'today':''}"><span class="dn">${dayShort(d)}</span><span class="dd">${dayNum(d)}</span></div>`).join('')}</div>
     <div class="progress-row">
@@ -1320,6 +1316,43 @@ function openAddPlace(){
       {enableHighAccuracy:false,timeout:8000});
   };
 }
+/* ---------- قائمة الإضافة (+) ---------- */
+function openAddMenu(){
+  const today=new Date().toISOString().slice(0,10);
+  openSheet(sheetHead('ماذا تريد أن تضيف؟')+`
+    <button class="vis-opt" data-act="openAddTask"><span style="font-size:20px">✅</span><span style="flex:1"><span class="vt">مهمة جديدة</span><br><span class="vd">شخصية أو مشتركة — بموعد وتعيين دقيق</span></span></button>
+    <button class="vis-opt" data-act="openAddHabit"><span style="font-size:20px">🌱</span><span style="flex:1"><span class="vt">عادة / هدف</span><br><span class="vd">عادة يومية بهدف كمي أو تم/لم يتم</span></span></button>
+    <button class="vis-opt" data-act="shopAll"><span style="font-size:20px">🛒</span><span style="flex:1"><span class="vt">عنصر تسوق</span><br><span class="vd">يُضاف مباشرة إلى القائمة المشتركة</span></span></button>
+    <button class="vis-opt" data-act="addCurrentPlace"><span style="font-size:20px">📍</span><span style="flex:1"><span class="vt">مكاني الحالي</span><br><span class="vd">يلتقط موقعك ويسألك عن الاسم — يفتح في خرائط Google</span></span></button>
+    <button class="vis-opt" data-act="addEvent" data-day="${today}"><span style="font-size:20px">📅</span><span style="flex:1"><span class="vt">موعد في جدولي</span><br><span class="vd">بتاريخ ووقت — خاص أو للدائرة أو لأشخاص</span></span></button>
+    <button class="vis-opt" data-act="openRemind"><span style="font-size:20px">🔔</span><span style="flex:1"><span class="vt">ذكّر رفيقي</span><br><span class="vd">تذكير بارز مع إشعار</span></span></button>
+    <button class="vis-opt" data-act="openMealSheet"><span style="font-size:20px">🍽</span><span style="flex:1"><span class="vt">وجبة اليوم</span><br><span class="vd">سجّل فطورك/غداءك/عشاءك أو اختر من أطباقكم</span></span></button>
+    <button class="vis-opt" data-act="openCreateCircle"><span style="font-size:20px">👥</span><span style="flex:1"><span class="vt">دائرة جديدة</span><br><span class="vd">أنشئ دائرة وشارك رمز الدعوة</span></span></button>`);
+}
+function openMealSheet(){
+  const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
+  const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+  openSheet(sheetHead('🍽 تسجيل وجبة اليوم')+`
+    <div class="chips" id="qmMeal">
+      ${[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']].map(([m,e],i)=>`<button class="chip ${i===0?'on':''}" data-m="${m}">${e} ${m}</button>`).join('')}
+    </div>
+    <div style="height:10px"></div>
+    <div class="field"><label>ماذا تناولتم؟</label><input id="qmText" placeholder="مثال: فول وبيض"></div>
+    ${dishes.length?`<div class="shop-meta" style="margin-bottom:10px">من أطباقكم: ${dishes.slice(0,4).map(d=>esc(d.title)).join(' • ')}</div>`:''}
+    <button class="btn" data-act="saveMeal">تسجيل الوجبة</button>`);
+  window._qmMeal='فطور';
+  const w=$('#qmMeal'); w.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(!b) return;
+    window._qmMeal=b.dataset.m; w.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+}
+async function logMeal(meal,text){
+  try{
+    const sh=sharedFirst(); const cid=sh?sh.circle.id:((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const l=await ensureList('طعامنا اليومي',cid);
+    await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:text,note:new Date().toISOString().slice(0,10)+'|'+meal,completed:false,position:0},'return=minimal');
+    await refreshAll(); renderApp(); toast('سُجّلت '+meal+' ✓');
+  }catch(e){ toast('تعذر التسجيل: '+(e&&e.message?e.message:'')); }
+}
 /* ---------- مكاني الحالي ---------- */
 function openAddCurrentPlace(){
   openSheet(sheetHead('📍 مكاني الحالي')+'<div id="cpBody"><p style="font-size:13px;color:var(--text-2)">جارٍ تحديد موقعك…</p></div>');
@@ -1516,6 +1549,10 @@ document.addEventListener('click', async e=>{
       case 'downloadBackup': doDownloadBackup(); break;
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
+      case 'addMenu': openAddMenu(); break;
+      case 'openMealSheet': openMealSheet(); break;
+      case 'saveMeal': { const t=($('#qmText')||{}).value||''; if(!t.trim()){ toast('اكتب ما تناولتم'); break; }
+        const m=window._qmMeal||'فطور'; closeSheet(); await logMeal(m,t.trim()); break; }
       case 'relogMeal': await relogMeal(el.dataset.meal, el.dataset.title); break;
       case 'delDish': await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderFood(); break;
       case 'addCurrentPlace': openAddCurrentPlace(); break;
