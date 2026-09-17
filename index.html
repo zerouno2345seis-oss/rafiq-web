@@ -1282,7 +1282,14 @@ function openAddTask(){
     <div class="field"><label>من يراها؟</label>${visWrap('tVis',window._visSel='PRIVATE',null)}</div>
     ${s?`<div class="field"><label>التعيين (اختياري)</label><select id="tAssign"><option value="">بدون</option>
       ${s.members.map(x=>`<option value="${x.m.user_id}">${esc(x.p.display_name||'عضو')}</option>`).join('')}</select></div>`:''}
-    <div class="field"><label>الموعد النهائي (اختياري)</label><input id="tDue" type="date"></div>
+    <div class="field"><label>الموعد النهائي (اختياري — بالنقر وليس الكتابة)</label>
+      <div style="display:flex;gap:8px">
+        <input id="tDue" type="date" style="flex:1">
+        <input id="tTime" type="time" value="09:00" style="flex:1">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px"><button class="chip" data-act="quickDue" data-d="0">اليوم</button>
+      <button class="chip" data-act="quickDue" data-d="1">غدًا</button>
+      <button class="chip" data-act="quickDue" data-d="7">بعد أسبوع</button></div></div>
     <button class="btn" data-act="saveTask">حفظ المهمة</button>`);
   window._taskCircle='personal';
   const wc=$('#tCircle'); if(wc) wc.addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b) return;
@@ -1834,7 +1841,9 @@ function openAddEvent(iso){
     <div class="field"><label>عنوان الموعد</label><input id="evTitle" placeholder="مثال: موعد الطبيب"></div>
     <div class="field"><label>الوقت</label><div class="chips" id="evTime">
       ${[['09:00','صباحًا 9'],['13:00','ظهرًا 1'],['17:00','عصرًا 5'],['21:00','مساءً 9']].map(([v,l],i)=>`<button class="chip ${i===3?'on':''}" data-v="${v}">${l}</button>`).join('')}</div>
-      <div style="display:flex;gap:8px;margin-top:8px"><input id="evTimeCustom" placeholder="أو HH:MM" style="direction:ltr;min-height:44px;border:1.5px solid var(--field-border);border-radius:var(--r-btn);background:var(--field-bg);padding:0 12px;flex:1"></div></div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <span style="font-size:12.5px;color:var(--text-3)">أو اختر الوقت:</span>
+        <input id="evTimeCustom" type="time" value="21:00" style="min-height:46px;border:1.5px solid var(--field-border);border-radius:var(--r-btn);background:var(--field-bg);padding:0 12px;flex:1"></div></div>
     <div class="field"><label>الدائرة</label><div class="chips" id="evCircle">
       <button class="chip ${sh?'':'on'}" data-c="personal">مساحتي الخاصة</button>
       ${sh?`<button class="chip ${sh?'on':''}" data-c="${sh.circle.id}">${esc(sh.circle.name)}</button>`:''}</div></div>
@@ -1976,6 +1985,8 @@ document.addEventListener('click', async e=>{
       case 'downloadBackup': doDownloadBackup(); break;
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
+      case 'quickDue': { const d=parseInt(el.dataset.d,10); const dt=new Date(); dt.setDate(dt.getDate()+d);
+        const iso=dt.toISOString().slice(0,10); const f=$('#tDue'); if(f) f.value=iso; break; }
       case 'addMenu': openAddMenu(); break;
       case 'openAddMed': openAddMed(); break;
       case 'openAddMood': openAddMood(); break;
