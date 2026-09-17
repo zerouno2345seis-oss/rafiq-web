@@ -455,10 +455,13 @@ async function refreshAll(){
     }
     try{ invites=await rest('GET','circle_invites','circle_id=in.('+ownedIds.join(',')+')&revoked=eq.false&order=created_at.desc&select=*'); }catch(e){}
   }
+  if(!profile){ const prev=loadSnap(); if(prev&&prev.profile) profile=prev.profile; }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
     items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites};
   saveSnap();
 }
+let dataSig='';
+function dataSignature(){ try{ return JSON.stringify(data).length + '|' + (data.items?data.items.length:0) + '|' + (data.tasks?data.tasks.length:0) + '|' + (data.shopping?data.shopping.length:0) + '|' + (data.entries?data.entries.length:0) + '|' + (data.activity?data.activity.length:0); }catch(e){ return String(Math.random()); } }
 function saveSnap(){ try{ localStorage.setItem('rafiq_snap', JSON.stringify({t:Date.now(),d:data})); }catch(e){} }
 function loadSnap(){ try{ const s=JSON.parse(localStorage.getItem('rafiq_snap')||'null'); if(s&&s.d) return s.d; }catch(e){} return null; }
 const circlesOf=()=>data?data.circles:[];
@@ -606,6 +609,19 @@ function checkNotify(){
       const d=e.due_at? new Date(e.due_at).getTime():0;
       if(d>now && d-now<2*3600*1000 && d>lastNotified){ try{ new Notification('📅 '+(e.title||'موعد'),{body:'موعدك بعد قليل',tag:'ev-'+e.id}); }catch(e2){} }
     }
+    // أدوية لم تكتمل جرعاتها اليوم
+    try{
+      for(const m of medsOf()){
+        if(!m.activeToday()) continue;
+        const lg=medLogged(m); if(Math.round(lg)>=m.perDay) continue;
+        const key='med_notified_'+m.item.id;
+        const last=parseInt(localStorage.getItem(key)||'0',10)||0;
+        if(now-last>2*3600*1000){
+          try{ new Notification('💊 دواء: '+m.item.title,{body:'بقي '+(m.perDay-Math.round(lg))+' من '+m.perDay+' جرعة اليوم',tag:key}); }catch(e){}
+          try{ localStorage.setItem(key,String(now)); }catch(e){}
+        }
+      }
+    }catch(e){}
     lastNotified=now; try{ localStorage.setItem('rafiq_last_notified',String(now)); }catch(e){}
   }catch(e){}
 }
@@ -617,7 +633,11 @@ function askGeo(){
 /* ================= المزامنة الحية ================= */
 let pollTimer=null;
 function startPolling(){ if(pollTimer) return; pollTimer=setInterval(()=>{
-  if(document.visibilityState==='visible'&&session&&data){ refreshAll().then(()=>{ renderApp(); checkNotify(); }).catch(()=>{}); } },5000); }
+  if(document.visibilityState==='visible'&&session&&data){ refreshAll().then(()=>{
+    const sig=dataSignature();
+    if(sig!==dataSig){ dataSig=sig; renderApp(); }
+    checkNotify();
+  }).catch(()=>{}); } },5000); }
 function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 </script>
 <script>
@@ -716,6 +736,20 @@ function renderHome(){
       <div class="shop-meta">يصل كتذكير بارز في الأعلى مع موعد اختياري</div></div>
       <span class="badge">فتح ➜</span></div>
     </div>
+    <div class="card">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">💊</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">أدويتنا</div>
+      <div class="shop-meta">${(()=>{ const a=medsOf().filter(m=>m.activeToday()); return a.length? ('لديكم '+a.length+' دواء نشط اليوم') : 'لا أدوية مسجلة — أضف دواءك أو دواء رفيقك'; })()}</div></div>
+      <button class="link" data-act="openAddMed">＋ دواء</button></div>
+      ${medsOf().filter(m=>m.activeToday()).map(m=>{ const lg=medLogged(m); const rem=Math.max(0,m.perDay-Math.round(lg));
+        return `<div class="row" style="min-height:48px">
+          <span style="font-size:16px">💊</span>
+          <div style="flex:1;min-width:0"><div class="htitle">${esc(m.item.title)}</div>
+          <div class="shop-meta">${esc(m.scheduleAr())} • ${esc(m.item.unit||'')} • ${esc(m.statusAr())}${m.item.owner_id!==meId()?' • من رفيقك':''}</div></div>
+          ${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">سجّل جرعة (${Math.round(lg)}/${m.perDay})</button>`
+                 :`<span class="badge">✅ اكتمل اليوم</span>`}
+        </div>`; }).join('')}
+    </div>
     <div class="sec"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
     <div class="card">${(()=>{ const pl=placesOf();
       return pl.items.length? pl.items.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
@@ -754,6 +788,192 @@ function shopRow(si){
 function nameOf(uid){ if(uid===meId()) return 'أنت';
   const m=(data.circles.flatMap(c=>c.members).find(x=>x.m.user_id===uid)||{}).p; return m?m.display_name:'رفيقك'; }
 
+
+/* ---------- جدولي (تقويم) ---------- */
+function eventsOf(){
+  const me=meId(); if(!data) return [];
+  const myCircleIds=(data.circles||[]).map(c=>c.circle.id);
+  return (data.tasks||[]).filter(t=>t.priority==='EVENT' && myCircleIds.includes(t.circle_id) && (
+    t.owner_id===me || t.visibility==='CIRCLE' ||
+    (t.visibility==='SELECTED_MEMBERS' && (t.recipients||[]).includes(me))));
+}
+function evDate(t){ try{ return t.due_at? new Date(t.due_at) : null; }catch(e){ return null; } }
+function evTimeText(t){ const d=evDate(t); if(!d) return ''; return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+let schedMonth=null;
+function renderSchedule(){
+  const evs=eventsOf();
+  if(!schedMonth){ const n=new Date(); schedMonth=new Date(n.getFullYear(), n.getMonth(), 1); }
+  const y=schedMonth.getFullYear(), m=schedMonth.getMonth();
+  const first=new Date(y,m,1);
+  const lead=(first.getDay()+1)%7;
+  const days=new Date(y,m+1,0).getDate();
+  const cells=[]; for(let i=0;i<lead;i++) cells.push(null);
+  for(let d=1;d<=days;d++) cells.push(d);
+  while(cells.length%7) cells.push(null);
+  const today=new Date();
+  const upcoming=evs.filter(t=>evDate(t) && evDate(t)>=new Date(today.getFullYear(),today.getMonth(),today.getDate()))
+    .sort((a,b)=>new Date(a.due_at)-new Date(b.due_at)).slice(0,6);
+  const iso=(d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  $('#view').innerHTML=`<div class="screen">
+    <div class="row" style="min-height:44px;border-top:none">
+      <button class="link" data-act="goHome">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">📅 جدولي</b>
+      <button class="link" data-act="addEvent" data-day="${iso(today.getDate())}">+ موعد</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:10px">تقويمك أنت — خصّص كل موعد: خاصًا، أو للدائرة، أو لأشخاص محددين.</p>
+    <div class="card">
+      <div class="row" style="min-height:36px;border-top:none">
+        <button class="link" data-act="prevMonth">◀</button>
+        <b style="flex:1;text-align:center">${AR_MONTHS[m]} ${y}</b>
+        <button class="link" data-act="nextMonth">▶</button>
+      </div>
+      <div style="display:flex">${['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'].map(d=>`<div style="flex:1;text-align:center;font-size:10px;color:var(--text-3)">${d}</div>`).join('')}</div>
+      ${cells.reduce((acc,_,i)=>{ if(i%7===0) acc.push([]); acc[acc.length-1].push(cells[i]); return acc; },[])
+        .map(week=>`<div style="display:flex;gap:4px;margin-top:4px">${week.map(d=>{
+          if(d===null) return '<div style="flex:1;height:42px"></div>';
+          const dt=new Date(y,m,d); const isToday=dt.toDateString()===today.toDateString();
+          const n=evs.filter(t=>evDate(t)&&evDate(t).toDateString()===dt.toDateString()).length;
+          return `<div data-act="schedDay" data-day="${iso(d)}" style="flex:1;height:42px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:${isToday?'var(--accent-soft)':'transparent'}">
+            <span style="font-size:13px;color:${isToday?'var(--accent-dark)':'var(--text-1)'};font-weight:${n?'700':'400'}">${d}</span>
+            <span style="display:flex;gap:2px;height:6px">${'<i style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block"></i>'.repeat(Math.min(n,3))}</span></div>`;
+        }).join('')}</div>`).join('')}
+    </div>
+    <div class="sec"><h2>مواعيد قادمة</h2></div>
+    <div class="card">${upcoming.length? upcoming.map(t=>`<div class="row">
+      <div style="text-align:center;min-width:52px"><div style="font-size:12px;font-weight:700;color:var(--accent-dark)">${evTimeText(t)}</div>
+      <div style="font-size:10px;color:var(--text-3)">${new Date(t.due_at).toLocaleDateString('ar')}</div></div>
+      <div style="flex:1;min-width:0"><div class="htitle">${esc(t.title)}</div>
+      <div class="badges"><span class="badge">${esc(nameOf(t.owner_id))}</span>
+      <span class="badge">${t.visibility==='PRIVATE'?'🔒 خاص':t.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون'}</span></div></div>
+      ${t.owner_id===meId()?`<button class="link" style="color:var(--error)" data-act="delEvent" data-id="${t.id}">حذف</button>`:''}
+    </div>`).join('') : '<div class="empty"><span class="e">📅</span>لا مواعيد بعد.<br>أضف موعدًا واختر من يراه.</div>'}</div>
+    <div class="foot">المواعيد الخاصة 🔒 تظهر لك وحدك.</div></div>`;
+}
+
+/* ---------- سجل الوجبات ---------- */
+function foodEntries(){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي');
+  return l? (data.shopping||[]).filter(i=>i.list_id===l.id) : []; }
+function renderFood(){
+  const meals=[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']];
+  const entries=foodEntries();
+  const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
+  const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+  $('#view').innerHTML=`<div class="screen">
+    <div class="row" style="min-height:44px;border-top:none">
+      <button class="link" data-act="goHome">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">🍽 طعامنا</b><span style="width:52px"></span>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:10px">اضغط أي وجبة سابقة لتسجيلها اليوم بضغطة واحدة.</p>
+    ${meals.map(([meal,emoji])=>{ const items=entries.filter(i=>(i.note||'').split('|')[1]===meal)
+        .sort((a,b)=>((b.note||'').split('|')[0]).localeCompare((a.note||'').split('|')[0]));
+      return `<div class="card"><b style="font-size:15px">${emoji} ${meal} (${items.length})</b>
+        ${items.length? items.slice(0,12).map(i=>`<div class="row" style="min-height:44px">
+          <div style="flex:1;min-width:0"><div class="htitle">${esc(i.title)}</div>
+          <div class="shop-meta">${esc((i.note||'').split('|')[0])}</div></div>
+          <button class="mini" data-act="relogMeal" data-meal="${meal}" data-title="${esc(i.title)}">سجّله اليوم ↩︎</button></div>`).join('')
+        :'<div class="shop-meta" style="padding:6px 0">لا تسجيلات بعد</div>'}
+      </div>`; }).join('')}
+    ${dishes.length?`<div class="card"><b style="font-size:15px">🍽 أطباق نحبها (${dishes.length})</b>
+      ${dishes.map(d=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(d.title)}</span>
+      <button class="link" style="color:var(--error)" data-act="delDish" data-id="${d.id}">حذف</button></div>`).join('')}</div>`:''}
+    <div class="foot">كله مشترك مع رفيقك لحظيًا 🍽</div></div>`;
+}
+
+/* ---------- الأدوية ---------- */
+function parseMed(it){
+  const f=it.frequency||''; if(!f.startsWith('MED|')) return null;
+  const desc=(it.description||'').split('|');
+  const g=k=>{ const p=desc.find(x=>x.startsWith(k+'=')); return p? p.slice(k.length+1):''; };
+  return {item:it, schedule:f.slice(4),
+    start:g('start'), end:g('end'), ongoing:g('ongoing')==='1', patient:g('patient'),
+    perDay:Math.max(1,Math.round((it.target_value||1))),
+    scheduleAr(){ if(this.schedule.endsWith('x')) return this.schedule.slice(0,-1)+' مرات يوميًا';
+      if(this.schedule.startsWith('weekly:')) return 'أيام: '+this.schedule.slice(7); return this.schedule; },
+    statusAr(){ if(this.ongoing) return 'مستمر مدى الحياة';
+      if(!this.end) return ''; const d=Math.ceil((new Date(this.end)-new Date())/86400000);
+      return d<0?'انتهى':(d===0?'آخر يوم':('ينتهي بعد '+d+' يومًا')); },
+    activeToday(){ const t=new Date().toISOString().slice(0,10);
+      if(this.start&&t<this.start) return false;
+      if(!this.ongoing&&this.end&&t>this.end) return false; return true; } };
+}
+function medsOf(){ const me=meId(); if(!data) return [];
+  return (data.items||[]).map(parseMed).filter(Boolean)
+    .filter(m=>m.item.owner_id===me || m.item.visibility!=='PRIVATE'); }
+function medLogged(m){ const t=new Date().toDateString();
+  return (data.entries||[]).filter(e=>e.item_id===m.item.id && new Date(e.recorded_at).toDateString()===t)
+    .reduce((s,e)=>s+(+e.value||0),0); }
+async function logDose(itemId){
+  try{ await rest('POST','progress_entries',{id:uuid(),item_id:itemId,user_id:meId(),value:1,recorded_at:new Date().toISOString()},'return=minimal');
+    await refreshAll(); renderApp(); toast('سُجّلت جرعة ✓'); }catch(e){ toast('تعذر التسجيل: '+(e&&e.message?e.message:'')); }
+}
+function openMedDetail(id){
+  const m=medsOf().find(x=>x.item.id===id); if(!m) return;
+  openSheet(sheetHead('💊 '+m.item.title)+`
+    <div class="card" style="box-shadow:none;margin:0 0 10px">
+      <div style="font-size:13.5px;line-height:2">الجدول: <b>${esc(m.scheduleAr())}</b><br>
+      الجرعة: ${esc(m.item.unit||'-')} × ${m.perDay} يوميًا<br>
+      البداية: ${esc(m.start||'—')}<br>
+      النهاية: ${esc(m.ongoing?'مستمر مدى الحياة ✳':(m.end||'—'))}<br>
+      لمن: ${m.patient==='companion'?'رفيقي':(m.patient==='both'?'كلانا':'أنا')}<br>
+      المشاركة: ${m.item.visibility==='PRIVATE'?'🔒 خاص':(m.item.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون')}<br>
+      جرعات اليوم: <b>${medLogged(m)} / ${m.perDay}</b></div>
+    </div>
+    <button class="btn" data-act="logDose" data-id="${m.item.id}">سجّل جرعة الآن</button>
+    <div style="height:8px"></div>
+    <button class="btn danger" data-act="delMed" data-id="${m.item.id}">🗑 حذف الدواء</button>`);
+}
+function openAddMed(){
+  const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).p:null;
+  openSheet(sheetHead('💊 دواء جديد')+`
+    <div class="field"><label>اسم الدواء</label><input id="mdName" placeholder="مثال: كونكور"></div>
+    <div class="field"><label>الجرعة</label><input id="mdDose" value="حبة"></div>
+    <div class="field"><label>عدد المرات يوميًا</label><div class="chips" id="mdPer">
+      ${[1,2,3,4].map((n,i)=>`<button class="chip ${i===0?'on':''}" data-n="${n}">${n}</button>`).join('')}
+      <button class="chip" data-n="w">أسبوعيًا</button></div></div>
+    <div class="field" id="mdWeeklyWrap" style="display:none"><label>أي أيام؟</label><input id="mdWeekly" placeholder="مثال: السبت والثلاثاء"></div>
+    <div class="field"><label>المدة</label><div class="chips" id="mdDur">
+      <button class="chip on" data-v="ongoing">مستمر مدى الحياة</button>
+      <button class="chip" data-v="until">حتى تاريخ</button></div></div>
+    <div class="field" id="mdEndWrap" style="display:none"><label>تاريخ النهاية</label><input id="mdEnd" type="date"></div>
+    <div class="field"><label>لمن هذا الدواء؟</label><div class="chips" id="mdPatient">
+      <button class="chip on" data-v="me">أنا</button>
+      ${comp?`<button class="chip" data-v="companion">رفيقي</button>`:''}
+      <button class="chip" data-v="both">كلانا</button></div></div>
+    <p style="font-size:11.5px;color:var(--text-3)">التذكير مشترك: سيصلكم إشعار حسب الجدول.</p>
+    <button class="btn" data-act="saveMed">حفظ الدواء</button>`);
+  window._mdPer=1; window._mdWeekly=false; window._mdOngoing=true; window._mdPatient='me';
+  const wp=$('#mdPer'); wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
+    wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    if(b.dataset.n==='w'){ window._mdWeekly=true; $('#mdWeeklyWrap').style.display='block'; }
+    else { window._mdWeekly=false; window._mdPer=parseInt(b.dataset.n,10); $('#mdWeeklyWrap').style.display='none'; } });
+  const wd=$('#mdDur'); wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    window._mdOngoing=(b.dataset.v==='ongoing'); $('#mdEndWrap').style.display=window._mdOngoing?'none':'block'; });
+  const wm=$('#mdPatient'); wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._mdPatient=b.dataset.v; });
+}
+async function saveMed(){
+  try{
+    const name=($('#mdName')||{}).value||''; if(!name.trim()){ toast('اكتب اسم الدواء'); return; }
+    const dose=($('#mdDose')||{}).value||'حبة';
+    const perDay=window._mdWeekly?1:window._mdPer;
+    const schedule=window._mdWeekly?('weekly:'+(($('#mdWeekly')||{}).value||'غير محدد')):(perDay+'x');
+    const ongoing=window._mdOngoing; const end=ongoing?null:(($('#mdEnd')||{}).value||null);
+    const patient=window._mdPatient||'me';
+    const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).m:null;
+    let cid=sh?sh.circle.id:((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const vis=(patient==='companion'&&comp)?'SELECTED_MEMBERS':'CIRCLE';
+    const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
+    const medId=uuid();
+    await rest('POST','items',{id:medId,owner_id:meId(),circle_id:cid,type:'MEDICINE',title:name.trim(),
+      description:desc,visibility:vis,unit:dose,target_value:perDay,frequency:'MED|'+schedule,status:'ACTIVE'},'return=minimal');
+    if(vis==='SELECTED_MEMBERS'&&comp){ try{ await rest('POST','item_recipients',{id:uuid(),item_id:medId,user_id:comp.user_id},'return=minimal'); }catch(e){} }
+    try{ await rest('POST','activity_events',{id:uuid(),circle_id:cid,user_id:meId(),kind:'MED_ADDED',payload:name.trim()}); }catch(e){}
+    await refreshAll(); closeSheet(); view='home'; renderApp(); toast('أُضيف الدواء 💊');
+  }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
 /* ---------- العادات ---------- */
 function renderHabits(){
   const me=meProfile(), habits=habitsFor(meId());
@@ -1327,6 +1547,7 @@ function openAddMenu(){
     <button class="vis-opt" data-act="addEvent" data-day="${today}"><span style="font-size:20px">📅</span><span style="flex:1"><span class="vt">موعد في جدولي</span><br><span class="vd">بتاريخ ووقت — خاص أو للدائرة أو لأشخاص</span></span></button>
     <button class="vis-opt" data-act="openRemind"><span style="font-size:20px">🔔</span><span style="flex:1"><span class="vt">ذكّر رفيقي</span><br><span class="vd">تذكير بارز مع إشعار</span></span></button>
     <button class="vis-opt" data-act="openMealSheet"><span style="font-size:20px">🍽</span><span style="flex:1"><span class="vt">وجبة اليوم</span><br><span class="vd">سجّل فطورك/غداءك/عشاءك أو اختر من أطباقكم</span></span></button>
+    <button class="vis-opt" data-act="openAddMed"><span style="font-size:20px">💊</span><span style="flex:1"><span class="vt">دواء (تذكير مشترك)</span><br><span class="vd">مرات يومية أو أسبوعية — مؤقت أو مستمر مدى الحياة</span></span></button>
     <button class="vis-opt" data-act="openCreateCircle"><span style="font-size:20px">👥</span><span style="flex:1"><span class="vt">دائرة جديدة</span><br><span class="vd">أنشئ دائرة وشارك رمز الدعوة</span></span></button>`);
 }
 function openMealSheet(){
@@ -1550,6 +1771,12 @@ document.addEventListener('click', async e=>{
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
       case 'addMenu': openAddMenu(); break;
+      case 'openAddMed': openAddMed(); break;
+      case 'saveMed': await saveMed(); break;
+      case 'logDose': await logDose(el.dataset.id); break;
+      case 'medDetail': openMedDetail(el.dataset.id); break;
+      case 'delMed': { if(!confirm('حذف هذا الدواء؟')) break;
+        await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='home'; renderApp(); toast('حُذف الدواء'); break; }
       case 'openMealSheet': openMealSheet(); break;
       case 'saveMeal': { const t=($('#qmText')||{}).value||''; if(!t.trim()){ toast('اكتب ما تناولتم'); break; }
         const m=window._qmMeal||'فطور'; closeSheet(); await logMeal(m,t.trim()); break; }
@@ -1624,9 +1851,12 @@ window.addEventListener('error',e=>{ console.error(e.message); });
 (async function boot(){
   if(!session){ renderAuth(); return; }
   try{
+    // 1) عرض فوري من آخر لقطة (بلا أي انتظار شبكة)
+    const snap=loadSnap();
+    if(snap && snap.profile){ data=snap; renderApp(); renderNav(); }
+    // 2) الشبكة في الخلفية
     if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession();
     await ensureProfile();
-    const snap=loadSnap(); if(snap){ data=snap; renderApp(); }   // عرض فوري من آخر لقطة
     await refreshAll(); renderApp(); startPolling();
     if(pendingJoin){ setTimeout(()=>openJoinSheet(pendingJoin),400); }
   }catch(e){
