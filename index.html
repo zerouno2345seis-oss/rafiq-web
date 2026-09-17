@@ -556,6 +556,7 @@ function arErr(r){ const m=(r.msg||'').toLowerCase();
 }
 async function afterAuth(){
   window._authErr=''; window._authInfo='';
+  askNotify();
   await ensureProfile(); await refreshAll(); startPolling(); renderApp();
   if(pendingJoin){ openJoinSheet(pendingJoin); }
 }
@@ -591,10 +592,33 @@ async function signIn(email,password){
 async function signOut(){ try{ await sb('/auth/v1/logout',{method:'POST'},true); }catch(e){}
   session=null; saveSession(); data=null; stopPolling(); renderAuth(); }
 
+/* ================= إشعارات المتصفح ================= */
+function askNotify(){
+  try{ if(('Notification' in window) && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+}
+let lastNotified=0;
+try{ lastNotified=parseInt(localStorage.getItem('rafiq_last_notified')||'0',10)||0; }catch(e){}
+function checkNotify(){
+  try{
+    if(!('Notification' in window) || Notification.permission!=='granted' || !data) return;
+    const reminders=(data.tasks||[]).filter(t=>t.priority==='REMINDER'&&t.assigned_to===meId()&&t.status!=='DONE');
+    const now=Date.now();
+    for(const r of reminders){
+      const ts=new Date(r.created_at||0).getTime()||0;
+      if(ts>lastNotified){ try{ new Notification('🔔 '+(r.title||'تذكير'),{body:'تذكير من رفيقك',tag:'rem-'+r.id}); }catch(e){} }
+    }
+    for(const e of eventsOf()){
+      const d=e.due_at? new Date(e.due_at).getTime():0;
+      if(d>now && d-now<2*3600*1000 && d>lastNotified){ try{ new Notification('📅 '+(e.title||'موعد'),{body:'موعدك بعد قليل',tag:'ev-'+e.id}); }catch(e2){} }
+    }
+    lastNotified=now; try{ localStorage.setItem('rafiq_last_notified',String(now)); }catch(e){}
+  }catch(e){}
+}
+
 /* ================= المزامنة الحية ================= */
 let pollTimer=null;
 function startPolling(){ if(pollTimer) return; pollTimer=setInterval(()=>{
-  if(document.visibilityState==='visible'&&session&&data) refreshAll().then(()=>renderApp()).catch(()=>{}); },5000); }
+  if(document.visibilityState==='visible'&&session&&data){ refreshAll().then(()=>{ renderApp(); checkNotify(); }).catch(()=>{}); } },5000); }
 function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 </script>
 <script>
@@ -824,6 +848,7 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
       <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
       <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
       <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
@@ -1429,6 +1454,7 @@ document.addEventListener('click', async e=>{
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
       case 'openReport': openReport(); break;
+      case 'askNotify': askNotify(); toast('إن وافق المتصفح ستصل التنبيهات 🔔'); break;
       case 'printReport': doPrintReport(); break;
       case 'openBackup': openBackup(); break;
       case 'downloadBackup': doDownloadBackup(); break;
