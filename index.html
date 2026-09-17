@@ -676,6 +676,22 @@ function renderHome(){
       :`<div class="pcard" data-act="tab" data-v="more" style="cursor:pointer"><span style="font-size:24px">🤝</span>
         <b style="font-size:13px">أضف رفيقًا</b><span style="font-size:11px;color:var(--text-3)">أنشئ دائرة مشتركة</span></div>`}
     </div>
+    <div class="card" data-act="openFood" style="cursor:pointer">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">طعامنا اليوم</div>
+      <div class="shop-meta">${(()=>{ const t=new Date().toISOString().slice(0,10);
+        const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
+        return m.length? ('مسجل اليوم: '+m.length+' وجبة') : 'اضغط لتسجيل الفطور/الغداء/العشاء'; })()}</div></div>
+      <span class="badge">السجل ➜</span></div>
+      ${(()=>{ const t=new Date().toISOString().slice(0,10);
+        const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
+        const em={فطور:'🍳',غداء:'🍲',عشاء:'🥗',سناك:'🍎'};
+        return m.length? '<div style="padding-top:6px">'+m.map(i=>{ const meal=(i.note||'').split('|')[1]||'';
+          return `<div style="font-size:13.5px;padding:3px 0"><span style="color:var(--text-3);font-size:12px">${em[meal]||'🍽'} ${esc(meal)}</span> — <b>${esc(i.title)}</b></div>`; }).join('')+'</div>' : ''; })()}
+      ${(()=>{ const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
+        const ds=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+        return ds.length? `<div class="shop-meta" style="padding-top:6px">🍽 أطباق نحبها: ${ds.map(d=>esc(d.title)).join(' • ')}</div>`:''; })()}
+    </div>
     <div class="sec"><h2>عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
     <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
       `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
@@ -702,14 +718,6 @@ function renderHome(){
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🔔</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">ذكّرني — ذكّر رفيقك بشيء مهم</div>
       <div class="shop-meta">يصل كتذكير بارز في الأعلى مع موعد اختياري</div></div>
-      <span class="badge">فتح ➜</span></div>
-    </div>
-    <div class="card" data-act="openFood" style="cursor:pointer">
-      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">طعامنا اليوم</div>
-      <div class="shop-meta">${(()=>{ const t=new Date().toISOString().slice(0,10);
-        const m=foodEntries().filter(i=>(i.note||'').startsWith(t)); 
-        return m.length? m.map(i=>esc(i.title)).join(' • ') : 'اضغط لتسجيل الفطور/الغداء/العشاء أو «ماذا نأكل؟»'; })()}</div></div>
       <span class="badge">فتح ➜</span></div>
     </div>
     <div class="sec"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
