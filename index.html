@@ -2250,7 +2250,7 @@ function applyCollapse(){
     pills.innerHTML=SEC_META.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}">${m[1]} ${m[2]}</button>`).join('');
     pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
     const note=document.getElementById('secNote');
-    if(note){ const m=SEC_META.find(x=>x[0]===activeSec); note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : 'اضغط قسمًا ليفتح أمامك مباشرة ⇣'; }
+    if(note){ const m=SEC_META.find(x=>x[0]===activeSec); note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : ''; note.style.display = m? 'block':'none'; }
   }
   // لوحة الأيقونات (الداشبورد)
   const grid=document.getElementById('collapseGrid');
