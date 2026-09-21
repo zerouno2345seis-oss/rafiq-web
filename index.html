@@ -85,7 +85,7 @@ h2{font-size:16px;font-weight:600}
 .sec-strip{background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
 .sec-pills{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .sec-pills::-webkit-scrollbar{display:none}
-.pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:12.5px;padding:7px 12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:14px;font-weight:600;padding:11px 16px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .pill.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 .sec-note{font-size:11px;color:var(--text-3);padding:0 3px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
@@ -698,7 +698,6 @@ function renderHome(){
       <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
     </div>
-    <div class="week">${days.map(d=>`<div class="day ${d.toDateString()===new Date().toDateString()?'today':''}"><span class="dn">${dayShort(d)}</span><span class="dd">${dayNum(d)}</span></div>`).join('')}</div>
     <div class="progress-row">
       <div class="pcard"><div class="who"><div class="avatar sm">${esc((me.display_name||'؟')[0])}</div> أنت 👑</div>
         ${ringSVG(myPct,'own')}
@@ -715,7 +714,6 @@ function renderHome(){
       <div class="sec-pills" id="secPills"></div>
       <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
     </div>
-    <div id="collapseGrid" class="tile-grid" style="display:none"></div>
     <div class="card" data-sec="food" data-act="openFood" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">طعامنا اليوم</div>
@@ -745,7 +743,8 @@ function renderHome(){
         <div style="flex:1;min-width:0"><div class="htitle">${esc(u.title)}</div>
         <div class="shop-meta">من ${esc(nameOf(u.owner_id))} • ${relAr(u.created_at)}</div></div>
         <button class="mini" data-act="doneUrgent" data-id="${u.id}">تم ✓</button>
-        <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a></div>`).join('')}
+        <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a>
+        <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delUrgent" data-id="${u.id}">حذف</button></div>`).join('')}
     </div>
     <div class="sec" data-sec="shopping"><h2>قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
     <div class="card">${shop?`
@@ -2063,6 +2062,8 @@ document.addEventListener('click', async e=>{
         try{ const ptok=(peer&&peer.avatar_url||'').startsWith('FCM:')?peer.avatar_url.slice(4):null;
           if(ptok) await fetch('https://rafiq-web-tau.vercel.app/api/send-push',{method:'POST',headers:{'Content-Type':'application/json','x-rafiq-key':'rk_77d1db341635c4e56368244df9fa09a3'},body:JSON.stringify({to_token:ptok,title:'رسالة مستجلة',message:t,urgent:true})}); }catch(e){}
         if(inp) inp.value=''; await refreshAll(); renderApp(); toast('أُرسلت 🚨'); break; }
+      case 'delUrgent': { if(!confirm('حذف هذه الرسالة المستجلة؟')) break;
+        await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذفت الرسالة'); break; }
       case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
       case 'addMedia': openAddMedia(); break;
       case 'saveMedia': await saveMedia(); break;
@@ -2256,9 +2257,7 @@ function applyCollapse(){
   const grid=document.getElementById('collapseGrid');
   if(grid){
     const items=SEC_META.filter(m=>set.has(m[0]));
-    grid.innerHTML=items.map(m=>`<button class="tile" data-tile="${m[0]}"><span style="font-size:26px">${m[1]}</span><span class="tl">${m[2]}</span><span class="ts">${esc(secSummary(m[0]))}</span></button>`).join('');
-    grid.style.display=(items.length && !activeSec)?'grid':'none';
-    grid.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>toggleSec(b.dataset.tile));
+    grid.innerHTML=''; grid.style.display='none';
   }
   // شريط التحكم
   const bar=document.getElementById('collapseBar');
