@@ -770,14 +770,32 @@ function renderHome(){
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">أدويتنا</div>
       <div class="shop-meta">${(()=>{ const a=medsOf().filter(m=>m.activeToday()); return a.length? ('لديكم '+a.length+' دواء نشط اليوم') : 'لا أدوية مسجلة — أضف دواءك أو دواء رفيقك'; })()}</div></div>
       <button class="link" data-act="openAddMed">＋ دواء</button></div>
-      ${medsOf().filter(m=>m.activeToday()).map(m=>{ const lg=medLogged(m); const rem=Math.max(0,m.perDay-Math.round(lg));
+      ${(()=>{ const act=medsOf().filter(m=>m.activeToday()); if(!act.length) return '';
+        const tog=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
+          <span style="font-size:12px;color:var(--text-3)">عرض:</span>
+          <button class="chip ${medsTable?'':'on'}" data-act="toggleMedsView" data-v="list">قائمة</button>
+          <button class="chip ${medsTable?'on':''}" data-act="toggleMedsView" data-v="table">جدول</button>
+          <span style="flex:1"></span>
+          <span style="font-size:10px;color:var(--text-3)">🟢 أنا • 🟠 رفيقي • 🔵 كلانا</span></div>`;
+        if(medsTable){
+          return tog+`<div class="row" style="min-height:30px;border-top:none"><span style="flex:1.6;font-size:11px;color:var(--text-3);font-weight:600">الدواء</span><span style="flex:1;font-size:11px;color:var(--text-3);font-weight:600">لمن</span><span style="flex:1.4;font-size:11px;color:var(--text-3);font-weight:600">الجرعة</span></div>`+
+            act.map(m=>{ const lg=medLogged(m); const rem=Math.max(0,m.perDay-Math.round(lg)); const col=medColor(m.patient);
+              return `<div class="row" style="min-height:44px;border-top:none">
+                <span style="width:4px;height:30px;border-radius:2px;background:${col};flex:0 0 auto"></span>
+                <div style="flex:1.6;min-width:0;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.item.title)}</div>
+                <div style="flex:1;font-size:11.5px;color:${col};font-weight:600">${medWho(m.patient)}</div>
+                <div style="flex:1.4">${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">${Math.round(lg)}/${m.perDay} سجّل</button>`:`<span class="badge">✅ تم</span>`}</div>
+              </div>`; }).join('');
+        }
+        return tog+act.map(m=>{ const lg=medLogged(m); const rem=Math.max(0,m.perDay-Math.round(lg)); const col=medColor(m.patient);
         return `<div class="row" style="min-height:48px">
+          <span style="width:4px;height:34px;border-radius:2px;background:${col};flex:0 0 auto"></span>
           <span style="font-size:16px">💊</span>
           <div style="flex:1;min-width:0"><div class="htitle">${esc(m.item.title)}</div>
-          <div class="shop-meta">${esc(m.scheduleAr())} • ${esc(m.item.unit||'')} • ${esc(m.statusAr())}${m.item.owner_id!==meId()?' • من رفيقك':''}</div></div>
+          <div class="shop-meta">${medWho(m.patient)} • ${esc(m.scheduleAr())} • ${esc(m.item.unit||'')} • ${esc(m.statusAr())}${m.item.owner_id!==meId()?' • من رفيقك':''}</div></div>
           ${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">سجّل جرعة (${Math.round(lg)}/${m.perDay})</button>`
                  :`<span class="badge">✅ اكتمل اليوم</span>`}
-        </div>`; }).join('')}
+        </div>`; }).join(''); })()}
     </div>
     <div class="card">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🎬</span>
@@ -788,12 +806,14 @@ function renderHome(){
       <button class="link" data-act="addMedia">＋ رابط</button></div>
       ${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
         const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id) : [];
-        return its.map(i=>`<div class="row" style="min-height:46px">
+        return its.map(i=>{ const th=ytThumb(i.note||'');
+          return `<div class="row" style="min-height:52px">
+          ${th?`<img src="${th}" alt="" loading="lazy" style="width:64px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto">`:'<span style="font-size:16px">🎬</span>'}
           <a href="${esc(i.note||'#')}" target="_blank" style="flex:1;min-width:0;text-decoration:none">
-            <div class="htitle" style="color:var(--text-1)">🎬 ${esc(i.title)}</div>
+            <div class="htitle" style="color:var(--text-1)">${esc(i.title)}</div>
             <div class="shop-meta">${esc((i.note||'').slice(0,50))}</div></a>
           <button class="link" data-act="renameItem" data-id="${i.id}" data-t="${esc(i.title)}">تسمية</button>
-          <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`).join(''); })()}
+          <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`; }).join(''); })()}
     </div>
     <div class="sec"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
     <div class="card">${(()=>{ const pl=placesOf();
@@ -801,7 +821,8 @@ function renderHome(){
         <a href="${esc(pp.note||'#')}" target="_blank" style="flex:1;min-width:0">
           <div class="htitle" style="color:var(--text-1)">${esc(pp.title)}</div>
           <div class="shop-meta">${esc((pp.note||'').slice(0,52))}</div>
-        </a><span class="badge">فتح ➜</span></div>`).join('')
+        </a><span class="badge">فتح ➜</span>
+        <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delPlace" data-id="${pp.id}">✕</button></div>`).join('')
       : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
       <div style="display:flex;gap:8px;padding-top:10px">
         <button class="btn ghost" data-act="addCurrentPlace" style="flex:1">📍 أضف مكاني الحالي</button>
@@ -828,7 +849,8 @@ function shopRow(si){
   const by=si.completed&&si.completed_by?nameOf(si.completed_by):null;
   return `<div class="row"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
     <div style="flex:1;min-width:0"><div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
-    ${si.completed&&by?`<div class="shop-meta">أنجزها ${esc(by)} • ${relAr(si.completed_at)}</div>`:''}</div></div>`;
+    ${si.completed&&by?`<div class="shop-meta">أنجزها ${esc(by)} • ${relAr(si.completed_at)}</div>`:''}</div>
+    <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${si.id}">✕</button></div>`;
 }
 function nameOf(uid){ if(uid===meId()) return 'أنت';
   const m=(data.circles.flatMap(c=>c.members).find(x=>x.m.user_id===uid)||{}).p; return m?m.display_name:'رفيقك'; }
@@ -942,6 +964,17 @@ function parseMed(it){
       if(this.start&&t<this.start) return false;
       if(!this.ongoing&&this.end&&t>this.end) return false; return true; } };
 }
+let medsTable=false;
+function ytThumb(u){ if(!u) return null; u=String(u); let id=null;
+  if(u.indexOf('youtu.be/')>=0) id=u.split('youtu.be/')[1];
+  else if(u.indexOf('shorts/')>=0) id=u.split('shorts/')[1];
+  else if(u.indexOf('v=')>=0) id=u.split('v=')[1];
+  if(!id) return null;
+  id=id.split('&')[0].split('?')[0].slice(0,11);
+  return id.length>=11? ('https://img.youtube.com/vi/'+id+'/mqdefault.jpg') : null;
+}
+function medColor(p){ return p==='companion'? 'var(--companion)' : (p==='both'? 'var(--info)' : 'var(--accent)'); }
+function medWho(p){ return p==='companion'? 'رفيقي' : (p==='both'? 'كلانا' : 'أنا'); }
 function medsOf(){ const me=meId(); if(!data) return [];
   return (data.items||[]).map(parseMed).filter(Boolean)
     .filter(m=>m.item.owner_id===me || m.item.visibility!=='PRIVATE'); }
@@ -2001,6 +2034,11 @@ document.addEventListener('click', async e=>{
         await rest('PATCH','shared_list_items',{title:t.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُفظت التسمية ✓'); break; }
       case 'delMedia': { if(!confirm('حذف هذا الرابط؟')) break;
         await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُذف'); break; }
+      case 'delShop': { if(!confirm('حذف هذا العنصر؟')) break;
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُذف العنصر ✓'); break; }
+      case 'delPlace': { if(!confirm('حذف هذا المكان؟')) break;
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذف المكان ✓'); break; }
+      case 'toggleMedsView': { medsTable=(el.dataset.v==='table'); renderApp(); break; }
       case 'renameCircle': { const n=($('#crName')||{}).value||''; if(!n.trim()){ toast('اكتب الاسم'); break; }
         await rest('PATCH','circles',{name:n.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('تم تعديل الاسم ✓'); break; }
       case 'manageCircle': { const cid=el.dataset.id, k=el.dataset.k; const box=$('#crManage'); if(!box) break;
