@@ -83,10 +83,10 @@ h2{font-size:16px;font-weight:600}
 .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:transparent;background:transparent;transition:all .18s ease}
 .check.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .sec-strip{background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
-.sec-pills{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
 .sec-pills::-webkit-scrollbar{display:none}
-.pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:14px;font-weight:600;padding:11px 16px;cursor:pointer;font-family:inherit;white-space:nowrap}
-.pill.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.pill{border:0;border-inline-start:1px solid var(--border);border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-1);font:inherit;font-size:11px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.pill.on{background:var(--accent);color:#fff;font-weight:700}
 .sec-note{font-size:11px;color:var(--text-3);padding:0 3px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .tile{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit}
@@ -2248,7 +2248,9 @@ function applyCollapse(){
   // شريط الأقسام الثابت
   const pills=document.getElementById('secPills');
   if(pills){
-    pills.innerHTML=SEC_META.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}">${m[1]} ${m[2]}</button>`).join('');
+    const ord=(vmOrder&&vmOrder.length?vmOrder:SEC_META.map(m=>m[0]));
+    const meta=ord.map(k=>SEC_META.find(m=>m[0]===k)).filter(Boolean);
+    pills.innerHTML=meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}"><span style="font-size:14px">${m[1]}</span><span>${m[2]}</span></button>`).join('');
     pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
     const note=document.getElementById('secNote');
     if(note){ const m=SEC_META.find(x=>x[0]===activeSec); note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : ''; note.style.display = m? 'block':'none'; }

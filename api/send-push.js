@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     if (!saRaw) return res.status(500).json({ error: "FIREBASE_SA missing" });
     const sa = JSON.parse(saRaw);
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { to_token, title, message, urgent } = body;
+    const { to_token, title, message, urgent, prio } = body;
     if (!to_token) return res.status(400).json({ error: "to_token required" });
     const access = await googleAccessToken(sa);
     const payload = {
@@ -46,8 +46,11 @@ module.exports = async (req, res) => {
         notification: { title: urgent ? "\u{1F6A8} " + (title || "رسالة مستجلة") : (title || "رفيق"), body: message || "" },
         data: { title: title || "رفيق", body: message || "", urgent: urgent ? "1" : "0" },
         android: {
-          priority: urgent ? "HIGH" : "NORMAL",
-          notification: { sound: urgent ? "rafiq_urgent" : "default", channel_id: urgent ? "rafiq_urgent" : "rafiq_reminders" },
+          priority: (urgent || prio === "high") ? "HIGH" : (prio === "low" ? "NORMAL" : "HIGH"),
+          notification: {
+            sound: (urgent || prio === "high") ? "rafiq_urgent" : "default",
+            channel_id: (urgent || prio === "high") ? "rafiq_urgent" : (prio === "low" ? "rafiq_low" : "rafiq_med"),
+          },
         },
       },
     };
