@@ -729,6 +729,18 @@ function renderHome(){
     <div class="sec" data-sec="habits"><h2>عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
     <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
       `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
+    <div class="card" data-sec="urgent">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🚨</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">رسائل مستجلة</div>
+      <div class="shop-meta">تصل بصوت مميز مع أزرار: تم / اتصال</div></div></div>
+      <div class="add-item"><input id="urgentIn" placeholder="اكتب رسالة مستجلة لرفيقك..."><button data-act="sendUrgent">🚨</button></div>
+      ${(data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').map(u=>`<div class="row" style="min-height:42px;border-top:none">
+        <span style="font-size:17px">🚨</span>
+        <div style="flex:1;min-width:0"><div class="htitle">${esc(u.title)}</div>
+        <div class="shop-meta">من ${esc(nameOf(u.owner_id))} • ${relAr(u.created_at)}</div></div>
+        <button class="mini" data-act="doneUrgent" data-id="${u.id}">تم ✓</button>
+        <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a></div>`).join('')}
+    </div>
     <div class="sec" data-sec="shopping"><h2>قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
     <div class="card">${shop?`
       <div class="row" style="min-height:32px"><div class="bar"><i style="width:${shop.done*100/(shop.items.length||1)}%"></i></div>
@@ -2037,6 +2049,14 @@ document.addEventListener('click', async e=>{
       case 'openReview': openReview(); break;
       case 'saveReview': await saveReview(); break;
       case 'completeRecurring': { const t=(data.tasks||[]).find(x=>x.id===el.dataset.id); if(t) await completeRecurring(t); break; }
+      case 'sendUrgent': { const inp=$('#urgentIn'); const t=((inp&&inp.value)||'').trim(); if(!t){ toast('اكتب الرسالة'); break; }
+        const me=meId(); const sh=(data.circles||[]).find(c=>c.circle.type==='SHARED')||(data.circles||[])[0];
+        if(!sh){ toast('تحتاج دائرة مشتركة أولًا'); break; }
+        const peer=((sh.members||[])[0]&&(sh.members||[])[0].p&&(sh.members||[])[0].p.id!==me)?(sh.members||[])[0].p:((sh.members||[])[1]||{}).p||null;
+        await rest('POST','tasks',{id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),owner_id:me,circle_id:sh.circle.id,title:t,visibility:'CIRCLE',assigned_to:peer?peer.id:null,priority:'URGENT',status:'TODO'});
+        try{ await fetch(CFG.url+'/functions/v1/send-push',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.key,'Authorization':'Bearer '+(session&&session.access_token)},body:JSON.stringify({to_user_id:peer?peer.id:null,title:'رسالة مستجلة 🚨',message:t,urgent:true,kind:'URGENT'})}); }catch(e){}
+        if(inp) inp.value=''; await refreshAll(); renderApp(); toast('أُرسلت 🚨'); break; }
+      case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
       case 'addMedia': openAddMedia(); break;
       case 'saveMedia': await saveMedia(); break;
       case 'renameItem': openRename(el.dataset.id, el.dataset.t); break;
@@ -2167,7 +2187,7 @@ function saveCollapsed(set){ try{ localStorage.setItem('rafiq_collapsed',[...set
 function toggleSec(k){ const set=collapsedSet(); if(set.has(k)) set.delete(k); else set.add(k); saveCollapsed(set); applyCollapse(); }
 function collapseAllSec(){ const keys=['food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
 function expandAllSec(){ saveCollapsed(new Set()); applyCollapse(); }
-const SEC_META=[['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع']];
+const SEC_META=[['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
 function secSummary(k){
   try{
     const today=new Date().toISOString().slice(0,10), me=meId();
@@ -2184,6 +2204,7 @@ function secSummary(k){
     if(k==='meds'){ const n=medsOf().length; return n? n+' دواء':'لا أدوية'; }
     if(k==='places'){ const n=lc('أماكننا المحفوظة'); return n? n+' مكان':'لا أماكن'; }
     if(k==='media'){ const n=lc('مقاطعنا الجميلة'); return n? n+' مقطع':'لا مقاطع'; }
+    if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستجلة':'لا رسائل'; }
   }catch(e){}
   return '';
 }
