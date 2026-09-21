@@ -2054,7 +2054,8 @@ document.addEventListener('click', async e=>{
         if(!sh){ toast('تحتاج دائرة مشتركة أولًا'); break; }
         const peer=((sh.members||[])[0]&&(sh.members||[])[0].p&&(sh.members||[])[0].p.id!==me)?(sh.members||[])[0].p:((sh.members||[])[1]||{}).p||null;
         await rest('POST','tasks',{id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),owner_id:me,circle_id:sh.circle.id,title:t,visibility:'CIRCLE',assigned_to:peer?peer.id:null,priority:'URGENT',status:'TODO'});
-        try{ await fetch(CFG.url+'/functions/v1/send-push',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.key,'Authorization':'Bearer '+(session&&session.access_token)},body:JSON.stringify({to_user_id:peer?peer.id:null,title:'رسالة مستجلة 🚨',message:t,urgent:true,kind:'URGENT'})}); }catch(e){}
+        try{ const ptok=(peer&&peer.avatar_url||'').startsWith('FCM:')?peer.avatar_url.slice(4):null;
+          if(ptok) await fetch('https://rafiq-web-tau.vercel.app/api/send-push',{method:'POST',headers:{'Content-Type':'application/json','x-rafiq-key':'rk_77d1db341635c4e56368244df9fa09a3'},body:JSON.stringify({to_token:ptok,title:'رسالة مستجلة',message:t,urgent:true})}); }catch(e){}
         if(inp) inp.value=''; await refreshAll(); renderApp(); toast('أُرسلت 🚨'); break; }
       case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
       case 'addMedia': openAddMedia(); break;
