@@ -82,7 +82,7 @@ h2{font-size:16px;font-weight:600}
 .hval.ok{color:var(--accent);font-weight:600}
 .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:transparent;background:transparent;transition:all .18s ease}
 .check.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.sec-strip{position:sticky;top:0;z-index:6;background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
+.sec-strip{background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
 .sec-pills{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .sec-pills::-webkit-scrollbar{display:none}
 .pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:12.5px;padding:7px 12px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -711,6 +711,11 @@ function renderHome(){
       :`<div class="pcard" data-act="tab" data-v="more" style="cursor:pointer"><span style="font-size:24px">🤝</span>
         <b style="font-size:13px">أضف رفيقًا</b><span style="font-size:11px;color:var(--text-3)">أنشئ دائرة مشتركة</span></div>`}
     </div>
+    <div id="secStrip" class="sec-strip">
+      <div class="sec-pills" id="secPills"></div>
+      <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
+    </div>
+    <div id="collapseGrid" class="tile-grid" style="display:none"></div>
     <div class="card" data-sec="food" data-act="openFood" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">طعامنا اليوم</div>
@@ -727,11 +732,6 @@ function renderHome(){
         const ds=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
         return ds.length? `<div class="shop-meta" style="padding-top:6px">🍽 أطباق نحبها: ${ds.map(d=>esc(d.title)).join(' • ')}</div>`:''; })()}
     </div>
-    <div id="secStrip" class="sec-strip">
-      <div class="sec-pills" id="secPills"></div>
-      <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
-    </div>
-    <div id="collapseGrid" class="tile-grid" style="display:none"></div>
     <div class="sec" data-sec="habits"><h2>عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
     <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
       `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
@@ -2257,7 +2257,7 @@ function applyCollapse(){
   if(grid){
     const items=SEC_META.filter(m=>set.has(m[0]));
     grid.innerHTML=items.map(m=>`<button class="tile" data-tile="${m[0]}"><span style="font-size:26px">${m[1]}</span><span class="tl">${m[2]}</span><span class="ts">${esc(secSummary(m[0]))}</span></button>`).join('');
-    grid.style.display=items.length?'grid':'none';
+    grid.style.display=(items.length && !activeSec)?'grid':'none';
     grid.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>toggleSec(b.dataset.tile));
   }
   // شريط التحكم
