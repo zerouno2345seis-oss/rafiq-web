@@ -852,6 +852,7 @@ function renderHome(){
           <div class="htitle" style="color:var(--text-1)">${esc(pp.title)}</div>
           <div class="shop-meta">${esc((pp.note||'').slice(0,52))}</div>
         </a><span class="badge">فتح ➜</span>
+        <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${pp.id}" data-t="${esc(pp.title)}">تسمية</button>
         <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delPlace" data-id="${pp.id}">✕</button></div>`).join('')
       : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
       <div style="display:flex;gap:8px;padding-top:10px">
@@ -1769,12 +1770,36 @@ function openAddMedia(){
     <div class="field"><label>الاسم (اختياري — يُسمّى تلقائيًا)</label><input id="mvTitle" placeholder="مثال: مقطع تحفيزي"></div>
     <button class="btn" data-act="saveMedia">حفظ</button>`);
 }
+function smartLinkName(url){
+  const u=(url||'').toLowerCase();
+  if(u.indexOf('instagram.com/')>=0){ const seg=url.substringAfter? '':''; }
+  try{
+    if(u.includes('instagram.com/')){
+      let seg=url.split('instagram.com/')[1].split('/')[0].split('?')[0];
+      if(seg && !['p','reel','reels','tv','stories','explore'].includes(seg)) return 'إنستغرام — '+seg;
+      return 'مقطع إنستغرام';
+    }
+  }catch(e){}
+  if(u.includes('youtube')||u.includes('youtu.be')) return 'مقطع يوتيوب';
+  if(u.includes('tiktok.com')) return 'مقطع تيك توك';
+  if(u.includes('twitter.com')||u.includes('x.com')) return 'منشور من X';
+  if(u.includes('facebook.com')) return 'منشور فيسبوك';
+  if(u.includes('spotify.com')) return 'مقطع صوتي — سبوتيفاي';
+  if(u.includes('soundcloud.com')) return 'مقطع صوتي — ساوندكلاود';
+  try{ const h=url.split('://')[1].split('/')[0].replace('www.',''); if(h) return 'رابط من '+h; }catch(e){}
+  return 'رابط';
+}
+function smartPlaceName(link, fallback){
+  try{ const q=(link.split('q=')[1]||'').split('&')[0]; if(!q) return fallback;
+    const dec=decodeURIComponent(q.replace(/\+/g,' ')).trim();
+    if(!dec || /^-?\d+\.\d+,-?\d+\.\d+$/.test(dec)) return fallback; return dec;
+  }catch(e){ return fallback; }
+}
 async function saveMedia(){
   try{
     const u=($('#mvUrl')||{}).value||''; const t=($('#mvTitle')||{}).value||'';
     if(!/^https?:/.test(u.trim())){ toast('الصق رابطًا صحيحًا'); return; }
-    const auto=(u.includes('youtube')||u.includes('youtu.be'))?('مقطع يوتيوب — '+new Date().toISOString().slice(0,10)):
-      (u.includes('instagram')?('مقطع إنستغرام — '+new Date().toISOString().slice(0,10)):('رابط — '+new Date().toISOString().slice(0,10)));
+    const auto=smartLinkName(u);
     const sh=sharedFirst(); const cid=sh?sh.circle.id:((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
     if(!cid){ toast('لا توجد دائرة متاحة'); return; }
     const l=await ensureList(MEDIA_TITLE,cid);
