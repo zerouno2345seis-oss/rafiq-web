@@ -82,6 +82,9 @@ h2{font-size:16px;font-weight:600}
 .hval.ok{color:var(--accent);font-weight:600}
 .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:transparent;background:transparent;transition:all .18s ease}
 .check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.add-pop{position:fixed;z-index:99;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column;gap:2px}
+.add-row{display:flex;align-items:center;gap:10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:var(--text-1);padding:10px 12px;border-radius:12px;cursor:pointer;text-align:start;width:100%}
+.add-ic{width:26px;height:26px;border-radius:8px;background:var(--accent-verysoft);display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
 .sec-strip{background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
 .sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
 .sec-pills::-webkit-scrollbar{display:none}
@@ -1809,19 +1812,16 @@ function openReview(){
 }
 /* ---------- قائمة الإضافة (+) ---------- */
 function openAddMenu(){
+  const old=document.getElementById('addPop'); if(old){ old.remove(); return; }
   const today=new Date().toISOString().slice(0,10);
-  openSheet(sheetHead('ماذا تريد أن تضيف؟')+`
-    <button class="vis-opt" data-act="openAddTask"><span style="font-size:20px">✅</span><span style="flex:1"><span class="vt">مهمة جديدة</span><br><span class="vd">شخصية أو مشتركة — بموعد وتعيين دقيق</span></span></button>
-    <button class="vis-opt" data-act="openAddHabit"><span style="font-size:20px">🌱</span><span style="flex:1"><span class="vt">عادة / هدف</span><br><span class="vd">عادة يومية بهدف كمي أو تم/لم يتم</span></span></button>
-    <button class="vis-opt" data-act="shopAll"><span style="font-size:20px">🛒</span><span style="flex:1"><span class="vt">عنصر تسوق</span><br><span class="vd">يُضاف مباشرة إلى القائمة المشتركة</span></span></button>
-    <button class="vis-opt" data-act="addCurrentPlace"><span style="font-size:20px">📍</span><span style="flex:1"><span class="vt">مكاني الحالي</span><br><span class="vd">يلتقط موقعك ويسألك عن الاسم — يفتح في خرائط Google</span></span></button>
-    <button class="vis-opt" data-act="addEvent" data-day="${today}"><span style="font-size:20px">📅</span><span style="flex:1"><span class="vt">موعد في جدولي</span><br><span class="vd">بتاريخ ووقت — خاص أو للدائرة أو لأشخاص</span></span></button>
-    <button class="vis-opt" data-act="openRemind"><span style="font-size:20px">🔔</span><span style="flex:1"><span class="vt">ذكّر رفيقي</span><br><span class="vd">تذكير بارز مع إشعار</span></span></button>
-    <button class="vis-opt" data-act="openMealSheet"><span style="font-size:20px">🍽</span><span style="flex:1"><span class="vt">وجبة اليوم</span><br><span class="vd">سجّل فطورك/غداءك/عشاءك أو اختر من أطباقكم</span></span></button>
-    <button class="vis-opt" data-act="openAddMood"><span style="font-size:20px">🌤</span><span style="flex:1"><span class="vt">شعور اليوم</span><br><span class="vd">فرح، حمد، امتنان… أو مخصص + سبب بسيط</span></span></button>
-    <button class="vis-opt" data-act="addMedia"><span style="font-size:20px">🎬</span><span style="flex:1"><span class="vt">رابط جميل (مقطع/صوتية)</span><br><span class="vd">يوتيوب أو إنستغرام — يُحفظ في مقاطعنا الجميلة</span></span></button>
-    <button class="vis-opt" data-act="openAddMed"><span style="font-size:20px">💊</span><span style="flex:1"><span class="vt">دواء (تذكير مشترك)</span><br><span class="vd">مرات يومية أو أسبوعية — مؤقت أو مستمر مدى الحياة</span></span></button>
-    <button class="vis-opt" data-act="openCreateCircle"><span style="font-size:20px">👥</span><span style="flex:1"><span class="vt">دائرة جديدة</span><br><span class="vd">أنشئ دائرة وشارك رمز الدعوة</span></span></button>`);
+  const items=[['✅','مهمة جديدة','openAddTask',''],['🌱','عادة / هدف','openAddHabit',''],['🛒','عنصر تسوق','shopAll',''],['📍','مكاني الحالي','addCurrentPlace',''],['📅','موعد في جدولي','addEvent',today],['🔔','ذكّر رفيقي','openRemind',''],['🍽','وجبة اليوم','openMealSheet',''],['🌤','شعور اليوم','openAddMood',''],['🎬','رابط جميل','addMedia',''],['💊','دواء','openAddMed',''],['👥','دائرة جديدة','openCreateCircle','']];
+  const pop=document.createElement('div'); pop.id='addPop'; pop.className='add-pop';
+  pop.innerHTML=items.map(it=>`<button class="add-row" data-act="${it[2]}" ${it[3]?`data-day="${it[3]}"`:''}><span class="add-ic">${it[0]}</span><span>${it[1]}</span></button>`).join('');
+  document.body.appendChild(pop);
+  const btn=document.querySelector('[data-act="addMenu"]');
+  if(btn){ const r=btn.getBoundingClientRect(); pop.style.top=(r.bottom+6)+'px'; pop.style.right=Math.max(8,(window.innerWidth-r.right))+'px'; }
+  pop.addEventListener('click',()=>setTimeout(()=>{const p=document.getElementById('addPop'); if(p) p.remove();},60));
+  setTimeout(()=>{ document.addEventListener('click',function h(ev){ const p=document.getElementById('addPop'); if(p && !p.contains(ev.target)){ p.remove(); document.removeEventListener('click',h); } },true); },60);
 }
 function openMealSheet(){
   const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
