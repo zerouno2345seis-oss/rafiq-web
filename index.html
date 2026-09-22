@@ -191,7 +191,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 /* ===== مشغّل المقاطع المنبثق — سينمائي داكن (Preset 05 Locomotive) 50% ===== */
 .rmp-backdrop{position:fixed;inset:0;z-index:900;background:rgba(4,5,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;animation:rmpFade .18s ease}
 @keyframes rmpFade{from{opacity:0}to{opacity:1}}
-.rmp-panel{width:50vw;max-width:1200px;background:#0B0C0D;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(48,138,101,.15);overflow:hidden;color:#F2F2F0;display:flex;flex-direction:column}
+.rmp-panel{width:60vw;max-width:1200px;background:#0B0C0D;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(48,138,101,.15);overflow:hidden;color:#F2F2F0;display:flex;flex-direction:column}
 .rmp-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
 .rmp-title{flex:1;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rmp-x{width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#F2F2F0;font-size:18px;cursor:pointer;line-height:1}
@@ -2356,7 +2356,7 @@ function openPlayer(url,title,id){
       <button class="rmp-btn" data-rmp="mute" aria-label="كتم الصوت (M)" aria-pressed="false">🔊</button>
       <input class="rmp-vol" type="range" min="0" max="100" value="100" data-rmp="vol" aria-label="مستوى الصوت">
       <button class="rmp-btn" data-rmp="fs" aria-label="ملء الشاشة">⛶</button></div>`:''}
-    <div class="rmp-note">${direct?'النافذة ٥٠٪ من مساحة العرض • الإغلاق: ✕ / Esc / النقر خارجها':'تحكّم يوتيوب • الإغلاق: ✕ / Esc / النقر خارجها'}</div></div>`;
+    <div class="rmp-note">${direct?'النافذة ٦٠٪ من مساحة العرض • الإغلاق: ✕ / Esc / النقر خارجها':'تحكّم يوتيوب • الإغلاق: ✕ / Esc / النقر خارجها'}</div></div>`;
   document.body.appendChild(back); document.body.style.overflow='hidden'; RMP.el=back;
   rmpLog({id:RMP.id,url:RMP.url,title:RMP.title,opened:new Date().toISOString(),position:startAt,event:'open'});
   if(direct) rmpWire(back.querySelector('video'), back);
