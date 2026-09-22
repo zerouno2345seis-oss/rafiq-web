@@ -187,6 +187,34 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
   border:1.5px solid var(--field-border);border-radius:14px;background:var(--field-bg);
   color:var(--text-1);outline:none;padding:0}
 .otp-b:focus{border-color:var(--accent-2);background:var(--surface)}
+
+/* ===== مشغّل المقاطع المنبثق — سينمائي داكن (Preset 05 Locomotive) 50% ===== */
+.rmp-backdrop{position:fixed;inset:0;z-index:900;background:rgba(4,5,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;animation:rmpFade .18s ease}
+@keyframes rmpFade{from{opacity:0}to{opacity:1}}
+.rmp-panel{width:50vw;max-width:1200px;background:#0B0C0D;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(48,138,101,.15);overflow:hidden;color:#F2F2F0;display:flex;flex-direction:column}
+.rmp-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.rmp-title{flex:1;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmp-x{width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#F2F2F0;font-size:18px;cursor:pointer;line-height:1}
+.rmp-x:focus-visible,.rmp-btn:focus-visible,.rmp-seek:focus-visible{outline:2px solid #4FA57E;outline-offset:2px}
+.rmp-stage{width:100%;aspect-ratio:16/9;background:#000;position:relative}
+.rmp-stage iframe,.rmp-stage video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.rmp-controls{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.rmp-btn{min-width:40px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#F2F2F0;cursor:pointer;font-size:14px}
+.rmp-btn[aria-pressed="true"]{background:rgba(48,138,101,.35);border-color:#4FA57E}
+.rmp-seek{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;background:rgba(255,255,255,.18);cursor:pointer}
+.rmp-seek::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#4FA57E;box-shadow:0 0 12px rgba(79,165,126,.8)}
+.rmp-seek::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#4FA57E}
+.rmp-time{font-size:11.5px;color:#AAA9A5;min-width:86px;text-align:center;font-variant-numeric:tabular-nums}
+.rmp-vol{width:90px}
+.rmp-err{padding:22px 16px;text-align:center;font-size:13.5px;color:#F2B8B8;background:rgba(217,74,74,.12);display:flex;flex-direction:column;gap:10px;align-items:center}
+.rmp-note{padding:8px 14px;font-size:11.5px;color:#8A8984;border-top:1px solid rgba(255,255,255,.06)}
+@media (max-width:640px){
+  .rmp-backdrop{padding:10px}
+  .rmp-panel{width:94vw;max-width:none;border-radius:14px}
+  .rmp-time{min-width:70px;font-size:11px}
+  .rmp-vol{width:60px}
+}
+/* 50% = متغيّر للتعديل السريع */
 </style>
 </head>
 <body>
@@ -839,7 +867,7 @@ function renderHome(){
         return its.map(i=>{ const th=ytThumb(i.note||'');
           return `<div class="row" style="min-height:52px">
           ${th?`<img src="${th}" alt="" loading="lazy" style="width:64px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto">`:'<span style="font-size:16px">🎬</span>'}
-          <a href="${esc(i.note||'#')}" target="_blank" style="flex:1;min-width:0;text-decoration:none">
+          <a href="javascript:void(0)" data-act="playMedia" data-u="${esc(i.note||'')}" data-t="${esc(i.title)}" data-id="${i.id}" style="flex:1;min-width:0;text-decoration:none">
             <div class="htitle" style="color:var(--text-1)">${esc(i.title)}</div>
             <div class="shop-meta">${esc((i.note||'').slice(0,50))}</div></a>
           <button class="link" data-act="renameItem" data-id="${i.id}" data-t="${esc(i.title)}">تسمية</button>
@@ -2090,6 +2118,7 @@ document.addEventListener('click', async e=>{
       case 'delUrgent': { if(!confirm('حذف هذه الرسالة المستجلة؟')) break;
         await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذفت الرسالة'); break; }
       case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
+      case 'playMedia': { openPlayer(el.dataset.u, el.dataset.t, el.dataset.id); break; }
       case 'addMedia': openAddMedia(); break;
       case 'saveMedia': await saveMedia(); break;
       case 'renameItem': openRename(el.dataset.id, el.dataset.t); break;
@@ -2292,6 +2321,106 @@ function applyCollapse(){
     bar.onclick=()=>{ if(any) collapseAllSec(); else expandAllSec(); }; }
 }
 (new MutationObserver(()=>applyCollapse())).observe(document.getElementById('view')||document.body,{childList:true});
+
+
+/* ================= مشغّل المقاطع المنبثق (50%) ================= */
+const RMP={el:null,video:null,id:null,url:null,title:null,openedAt:0,lastFocus:null,scrollY:0};
+function rmpLog(e){ try{ const a=JSON.parse(localStorage.getItem('rafiq_play_log')||'[]'); a.unshift(e); localStorage.setItem('rafiq_play_log',JSON.stringify(a.slice(0,200))); }catch(x){} }
+function rmpLast(id){ try{ const a=JSON.parse(localStorage.getItem('rafiq_play_log')||'[]'); return a.filter(x=>x.id===id)[0]||null; }catch(x){ return null; } }
+function ytIdOf(u){ try{ if(u.includes('youtu.be/')) return u.split('youtu.be/')[1].split(/[?&]/)[0].slice(0,11);
+  if(u.includes('shorts/')) return u.split('shorts/')[1].split(/[?&]/)[0].slice(0,11);
+  if(u.includes('v=')) return u.split('v=')[1].split('&')[0].slice(0,11); }catch(e){} return null; }
+function isDirectMedia(u){ return /\.(mp4|webm|ogv|ogg|mp3|m4a|wav)(\?|#|$)/i.test(u||''); }
+function rmpFmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+function openPlayer(url,title,id){
+  if(RMP.el) closePlayer(true);
+  RMP.url=url; RMP.title=title||'مقطع'; RMP.id=id||String(Date.now()); RMP.openedAt=Date.now();
+  RMP.lastFocus=document.activeElement; RMP.scrollY=window.scrollY;
+  const prev=rmpLast(RMP.id); const startAt=(prev&&prev.position>3)?Math.floor(prev.position):0;
+  const yt=ytIdOf(url), direct=isDirectMedia(url);
+  const back=document.createElement('div'); back.className='rmp-backdrop';
+  back.setAttribute('role','dialog'); back.setAttribute('aria-modal','true');
+  back.setAttribute('aria-label','مشغّل المقطع: '+(title||'مقطع'));
+  const stage = yt ? `<iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&enablejsapi=1&start=${startAt}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="${esc(title||'مقطع')}"></iframe>`
+    : direct ? `<video src="${esc(url)}" playsinline preload="metadata" data-start="${startAt}"></video>`
+    : `<div class="rmp-err"><b>تعذّر تشغيل هذا الرابط داخل التطبيق</b><span>الرابط ليس مقطعًا قابلًا للتشغيل المباشر — المدعوم: يوتيوب أو ملف فيديو/صوت مباشر.</span><button class="rmp-btn" data-rmp="retry">إعادة المحاولة</button></div>`;
+  back.innerHTML=`<div class="rmp-panel">
+    <div class="rmp-head"><span class="rmp-title">🎬 ${esc(title||'مقطع')}</span>
+      <button class="rmp-x" data-rmp="close" aria-label="إغلاق المشغّل (Esc)">✕</button></div>
+    <div class="rmp-stage">${stage}</div>
+    ${direct?`<div class="rmp-controls">
+      <button class="rmp-btn" data-rmp="play" aria-label="تشغيل/إيقاف (مسافة)">▶︎</button>
+      <input class="rmp-seek" type="range" min="0" max="1000" value="0" data-rmp="seek" aria-label="شريط التقدم">
+      <span class="rmp-time" data-rmp="time" aria-live="off">0:00 / 0:00</span>
+      <button class="rmp-btn" data-rmp="mute" aria-label="كتم الصوت (M)" aria-pressed="false">🔊</button>
+      <input class="rmp-vol" type="range" min="0" max="100" value="100" data-rmp="vol" aria-label="مستوى الصوت">
+      <button class="rmp-btn" data-rmp="fs" aria-label="ملء الشاشة">⛶</button></div>`:''}
+    <div class="rmp-note">${direct?'النافذة ٥٠٪ من مساحة العرض • الإغلاق: ✕ / Esc / النقر خارجها':'تحكّم يوتيوب • الإغلاق: ✕ / Esc / النقر خارجها'}</div></div>`;
+  document.body.appendChild(back); document.body.style.overflow='hidden'; RMP.el=back;
+  rmpLog({id:RMP.id,url:RMP.url,title:RMP.title,opened:new Date().toISOString(),position:startAt,event:'open'});
+  if(direct) rmpWire(back.querySelector('video'), back);
+  else if(yt){ // تحكّم أساسي عبر واجهة يوتيوب
+    RMP.video=null;
+  }
+  back.addEventListener('click',ev=>{ if(ev.target===back) closePlayer(); });
+  back.addEventListener('click',ev=>{ const b=ev.target.closest('[data-rmp]'); if(!b) return;
+    const act=b.getAttribute('data-rmp');
+    if(act==='close') closePlayer();
+    else if(act==='play'||act==='mute'||act==='fs'||act==='retry') rmpAct(act,b);
+  });
+  const focusables=back.querySelectorAll('button,input,iframe');
+  if(focusables.length) focusables[0].focus();
+  setTimeout(()=>{ if(RMP.video){ const v=RMP.video; v.play().catch(()=>{}); } },60);
+}
+
+function rmpAct(act,btn){
+  const v=RMP.video; if(!v && act!=='retry') { if(act==='retry') openPlayer(RMP.url,RMP.title,RMP.id); return; }
+  if(act==='play'){ if(v.paused){ v.play().catch(()=>{}); } else { v.pause(); } }
+  if(act==='mute'){ v.muted=!v.muted; btn.setAttribute('aria-pressed', v.muted?'true':'false'); btn.textContent = v.muted?'🔇':'🔊'; }
+  if(act==='fs'){ const p=RMP.el.querySelector('.rmp-panel'); if(document.fullscreenElement){ document.exitFullscreen(); } else if(p.requestFullscreen){ p.requestFullscreen().catch(()=>{}); } }
+  if(act==='retry'){ openPlayer(RMP.url,RMP.title,RMP.id); }
+}
+
+function rmpWire(v,panel){
+  RMP.video=v;
+  const play=panel.querySelector('[data-rmp="play"]'), seek=panel.querySelector('[data-rmp="seek"]'),
+        time=panel.querySelector('[data-rmp="time"]'), vol=panel.querySelector('[data-rmp="vol"]'), mute=panel.querySelector('[data-rmp="mute"]');
+  const sync=()=>{ if(v.duration){ seek.value=String(Math.round(v.currentTime/v.duration*1000)); time.textContent=rmpFmt(v.currentTime)+' / '+rmpFmt(v.duration); } };
+  v.addEventListener('loadedmetadata',()=>{ const st=parseInt(v.getAttribute('data-start')||'0',10); if(st>0) v.currentTime=st; sync(); });
+  v.addEventListener('timeupdate',sync);
+  v.addEventListener('play',()=>{ play.textContent='⏸'; });
+  v.addEventListener('pause',()=>{ play.textContent='▶︎'; });
+  v.addEventListener('error',()=>{ const st=panel.querySelector('.rmp-stage'); st.innerHTML='<div class="rmp-err"><b>تعذّر تحميل المقطع</b><span>تحقق من الرابط أو الاتصال ثم أعد المحاولة.</span><button class="rmp-btn" data-rmp="retry">إعادة المحاولة</button></div>'; });
+  seek.addEventListener('input',()=>{ if(v.duration) v.currentTime=(+seek.value/1000)*v.duration; });
+  vol && vol.addEventListener('input',()=>{ v.volume=(+vol.value)/100; v.muted=(+vol.value===0); if(mute){ mute.setAttribute('aria-pressed', v.muted?'true':'false'); mute.textContent=v.muted?'🔇':'🔊'; } });
+}
+
+function closePlayer(silent){
+  const v=RMP.video;
+  if(v){ v.pause(); try{ v.removeAttribute('src'); v.load(); }catch(e){} }
+  if(RMP.el){ RMP.el.remove(); RMP.el=null; RMP.video=null; document.body.style.overflow=''; }
+  if(!silent){
+    rmpLog({id:RMP.id,url:RMP.url,title:RMP.title,opened:new Date(RMP.openedAt).toISOString(),closed:new Date().toISOString(),position:(v&&v.currentTime)||0,event:'close'});
+    window.scrollTo(0,RMP.scrollY||0);
+    try{ if(RMP.lastFocus&&RMP.lastFocus.focus) RMP.lastFocus.focus(); }catch(e){}
+  }
+}
+
+document.addEventListener('keydown',ev=>{
+  if(!RMP.el) return;
+  if(ev.key==='Escape'){ ev.preventDefault(); closePlayer(); return; }
+  const v=RMP.video;
+  if(ev.key===' '||ev.code==='Space'){ ev.preventDefault(); if(v){ v.paused? v.play().catch(()=>{}) : v.pause(); } return; }
+  if(v && (ev.key==='ArrowRight'||ev.key==='ArrowLeft')){ ev.preventDefault(); v.currentTime=Math.max(0,v.currentTime+(ev.key==='ArrowRight'?5:-5)); return; }
+  if(v && (ev.key==='m'||ev.key==='M')){ const b=RMP.el.querySelector('[data-rmp="mute"]'); rmpAct('mute',b); return; }
+  if(ev.key==='Tab'){ // حصر التركيز داخل النافذة
+    const f=[...RMP.el.querySelectorAll('button,input,iframe,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled);
+    if(!f.length) return; const first=f[0],last=f[f.length-1];
+    if(ev.shiftKey && document.activeElement===first){ ev.preventDefault(); last.focus(); }
+    else if(!ev.shiftKey && document.activeElement===last){ ev.preventDefault(); first.focus(); }
+  }
+});
 
 (async function boot(){
   if(!session){ renderAuth(); return; }
