@@ -1,6 +1,6 @@
 {
-  "versionCode": 6,
-  "versionName": "1.06",
+  "versionCode": 7,
+  "versionName": "1.07",
   "url": "https://rafiq-web-tau.vercel.app/rafiq.apk",
-  "notes": "الرسائل المستعجلة: إضافة 10 نغمات جديدة واختيارها من الإعدادات مع ميزة الرنين وتجاوز الوضع الصامت وعدم الإزعاج"
+  "notes": "إطلاق 8 بطاقات تفاعلية على الشاشة الرئيسية (Widgets) + المزامنة اللحظية عبر Supabase Realtime WebSocket + إشعارات تفاعلية بنقرة واحدة + تحسينات الأداء وهندسة التطبيق"
 }
