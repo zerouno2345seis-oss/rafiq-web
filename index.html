@@ -275,6 +275,8 @@ const CFG = {
 try{
   const saved = JSON.parse(localStorage.getItem('rafiq_web_cfg')||'null');
   if(saved && saved.url && saved.key){ CFG.url = saved.url; CFG.key = saved.key; }
+  const cSet = new Set((localStorage.getItem('rafiq_collapsed')||'').split(',').filter(Boolean));
+  if(cSet.has('lifetracker')){ cSet.delete('lifetracker'); localStorage.setItem('rafiq_collapsed',[...cSet].join(',')); }
 }catch(e){}
 function saveCfg(){ localStorage.setItem('rafiq_web_cfg', JSON.stringify({url:CFG.url,key:CFG.key})); }
 
@@ -736,7 +738,7 @@ function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null;
 <script>
 'use strict';
 /* ================= الواجهة الرئيسية ================= */
-const TABS=[['home','الرئيسية','🏠'],['lifetracker','المتتبع','📈'],['habits','العادات','🎯'],['stats','الإحصائيات','📊'],['tasks','المهام','✅'],['more','المزيد','⋯']];
+const TABS=[['home','الرئيسية','🏠'],['habits','العادات','🎯'],['lifetracker','متتبع العادات','📈'],['tasks','المهام','✅'],['more','المزيد','⋯']];
 function renderNav(){
   $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
     `<button data-act="tab" data-v="${id}" class="${view===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
@@ -788,15 +790,15 @@ function renderHome(){
       <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
     </div>
     <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
-      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">📈</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">متتبع الحياة</div>
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">📈</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700">متتبع العادات والأنشطة</div>
       <div class="shop-meta">${(()=>{
         const trk=getTrackerData();
         const todayIso=new Date().toISOString().slice(0,10);
         const todayEntries=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(todayIso));
-        return todayEntries.length? ('سُجّل اليوم: '+todayEntries.length+' نشاط') : 'سجل عاداتك، مشيك، أدويتك وأعراضك بدقة';
+        return todayEntries.length? ('سُجّل اليوم: '+todayEntries.length+' نشاط') : 'سجل المشي، الدواء، الطعام، الصداع، مع الفئات الذكية وأوقات البداية والنهاية';
       })()}</div></div>
-      <span class="badge">المتتبع ➜</span></div>
+      <span class="badge">افتح المتتبع ➜</span></div>
       ${(()=>{
         const trk=getTrackerData();
         const todayIso=new Date().toISOString().slice(0,10);
@@ -2321,6 +2323,14 @@ function weekStats(){ const me=meId(); const start=new Date(); start.setDate(sta
 function renderHabits(){
   const me=meProfile(), habits=habitsFor(meId());
   $('#view').innerHTML=`<div class="screen">
+    <div class="card" data-act="openLifeTracker" style="background:var(--accent-soft);border:1.5px solid var(--accent);cursor:pointer;margin-bottom:14px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:26px">📈</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:var(--text-1)">متتبع العادات والأنشطة اليومية</div>
+        <div style="font-size:12px;color:var(--text-2)">تسجيل المشي، الدواء، النوم، الرياضة، الأعراض بالأوقات والفئات الذكية ➜</div>
+      </div>
+      <span class="badge" style="background:var(--accent);color:#fff">افتح</span>
+    </div>
     <div class="sec"><h2>عاداتي وأهدافي</h2><button class="link" data-act="openAddHabit">+ عادة جديدة</button></div>
     ${habits.length?habits.map(item=>{ const hp=habitProg(meId(),item);
       return `<div class="card"><div class="row"><span class="hicon">${typeEmoji(item.type)}</span>
@@ -2433,6 +2443,8 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">📈 متتبع العادات والأنشطة</span><button class="link" data-act="openLifeTracker">افتح</button></div>
+      <div class="setrow"><span class="st">📊 الإحصائيات العامة</span><button class="link" data-act="tab" data-v="stats">عرض</button></div>
       <div class="setrow"><span class="st">📱 تحميل تطبيق Android (آخر إصدار v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
       <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
       <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
@@ -3400,17 +3412,17 @@ function bootFailed(msg, src){
   }catch(e){}
 }
 /* ---------- طي/توسيع أقسام الرئيسية ---------- */
-function collapsedSet(){ try{ return new Set((localStorage.getItem('rafiq_collapsed')||'').split(',').filter(Boolean)); }catch(e){ return new Set(); } }
-function saveCollapsed(set){ try{ localStorage.setItem('rafiq_collapsed',[...set].join(',')); }catch(e){} }
+function collapsedSet(){ try{ const s=new Set((localStorage.getItem('rafiq_collapsed')||'').split(',').filter(Boolean)); s.delete('lifetracker'); return s; }catch(e){ return new Set(); } }
+function saveCollapsed(set){ try{ set.delete('lifetracker'); localStorage.setItem('rafiq_collapsed',[...set].join(',')); }catch(e){} }
 function toggleSec(k){ const set=collapsedSet(); if(set.has(k)) set.delete(k); else set.add(k); saveCollapsed(set); applyCollapse(); }
-function collapseAllSec(){ const keys=['lifetracker','food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
+function collapseAllSec(){ const keys=['food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
 function expandAllSec(){ saveCollapsed(new Set()); applyCollapse(); }
-const SEC_META=[['lifetracker','📈','المتتبع'],['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
+const SEC_META=[['lifetracker','📈','متتبع العادات'],['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
 function secSummary(k){
   try{
     const today=new Date().toISOString().slice(0,10), me=meId();
     const lc=t=>{ const l=(data&&data.sharedLists||[]).find(x=>x.title===t); return l? (data.shopping||[]).filter(i=>i.list_id===l.id).length : 0; };
-    if(k==='lifetracker'){ const trk=getTrackerData(); const n=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(today)).length; return n? n+' نشاط اليوم':'سجل الأنشطة'; }
+    if(k==='lifetracker'){ const trk=getTrackerData(); const n=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(today)).length; return n? n+' نشاط اليوم':'سجل الأنشطة والعادات'; }
     if(k==='food'){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي'); const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id&&(i.note||'').startsWith(today)).length:0; return n? n+' وجبة اليوم':'لا وجبات اليوم'; }
     if(k==='schedule'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=today).length; return n? n+' موعد قادم':'لا مواعيد'; }
     if(k==='remind') return 'أرسل تذكيرًا';
