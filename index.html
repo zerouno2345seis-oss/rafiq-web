@@ -255,6 +255,40 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-range-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .trk-range-row:last-child{margin-bottom:0}
 .fab-pdf{position:fixed;bottom:calc(var(--nav-h) + 16px);inset-inline-end:16px;z-index:50;display:flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
+/* --- Food, Shopping, Meds Twinning Styles --- */
+.meal-cols-row{display:flex;gap:8px;margin:10px 0}
+.meal-col-btn{flex:1;border-radius:16px;padding:11px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;user-select:none;border:1px solid transparent}
+.meal-col-btn:active{transform:scale(0.96)}
+.meal-futoor{background:#FFF4E0;color:#92400E;border-color:#FDE68A}
+[data-theme="dark"] .meal-futoor{background:rgba(217,119,6,0.18);color:#FDE68A;border-color:rgba(217,119,6,0.35)}
+.meal-ghadaa{background:var(--accent-soft);color:var(--accent-dark);border-color:var(--accent-2)}
+.meal-ashaa{background:#EAF1FA;color:#1E40AF;border-color:#BFDBFE}
+[data-theme="dark"] .meal-ashaa{background:rgba(37,99,235,0.18);color:#BFDBFE;border-color:rgba(37,99,235,0.35)}
+.meal-snack{background:#FBEDF3;color:#9D174D;border-color:#FBCFE8}
+[data-theme="dark"] .meal-snack{background:rgba(219,39,119,0.18);color:#FBCFE8;border-color:rgba(219,39,119,0.35)}
+.dish-pick-box{background:var(--accent-soft);border-radius:14px;padding:14px;text-align:center;margin-top:10px;border:1.5px dashed var(--accent)}
+.dish-pick-title{font-size:12px;color:var(--text-3);margin-bottom:4px}
+.dish-pick-name{font-size:20px;font-weight:800;color:var(--accent-dark);margin-bottom:8px}
+.dish-pick-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.store-tabs-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px 0;scrollbar-width:none;align-items:center}
+.store-tab-pill{padding:7px 13px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--surface-2);color:var(--text-1);border:1px solid var(--border);transition:all .15s}
+.store-tab-pill.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.store-add-btn{padding:7px 13px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;background:var(--accent-soft);color:var(--accent-dark);border:1px dashed var(--accent)}
+.past-readd-bar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px 0;scrollbar-width:none;align-items:center}
+.past-readd-pill{padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent-2);transition:transform .1s}
+.past-readd-pill:active{transform:scale(0.95)}
+.med-shelf-card{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;background:var(--surface);transition:box-shadow .15s}
+.med-shelf-card:hover{box-shadow:var(--shadow-sm)}
+.med-pat-stripe{width:4px;border-radius:2px;flex:0 0 auto;margin-inline-end:10px}
+.meds-matrix-wrap{overflow-x:auto;scrollbar-width:thin;margin-top:8px;-webkit-overflow-scrolling:touch}
+.meds-matrix-table{width:100%;min-width:440px;border-collapse:separate;border-spacing:0}
+.meds-matrix-table th{background:var(--surface-2);color:var(--text-2);font-size:11px;font-weight:700;padding:8px 4px;text-align:center;border-bottom:1px solid var(--border)}
+.meds-matrix-table th.today{background:var(--accent-soft);color:var(--accent-dark);border-radius:8px 8px 0 0}
+.meds-matrix-table td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);vertical-align:middle}
+.meds-matrix-table td.today{background:var(--accent-soft)}
+.meds-matrix-table td.med-name-cell{text-align:start;padding:8px 8px;white-space:nowrap}
+.med-dose-pill{display:inline-block;padding:3px 6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent-2)}
+.med-log-btn{display:inline-block;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;border:none}
 </style>
 </head>
 <body>
@@ -749,7 +783,19 @@ function renderApp(){
   document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
   document.documentElement.dataset.theme=(localStorage.getItem('rafiq_web_dark')==='on')?'dark':'light';
   renderNav();
-  ({home:renderHome,lifetracker:renderLifeTracker,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore,schedule:renderSchedule,food:renderFood})[view]();
+  const routes = {
+    home: renderHome,
+    lifetracker: renderLifeTracker,
+    habits: renderHabits,
+    stats: renderStats,
+    tasks: renderTasks,
+    more: renderMore,
+    schedule: renderSchedule,
+    food: renderFood,
+    shopping: renderShopping,
+    meds: renderMeds
+  };
+  (routes[view] || renderHome)();
 }
 function ringSVG(pct,cls){
   const r=34,c=(2*Math.PI*r).toFixed(1),off=(c*(1-Math.min(100,Math.max(0,pct))/100)).toFixed(1);
@@ -823,21 +869,59 @@ function renderHome(){
           `).join('')+'</div>';
       })()}
     </div>
-    <div class="card" data-sec="food" data-act="openFood" style="cursor:pointer">
-      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">طعامنا اليوم</div>
+    <div class="card" data-sec="food">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">🍽</span>
+      <div style="flex:1;min-width:0;cursor:pointer" data-act="openFood"><div style="font-size:15px;font-weight:700">طعامنا اليوم</div>
       <div class="shop-meta">${(()=>{ const t=new Date().toISOString().slice(0,10);
         const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
-        return m.length? ('مسجل اليوم: '+m.length+' وجبة') : 'اضغط لتسجيل الفطور/الغداء/العشاء'; })()}</div></div>
-      <span class="badge">السجل ➜</span></div>
+        return m.length? ('مسجل اليوم: '+m.length+' وجبة') : 'اضغط فطور/غداء/عشاء لتسجيل ما تناولتم'; })()}</div></div>
+      <span class="badge" data-act="openFood" style="cursor:pointer">السجل ➜</span></div>
+      
+      <!-- 4 أعمدة الوجبات الملونة التوأم لتطبيق الأندرويد -->
+      <div class="meal-cols-row">
+        ${[['فطور','🍳','meal-futoor'],['غداء','🍲','meal-ghadaa'],['عشاء','🥗','meal-ashaa'],['سناك','🍎','meal-snack']].map(([m,e,cls])=>{
+          const t=new Date().toISOString().slice(0,10);
+          const cnt=foodEntries().filter(i=>(i.note||'').startsWith(t) && (i.note||'').split('|')[1]===m).length;
+          return `<div class="meal-col-btn ${cls}" data-act="quickMealLog" data-meal="${m}">
+            <span style="font-size:21px">${e}</span>
+            <span style="font-size:12px;font-weight:700;margin-top:2px">${m}</span>
+            <span style="font-size:10px;opacity:.85">${cnt? (cnt+' مسجّل'):'—'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- الوجبات المسجلة اليوم -->
       ${(()=>{ const t=new Date().toISOString().slice(0,10);
         const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
         const em={فطور:'🍳',غداء:'🍲',عشاء:'🥗',سناك:'🍎'};
-        return m.length? '<div style="padding-top:6px">'+m.map(i=>{ const meal=(i.note||'').split('|')[1]||'';
-          return `<div style="font-size:13.5px;padding:3px 0"><span style="color:var(--text-3);font-size:12px">${em[meal]||'🍽'} ${esc(meal)}</span> — <b>${esc(i.title)}</b></div>`; }).join('')+'</div>' : ''; })()}
+        return m.length? '<div style="padding:4px 0">'+m.map(i=>{ const meal=(i.note||'').split('|')[1]||'';
+          return `<div class="row" style="min-height:36px;padding:4px 0"><span class="badge" style="background:var(--surface-2);color:var(--text-1)">${em[meal]||'🍽'} ${esc(meal)}</span><span style="font-size:14px;font-weight:600;margin-inline-start:8px;flex:1">${esc(i.title)}</span></div>`; }).join('')+'</div>' : ''; })()}
+
+      <!-- أطباق نحبها -->
       ${(()=>{ const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
         const ds=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
-        return ds.length? `<div class="shop-meta" style="padding-top:6px">🍽 أطباق نحبها: ${ds.map(d=>esc(d.title)).join(' • ')}</div>`:''; })()}
+        return ds.length? `<div class="shop-meta" style="padding-top:4px;color:var(--accent-dark)">🍽 أطباق نحبها: ${ds.map(d=>esc(d.title)).join(' • ')}</div>`:''; })()}
+
+      <!-- أزرار الإجراءات السريعة -->
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn ghost" data-act="openFood" style="flex:1;padding:8px 4px;font-size:12px">🍎 سجل الوجبات</button>
+        <button class="btn ghost" data-act="openDishesSheet" style="flex:1;padding:8px 4px;font-size:12px">${(()=>{ const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها'); const n=dl?(data.shopping||[]).filter(i=>i.list_id===dl.id).length:0; return '🍽 أطباقنا ('+n+')'; })()}</button>
+        <button class="btn ghost" data-act="pickRandomDish" style="flex:1;padding:8px 4px;font-size:12px;background:var(--accent-soft);color:var(--accent-dark);font-weight:700">🎲 ماذا نأكل؟</button>
+      </div>
+
+      <!-- صندوق الاختيار العشوائي للطبق -->
+      ${window._pickedDish ? `
+        <div class="dish-pick-box">
+          <div class="dish-pick-title">🎲 اختيار اليوم العشوائي</div>
+          <div class="dish-pick-name">${esc(window._pickedDish)}</div>
+          <div class="dish-pick-actions">
+            <button class="btn mini" style="background:var(--accent);color:#fff" data-act="logPickedDish" data-meal="غداء">سجّله غداءً 🍲</button>
+            <button class="btn mini" style="background:var(--accent);color:#fff" data-act="logPickedDish" data-meal="عشاء">سجّله عشاءً 🥗</button>
+            <button class="btn ghost mini" data-act="pickRandomDish">🎲 غيّر</button>
+            <button class="btn ghost mini" data-act="closePickedDish">إغلاق</button>
+          </div>
+        </div>
+      ` : ''}
     </div>
     <div class="sec" data-sec="habits"><h2>🌱 عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
     <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
@@ -855,13 +939,42 @@ function renderHome(){
         <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a>
         <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delUrgent" data-id="${u.id}">حذف</button></div>`).join('')}
     </div>
-    <div class="sec" data-sec="shopping"><h2>🛒 قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
-    <div class="card">${shop?`
-      <div class="row" style="min-height:32px"><div class="bar"><i style="width:${shop.done*100/(shop.items.length||1)}%"></i></div>
-        <span style="font-size:12px;color:var(--text-2);font-weight:600">${shop.done} / ${shop.items.length} منجزة</span></div>
-      ${shop.items.map(si=>shopRow(si)).join('')}
-      <div class="add-item"><input id="shopIn" placeholder="أضف عنصرًا..." data-list="${shop.list.id}"><button data-act="addShop">＋</button></div>`
-    :`<div class="empty"><span class="e">🛒</span>لا توجد قائمة مشتركة بعد.<br>تُنشأ تلقائيًا مع أول دائرة مشتركة.</div>`}</div>
+    <div class="sec" data-sec="shopping">
+      <h2>🛒 قائمة التسوق المشتركة</h2>
+      <button class="link" data-act="openShopping">فتح كل المتاجر ➜</button>
+    </div>
+    <div class="card" data-sec="shopping">
+      ${(()=>{
+        const stores = getStoreLists();
+        const shop = shoppingFor();
+        if(!stores.length || !shop){
+          return `<div class="empty"><span class="e">🛒</span>لا توجد قائمة مشتركة بعد.<br><button class="mini" data-act="openAddStoreSheet" style="margin-top:8px">＋ إنشاء أول متجر</button></div>`;
+        }
+        const totalItems = shop.items.length;
+        const totalDone = shop.done;
+        const pendingItems = shop.items.filter(i=>!i.completed);
+        return `
+          <div class="row" style="min-height:32px;border-top:none">
+            <div class="bar"><i style="width:${totalDone*100/(totalItems||1)}%"></i></div>
+            <span style="font-size:12px;color:var(--text-2);font-weight:600">${totalDone} / ${totalItems} منجزة (${stores.length} متاجر)</span>
+          </div>
+          <!-- شريط متاجر مصغر -->
+          <div class="store-tabs-bar" style="padding:2px 0 6px">
+            <div class="store-tab-pill ${(!window._activeStoreTab||window._activeStoreTab==='ALL')?'on':''}" data-act="setStoreTabAndGo" data-tab="ALL">📊 الكل (${pendingItems.length})</div>
+            ${stores.map(s=>{
+              const unc = getStoreUncompletedCount(s.id);
+              return `<div class="store-tab-pill ${window._activeStoreTab===s.id?'on':''}" data-act="setStoreTabAndGo" data-tab="${s.id}">${esc(s.title)} (${unc})</div>`;
+            }).join('')}
+            <div class="store-add-btn" data-act="openAddStoreSheet">+ متجر</div>
+          </div>
+          <!-- سلع معلقة من جميع المتاجر -->
+          ${pendingItems.slice(0, 6).map(si=>shopRow(si)).join('')}
+          ${pendingItems.length > 6 ? `<div style="text-align:center;padding:6px 0"><button class="link" data-act="openShopping">+ ${pendingItems.length - 6} عناصر أخرى — فتح كل المتاجر ➜</button></div>` : ''}
+          ${!pendingItems.length ? '<div class="shop-meta" style="padding:8px 0;text-align:center">سلة التسوق فارغة في جميع المتاجر ✓</div>' : ''}
+          <div class="add-item"><input id="shopIn" placeholder="أضف عنصرًا سريعًا..." data-list="${stores[0]?stores[0].id:''}"><button data-act="addShop">＋</button></div>
+        `;
+      })()}
+    </div>
     ${(()=>{ const rs=(data.tasks||[]).filter(t=>t.priority==='REMINDER'&&t.assigned_to===meId()&&t.status!=='DONE');
       return rs.length? `<div class="sec" data-sec="reminders"><h2>🔔 تذكيرات موجّهة إليك</h2></div>
       <div class="card">${rs.map(r=>`<div class="row"><span style="font-size:19px">🔔</span>
@@ -903,8 +1016,9 @@ function renderHome(){
     </div>
     <div class="card" data-sec="meds">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">💊</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">أدويتنا</div>
+      <div style="flex:1;min-width:0;cursor:pointer" data-act="openMeds"><div style="font-size:15px;font-weight:600">أدويتنا</div>
       <div class="shop-meta">${(()=>{ const a=medsOf().filter(m=>m.activeToday()); return a.length? ('لديكم '+a.length+' دواء نشط اليوم') : 'لا أدوية مسجلة — أضف دواءك أو دواء رفيقك'; })()}</div></div>
+      <button class="link" data-act="openMeds" style="margin-inline-end:6px">فتح المنظمة ➜</button>
       <button class="link" data-act="openAddMed">＋ دواء</button></div>
       ${(()=>{ const act=medsOf().filter(m=>m.activeToday()); if(!act.length) return '';
         const tog=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
@@ -970,11 +1084,235 @@ function renderHome(){
   </div>`;
   applyCollapse();
 }
+/* ---------- قوائم التسوق والمتاجر (Shopping & Stores) ---------- */
+const RESERVED_SHOPPING_TITLES = ['طعامنا اليومي', 'أطباق نحبها', 'أماكننا المحفوظة', 'مقاطعنا الجميلة', '__سلة المحذوفات__'];
+window._activeStoreTab = 'ALL';
+
+function getStoreLists(){
+  if(!data || !data.sharedLists) return [];
+  return data.sharedLists.filter(l => !RESERVED_SHOPPING_TITLES.includes(l.title) && !l.title.includes('سلة المحذوفات'));
+}
+
+function getPastBoughtItems(){
+  const storeIds = new Set(getStoreLists().map(s => s.id));
+  const past = (data.shopping || []).filter(i => storeIds.has(i.list_id) && i.completed).map(i => i.title);
+  return [...new Set(past)].slice(0, 15);
+}
+
+function getStoreUncompletedCount(listId){
+  return (data.shopping || []).filter(i => i.list_id === listId && !i.completed).length;
+}
+
 function shoppingFor(){
-  if(!data||!data.sharedLists.length) return null;
-  const list=data.sharedLists[0];
-  const items=data.shopping.filter(i=>i.list_id===list.id).sort((a,b)=>(a.completed-b.completed)||(a.position-b.position));
-  return {list,items,done:items.filter(i=>i.completed).length};
+  const stores = getStoreLists();
+  if(!stores.length) return null;
+  const allStoreIds = new Set(stores.map(s => s.id));
+  const items = (data.shopping || []).filter(i => allStoreIds.has(i.list_id)).sort((a,b)=>(a.completed-b.completed)||(a.position-b.position));
+  return {
+    stores,
+    items,
+    done: items.filter(i => i.completed).length,
+    pending: items.filter(i => !i.completed)
+  };
+}
+
+function shopRow(si){
+  const by = si.completed && si.completed_by ? nameOf(si.completed_by) : null;
+  const store = getStoreLists().find(s => s.id === si.list_id);
+  return `<div class="row"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
+    <div style="flex:1;min-width:0"><div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
+    <div class="shop-meta">${store?`<span style="color:var(--accent-dark);font-weight:600">📍 ${esc(store.title)}</span> • `:''}${si.completed&&by?`أنجزها ${esc(by)} • ${relAr(si.completed_at)}`:''}</div></div>
+    <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${si.id}" data-t="${esc(si.title)}">تسمية</button>
+    <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${si.id}">✕</button></div>`;
+}
+
+async function quickReaddShopping(title){
+  const stores = getStoreLists();
+  let targetListId = (window._activeStoreTab && window._activeStoreTab !== 'ALL') ? window._activeStoreTab : (stores[0] ? stores[0].id : null);
+  if(!targetListId){
+    const sh = sharedFirst();
+    const cid = sh ? sh.circle.id : ((data.circles || []).find(c => c.circle.type === 'PERSONAL') || {}).circle?.id;
+    if(!cid){ toast('تحتاج دائرة أولاً'); return; }
+    const nl = await ensureList('عام', cid);
+    targetListId = nl.id;
+  }
+  try {
+    await rest('POST', 'shared_list_items', { id: uuid(), list_id: targetListId, title: title, completed: false }, 'return=minimal');
+    await refreshAll();
+    renderApp();
+    toast('أُضيف: ' + title + ' ✓');
+  } catch(e) {
+    toast(friendly(e));
+  }
+}
+
+function openAddStoreSheet(){
+  openSheet(sheetHead('🛒 متجر / قائمة تسوق جديدة') + `
+    <div class="field"><label>اسم المتجر أو القائمة</label><input id="newStoreTitle" placeholder="مثال: لينييرس، الصيدلية، كارفور"></div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:12px">تُشارك هذه القائمة تلقائيًا مع رفيقك في الدائرة المشتركة.</p>
+    <button class="btn" data-act="saveNewStore">إنشاء المتجر</button>`);
+  setTimeout(()=>{ const i=$('#newStoreTitle'); if(i) i.focus(); }, 100);
+}
+
+async function saveNewStore(){
+  const inp = $('#newStoreTitle');
+  const title = ((inp && inp.value) || '').trim();
+  if(!title){ toast('اكتب اسم المتجر'); return; }
+  try {
+    const sh = sharedFirst();
+    const cid = sh ? sh.circle.id : ((data.circles || []).find(c => c.circle.type === 'PERSONAL') || {}).circle?.id;
+    if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+    const newList = await ensureList(title, cid);
+    window._activeStoreTab = newList.id;
+    closeSheet();
+    await refreshAll();
+    view = 'shopping';
+    renderApp();
+    toast('أُضيف متجر ' + title + ' ✓');
+  } catch(e) {
+    toast('تعذر إضافة المتجر: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+function openRenameStoreSheet(listId, curTitle){
+  openSheet(sheetHead('✏️ تعديل اسم المتجر') + `
+    <div class="field"><label>اسم المتجر</label><input id="renameStoreTitle" value="${esc(curTitle)}"></div>
+    <button class="btn" data-act="saveRenameStore" data-id="${listId}">حفظ التعديل</button>`);
+}
+
+async function saveRenameStore(listId){
+  const inp = $('#renameStoreTitle');
+  const title = ((inp && inp.value) || '').trim();
+  if(!title){ toast('اكتب اسم المتجر'); return; }
+  try {
+    await rest('PATCH', 'shared_lists', { title }, 'id=eq.' + listId);
+    closeSheet();
+    await refreshAll();
+    renderApp();
+    toast('تم تعديل الاسم ✓');
+  } catch(e) {
+    toast('تعذر التعديل: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+async function deleteStore(listId, storeName){
+  if(!confirm('حذف متجر «' + storeName + '» وجميع عناصره؟')) return;
+  try {
+    await rest('DELETE', 'shared_list_items', 'list_id=eq.' + listId);
+    await rest('DELETE', 'shared_lists', 'id=eq.' + listId);
+    window._activeStoreTab = 'ALL';
+    await refreshAll();
+    renderApp();
+    toast('حُذف المتجر ✓');
+  } catch(e) {
+    toast('تعذر الحذف: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+function renderShopping(){
+  const stores = getStoreLists();
+  const past = getPastBoughtItems();
+  const activeTab = window._activeStoreTab || 'ALL';
+  const allPending = (data.shopping||[]).filter(i => stores.some(s => s.id === i.list_id) && !i.completed);
+  const totalAll = (data.shopping||[]).filter(i => stores.some(s => s.id === i.list_id)).length;
+  const totalCompleted = totalAll - allPending.length;
+
+  const curStore = stores.find(s => s.id === activeTab);
+
+  $('#view').innerHTML = `
+  <div class="screen">
+    <div class="row" style="min-height:44px;border-top:none">
+      <button class="link" data-act="goHome">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">🛒 قوائم التسوق والمتاجر</b>
+      <button class="link" data-act="openAddStoreSheet">+ متجر</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px">قوائم مشتركة منظمة حسب المتاجر — كل ما تشتريه يظهر لرفيقك فورًا.</p>
+
+    <!-- شريط التبويبات -->
+    <div class="store-tabs-bar">
+      <div class="store-tab-pill ${activeTab==='ALL'?'on':''}" data-act="setStoreTab" data-tab="ALL">
+        📊 الكل (${allPending.length})
+      </div>
+      ${stores.map(s => {
+        const unc = getStoreUncompletedCount(s.id);
+        return `<div class="store-tab-pill ${activeTab===s.id?'on':''}" data-act="setStoreTab" data-tab="${s.id}">
+          ${esc(s.title)} (${unc})
+        </div>`;
+      }).join('')}
+      <div class="store-add-btn" data-act="openAddStoreSheet">＋ متجر جديد</div>
+    </div>
+
+    <!-- شريط السلع السابقة (إعادة إضافة فورية) -->
+    ${past.length ? `
+      <div style="font-size:11.5px;color:var(--text-3);margin-bottom:4px">⚡ سلع سابقة شائعة (اضغط للإضافة الفورية):</div>
+      <div class="past-readd-bar">
+        ${past.map(p => `<div class="past-readd-pill" data-act="quickReaddShopping" data-t="${esc(p)}">＋ ${esc(p)}</div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${activeTab === 'ALL' ? `
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <b style="font-size:15px">📋 جميع طلبات التسوق المطلوبة (${allPending.length})</b>
+          <span style="font-size:11.5px;color:var(--text-3)">${totalCompleted} منجزة من ${totalAll}</span>
+        </div>
+        ${allPending.length ? allPending.map(item => {
+          const st = stores.find(s => s.id === item.list_id);
+          const storeName = st ? st.title : 'عام';
+          return `<div class="row">
+            <button class="check" data-act="toggleShop" data-id="${item.id}">✓</button>
+            <div style="flex:1;min-width:0">
+              <div class="htitle">${esc(item.title)}</div>
+              <div class="shop-meta"><span style="color:var(--accent-dark);font-weight:600">📍 ${esc(storeName)}</span></div>
+            </div>
+            <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${item.id}" data-t="${esc(item.title)}">تسمية</button>
+            <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${item.id}">✕</button>
+          </div>`;
+        }).join('') : `
+          <div class="empty" style="padding:24px 0"><span class="e">🛒</span>سلة التسوق فارغة حالياً في جميع المتاجر ✓</div>
+        `}
+        <div class="add-item" style="margin-top:10px">
+          <input id="shopIn" placeholder="أضف عنصرًا..." data-list="${stores[0] ? stores[0].id : ''}">
+          <button data-act="addShop">＋</button>
+        </div>
+      </div>
+    ` : (curStore ? `
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <b style="font-size:16px">📍 ${esc(curStore.title)}</b>
+          <div style="display:flex;gap:6px">
+            <button class="link" data-act="renameStore" data-id="${curStore.id}" data-t="${esc(curStore.title)}">تعديل الاسم</button>
+            ${stores.length > 1 ? `<button class="link" style="color:var(--error)" data-act="deleteStore" data-id="${curStore.id}" data-t="${esc(curStore.title)}">حذف المتجر</button>` : ''}
+          </div>
+        </div>
+        ${(()=>{
+          const items = (data.shopping||[]).filter(i => i.list_id === curStore.id);
+          const pending = items.filter(i => !i.completed);
+          const done = items.filter(i => i.completed);
+          return `
+            <div class="row" style="min-height:30px;border-top:none">
+              <div class="bar"><i style="width:${done.length * 100 / (items.length || 1)}%"></i></div>
+              <span style="font-size:12px;color:var(--text-2);font-weight:600">${done.length} / ${items.length} منجزة</span>
+            </div>
+            ${pending.map(si => shopRow(si)).join('')}
+            ${done.length ? `
+              <div style="font-size:11.5px;color:var(--text-3);margin:10px 0 4px;font-weight:600">المكتملة (${done.length}):</div>
+              ${done.map(si => shopRow(si)).join('')}
+            ` : ''}
+            ${!items.length ? '<div class="shop-meta" style="padding:8px 0">لا توجد عناصر في هذا المتجر بعد.</div>' : ''}
+            <div class="add-item" style="margin-top:10px">
+              <input id="shopIn" placeholder="أضف عنصرًا إلى ${esc(curStore.title)}..." data-list="${curStore.id}">
+              <button data-act="addShop">＋</button>
+            </div>
+          `;
+        })()}
+      </div>
+    ` : `
+      <div class="empty">المتجر غير موجود. اختر متجرًا من الأعلى.</div>
+    `)}
+
+    <div class="foot">تزامن حي وفوري مع رفيقك 🛒</div>
+  </div>`;
 }
 function habitRow(uid,item){
   const hp=habitProg(uid,item);
@@ -983,13 +1321,7 @@ function habitRow(uid,item){
       :`<div class="bar solo"><i style="width:${hp.pct}%"></i></div><span class="hval ${hp.done?'ok':''}">${trimN(hp.v)} / ${trimN(item.target_value)} ${item.unit||''}</span>
         <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}</div>`;
 }
-function shopRow(si){
-  const by=si.completed&&si.completed_by?nameOf(si.completed_by):null;
-  return `<div class="row"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
-    <div style="flex:1;min-width:0"><div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
-    ${si.completed&&by?`<div class="shop-meta">أنجزها ${esc(by)} • ${relAr(si.completed_at)}</div>`:''}</div>
-    <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${si.id}">✕</button></div>`;
-}
+
 function nameOf(uid){ if(uid===meId()) return 'أنت';
   const m=(data.circles.flatMap(c=>c.members).find(x=>x.m.user_id===uid)||{}).p; return m?m.display_name:'رفيقك'; }
 
@@ -1084,8 +1416,43 @@ async function saveDish(){
     toast('أُضيف الطبق ✓');
   }catch(e){ toast('تعذر إضافة الطبق: '+(e&&e.message?e.message:'')); }
 }
+function openDishesSheet(){
+  const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
+  const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+  openSheet(sheetHead('🍽 أطباق نحبها ('+dishes.length+')')+`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="mini" data-act="openAddDish">➕ إضافة طبق جديد</button>
+    </div>
+    ${dishes.length? dishes.map(d=>`<div class="row" style="min-height:42px">
+      <span class="htitle" style="flex:1">${esc(d.title)}</span>
+      <button class="mini" data-act="quickLogDishAsMeal" data-title="${esc(d.title)}">سجّل كوجبة</button>
+      <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delDish" data-id="${d.id}">حذف</button>
+    </div>`).join('') : '<div class="shop-meta" style="padding:10px 0">لا توجد أطباق محفوظة بعد.</div>'}`);
+}
+
+function pickRandomDish(){
+  const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
+  const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+  if(!dishes.length){ toast('أضف أطباقًا نحبها أولًا'); return; }
+  const r = dishes[Math.floor(Math.random() * dishes.length)];
+  window._pickedDish = r.title;
+  renderApp();
+}
+
+function closePickedDish(){
+  window._pickedDish = null;
+  renderApp();
+}
+
+async function logPickedDish(meal){
+  if(!window._pickedDish) return;
+  const t = window._pickedDish;
+  window._pickedDish = null;
+  await logMeal(meal, t);
+}
+
 function renderFood(){
-  const meals=[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']];
+  const meals=[['فطور','🍳','meal-futoor'],['غداء','🍲','meal-ghadaa'],['عشاء','🥗','meal-ashaa'],['سناك','🍎','meal-snack']];
   const entries=foodEntries();
   const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
   const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
@@ -1094,7 +1461,21 @@ function renderFood(){
       <button class="link" data-act="goHome">➜ رجوع</button>
       <b style="flex:1;text-align:center;font-size:18px">🍽 طعامنا</b><span style="width:52px"></span>
     </div>
-    <p style="font-size:12px;color:var(--text-3);margin-bottom:10px">اضغط أي وجبة سابقة لتسجيلها اليوم بضغطة واحدة.</p>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:6px">سجّل ما تناولتم بلمسة واحدة، أو اضغط وجبة سابقة لإعادة تسجيلها اليوم.</p>
+
+    <!-- 4 أزرار سريعة لتسجيل الوجبات مباشرة -->
+    <div class="meal-cols-row">
+      ${meals.map(([m,e,cls])=>{
+        const t=new Date().toISOString().slice(0,10);
+        const cnt=entries.filter(i=>(i.note||'').startsWith(t) && (i.note||'').split('|')[1]===m).length;
+        return `<div class="meal-col-btn ${cls}" data-act="quickMealLog" data-meal="${m}">
+          <span style="font-size:21px">${e}</span>
+          <span style="font-size:12px;font-weight:700;margin-top:2px">${m}</span>
+          <span style="font-size:10px;opacity:.85">${cnt? (cnt+' مسجّل اليوم'):'+ تسجيل'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
     ${meals.map(([meal,emoji])=>{ const items=entries.filter(i=>(i.note||'').split('|')[1]===meal)
         .sort((a,b)=>((b.note||'').split('|')[0]).localeCompare((a.note||'').split('|')[0]));
       return `<div class="card"><b style="font-size:15px">${emoji} ${meal} (${items.length})</b>
@@ -2200,6 +2581,8 @@ function openMedDetail(id){
     </div>
     <button class="btn" data-act="logDose" data-id="${m.item.id}">سجّل جرعة الآن</button>
     <div style="height:8px"></div>
+    <button class="btn ghost" data-act="openEditMed" data-id="${m.item.id}">✏️ تعديل الدواء</button>
+    <div style="height:8px"></div>
     <button class="btn danger" data-act="delMed" data-id="${m.item.id}">🗑 حذف الدواء</button>`);
 }
 function openAddMed(){
@@ -2222,14 +2605,14 @@ function openAddMed(){
     <p style="font-size:11.5px;color:var(--text-3)">التذكير مشترك: سيصلكم إشعار حسب الجدول.</p>
     <button class="btn" data-act="saveMed">حفظ الدواء</button>`);
   window._mdPer=1; window._mdWeekly=false; window._mdOngoing=true; window._mdPatient='me';
-  const wp=$('#mdPer'); wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
+  const wp=$('#mdPer'); if(wp) wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
     wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
     if(b.dataset.n==='w'){ window._mdWeekly=true; setDisplay('mdWeeklyWrap','block'); }
     else { window._mdWeekly=false; window._mdPer=parseInt(b.dataset.n,10); setDisplay('mdWeeklyWrap','none'); } });
-  const wd=$('#mdDur'); wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+  const wd=$('#mdDur'); if(wd) wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
     wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
     window._mdOngoing=(b.dataset.v==='ongoing'); setDisplay('mdEndWrap', window._mdOngoing?'none':'block'); });
-  const wm=$('#mdPatient'); wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+  const wm=$('#mdPatient'); if(wm) wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
     wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._mdPatient=b.dataset.v; });
 }
 async function saveMed(){
@@ -2250,8 +2633,255 @@ async function saveMed(){
       description:desc,visibility:vis,unit:dose,target_value:perDay,frequency:'MED|'+schedule,status:'ACTIVE'},'return=minimal');
     if(vis==='SELECTED_MEMBERS'&&comp){ try{ await rest('POST','item_recipients',{id:uuid(),item_id:medId,user_id:comp.user_id},'return=minimal'); }catch(e){} }
     try{ await rest('POST','activity_events',{id:uuid(),circle_id:cid,user_id:meId(),kind:'MED_ADDED',payload:name.trim()}); }catch(e){}
-    await refreshAll(); closeSheet(); view='home'; renderApp(); toast('أُضيف الدواء 💊');
+    await refreshAll(); closeSheet(); renderApp(); toast('أُضيف الدواء 💊');
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
+}
+
+function openEditMedSheet(id){
+  const m=medsOf().find(x=>x.item.id===id); if(!m) return;
+  const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).p:null;
+  const isWeekly = m.schedule.startsWith('weekly:');
+  const curPer = isWeekly ? 1 : m.perDay;
+  const curWeekly = isWeekly ? m.schedule.slice(7) : '';
+  openSheet(sheetHead('✏️ تعديل الدواء')+`
+    <div class="field"><label>اسم الدواء</label><input id="emdName" value="${esc(m.item.title)}"></div>
+    <div class="field"><label>الجرعة</label><input id="emdDose" value="${esc(m.item.unit||'حبة')}"></div>
+    <div class="field"><label>عدد المرات يوميًا</label><div class="chips" id="emdPer">
+      ${[1,2,3,4].map(n=>`<button class="chip ${(!isWeekly&&curPer===n)?'on':''}" data-n="${n}">${n}</button>`).join('')}
+      <button class="chip ${isWeekly?'on':''}" data-n="w">أسبوعيًا</button></div></div>
+    <div class="field" id="emdWeeklyWrap" style="display:${isWeekly?'block':'none'}"><label>أي أيام؟</label><input id="emdWeekly" value="${esc(curWeekly)}" placeholder="مثال: السبت والثلاثاء"></div>
+    <div class="field"><label>المدة</label><div class="chips" id="emdDur">
+      <button class="chip ${m.ongoing?'on':''}" data-v="ongoing">مستمر مدى الحياة</button>
+      <button class="chip ${!m.ongoing?'on':''}" data-v="until">حتى تاريخ</button></div></div>
+    <div class="field" id="emdEndWrap" style="display:${m.ongoing?'none':'block'}"><label>تاريخ النهاية</label><input id="emdEnd" type="date" value="${esc(m.end||'')}"></div>
+    <div class="field"><label>لمن هذا الدواء؟</label><div class="chips" id="emdPatient">
+      <button class="chip ${m.patient==='me'?'on':''}" data-v="me">أنا</button>
+      ${comp?`<button class="chip ${m.patient==='companion'?'on':''}" data-v="companion">رفيقي</button>`:''}
+      <button class="chip ${m.patient==='both'?'on':''}" data-v="both">كلانا</button></div></div>
+    <button class="btn" data-act="saveEditMed" data-id="${m.item.id}">حفظ التعديلات</button>`);
+  window._emdPer=curPer; window._emdWeekly=isWeekly; window._emdOngoing=m.ongoing; window._emdPatient=m.patient||'me';
+  const wp=$('#emdPer'); if(wp) wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
+    wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    if(b.dataset.n==='w'){ window._emdWeekly=true; setDisplay('emdWeeklyWrap','block'); }
+    else { window._emdWeekly=false; window._emdPer=parseInt(b.dataset.n,10); setDisplay('emdWeeklyWrap','none'); } });
+  const wd=$('#emdDur'); if(wd) wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+    window._emdOngoing=(b.dataset.v==='ongoing'); setDisplay('emdEndWrap', window._emdOngoing?'none':'block'); });
+  const wm=$('#emdPatient'); if(wm) wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+    wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._emdPatient=b.dataset.v; });
+}
+
+async function saveEditMed(itemId){
+  try{
+    const name=($('#emdName')||{}).value||''; if(!name.trim()){ toast('اكتب اسم الدواء'); return; }
+    const dose=($('#emdDose')||{}).value||'حبة';
+    const perDay=window._emdWeekly?1:window._emdPer;
+    const schedule=window._emdWeekly?('weekly:'+(($('#emdWeekly')||{}).value||'غير محدد')):(perDay+'x');
+    const ongoing=window._emdOngoing; const end=ongoing?null:(($('#emdEnd')||{}).value||null);
+    const patient=window._emdPatient||'me';
+    const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
+    await rest('PATCH','items',{title:name.trim(),unit:dose,target_value:perDay,frequency:'MED|'+schedule,description:desc},'id=eq.'+itemId);
+    await refreshAll(); closeSheet(); renderApp(); toast('تم تعديل الدواء ✓');
+  }catch(e){ toast('تعذر التعديل: '+(e&&e.message?e.message:'')); }
+}
+
+/* --- مساعدات مصفوفة الأسبوع والجرعات (Meds Matrix Helpers) --- */
+const WEEK_DAYS_SHORT = ['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'];
+const WEEK_DAYS_FULL = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+window._medsWeekOffset = 0;
+
+function getWeekSaturday(refDate, offset){
+  const d = new Date(refDate);
+  d.setDate(d.getDate() + (offset * 7));
+  const daysSinceSat = (d.getDay() + 1) % 7;
+  d.setDate(d.getDate() - daysSinceSat);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getWeekDays(refDate, offset){
+  const sat = getWeekSaturday(refDate, offset);
+  const days = [];
+  for(let i = 0; i < 7; i++){
+    const day = new Date(sat);
+    day.setDate(sat.getDate() + i);
+    days.push(day);
+  }
+  return days;
+}
+
+function parseDosesForMed(itemId, entries){
+  return (entries || []).filter(e => e.item_id === itemId).map(e => {
+    try {
+      const dt = new Date(e.recorded_at);
+      const isoDate = dt.toISOString().slice(0, 10);
+      const h = dt.getHours(), m = dt.getMinutes();
+      const ampm = h < 12 ? 'ص' : 'م';
+      const h12 = (h % 12) || 12;
+      const timeStr = h12 + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+      return { id: e.id, date: isoDate, timeStr, dt };
+    } catch(ex){ return null; }
+  }).filter(Boolean).sort((a,b) => a.dt - b.dt);
+}
+
+function lastDoseFormatted(doses, todayIso){
+  if(!doses.length) return 'لم يُسجّل هذا الأسبوع';
+  const last = doses[doses.length - 1];
+  if(last.date === todayIso) return 'اليوم • ' + last.timeStr;
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  if(last.date === yest.toISOString().slice(0, 10)) return 'أمس • ' + last.timeStr;
+  return last.date + ' • ' + last.timeStr;
+}
+
+async function undoLastDose(itemId){
+  try {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const myEntries = (data.entries || []).filter(e => e.item_id === itemId && (e.recorded_at || '').startsWith(todayIso) && e.user_id === meId());
+    if(!myEntries.length){ toast('لا توجد جرعة مسجلة اليوم للتراجع عنها'); return; }
+    myEntries.sort((a,b) => (b.recorded_at||'').localeCompare(a.recorded_at||''));
+    await rest('DELETE', 'progress_entries', 'id=eq.' + myEntries[0].id);
+    await refreshAll();
+    renderApp();
+    toast('تم التراجع عن الجرعة ↩︎');
+  } catch(e) {
+    toast('تعذر التراجع: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+function renderMeds(){
+  const meds = medsOf();
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
+  const weekOffset = window._medsWeekOffset || 0;
+  const weekDays = getWeekDays(today, weekOffset);
+  const weekSat = weekDays[0];
+  const weekFri = weekDays[6];
+
+  const satLabel = weekSat.getDate() + ' ' + AR_MONTHS[weekSat.getMonth()];
+  const friLabel = weekFri.getDate() + ' ' + AR_MONTHS[weekFri.getMonth()];
+
+  $('#view').innerHTML = `
+  <div class="screen">
+    <div class="row" style="min-height:44px;border-top:none">
+      <button class="link" data-act="goHome">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">💊 منظمة الأدوية</b>
+      <button class="link" data-act="openAddMed">+ دواء</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px">متابعة دقيقة للأدوية والجرعات بلمسة واحدة مع مصفوفة أسبوعية ذكية.</p>
+
+    <!-- 1. رف الأدوية السريع -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px">
+      <b style="font-size:14.5px;color:var(--text-1)">⚡ رف الأدوية السريع</b>
+      <span style="font-size:11.5px;color:var(--text-3)">اضغط لتسجيل جرعتك فوراً</span>
+    </div>
+
+    ${meds.length ? meds.map(m => {
+      const doses = parseDosesForMed(m.item.id, data.entries);
+      const todayDoses = doses.filter(d => d.date === todayIso);
+      const lastDoseTxt = lastDoseFormatted(doses, todayIso);
+      const patCol = medColor(m.patient);
+      const patLbl = medWho(m.patient);
+
+      return `
+      <div class="card med-shelf-card">
+        <div style="display:flex;align-items:center;cursor:pointer" data-act="medDetail" data-id="${m.item.id}">
+          <div class="med-pat-stripe" style="background:${patCol};height:40px"></div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:15px;font-weight:700;color:var(--text-1)">${esc(m.item.title)}</span>
+              <span class="badge" style="background:var(--surface-2);color:var(--text-2);font-size:11px">${esc(m.item.unit||'حبة')}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">
+              آخر جرعة: ${lastDoseTxt} • لمن: <span style="color:${patCol};font-weight:600">${patLbl}</span>
+            </div>
+          </div>
+          <button class="link" style="font-size:20px;padding:4px 8px" data-act="medDetail" data-id="${m.item.id}">⋯</button>
+        </div>
+
+        <div style="margin-top:10px">
+          ${!todayDoses.length ? `
+            <button class="btn" style="width:100%;background:var(--accent);color:#fff;font-weight:700;padding:9px;border-radius:10px" data-act="logDose" data-id="${m.item.id}">
+              ✔ أخذت الجرعة الآن
+            </button>
+          ` : `
+            <div style="display:flex;gap:6px">
+              <button class="btn ghost" style="flex:1;background:var(--accent-soft);color:var(--accent-dark);font-size:12px;font-weight:700;padding:8px" data-act="logDose" data-id="${m.item.id}">
+                ✅ أُخذت اليوم (${todayDoses[todayDoses.length-1].timeStr}) • +جرعة إضافية
+              </button>
+              <button class="btn ghost" style="flex:0 0 auto;padding:8px 12px;font-size:12px;color:var(--text-2)" data-act="undoLastDose" data-id="${m.item.id}">
+                ↩︎ تراجع
+              </button>
+            </div>
+          `}
+        </div>
+      </div>`;
+    }).join('') : `
+      <div class="card"><div class="empty"><span class="e">💊</span>لا توجد أدوية مسجلة بعد.<br><button class="mini" data-act="openAddMed" style="margin-top:8px">＋ إضافة دواء</button></div></div>
+    `}
+
+    <!-- 2. مصفوفة الأسبوع الشبكية الشاملة -->
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <b style="font-size:14px;color:var(--text-1)">📅 مصفوفة الأسبوع الشبكية</b>
+          <div style="font-size:11px;color:var(--text-3)">${satLabel} — ${friLabel}</div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="mini" data-act="medsPrevWeek">‹ السابق</button>
+          ${weekOffset !== 0 ? '<button class="mini" data-act="medsCurrentWeek">الحالي</button>' : ''}
+          <button class="mini" data-act="medsNextWeek">التالي ›</button>
+        </div>
+      </div>
+
+      <div class="meds-matrix-wrap">
+        <table class="meds-matrix-table">
+          <thead>
+            <tr>
+              <th style="text-align:start;padding-inline-start:8px;min-width:110px">الدواء</th>
+              ${weekDays.map((d, idx) => {
+                const isT = d.toISOString().slice(0, 10) === todayIso;
+                return `<th class="${isT ? 'today' : ''}">
+                  <div>${WEEK_DAYS_SHORT[idx]}</div>
+                  <div style="font-size:10px;font-weight:normal">${d.getDate()}</div>
+                </th>`;
+              }).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${meds.length ? meds.map(m => {
+              const doses = parseDosesForMed(m.item.id, data.entries);
+              return `<tr>
+                <td class="med-name-cell">
+                  <div style="font-size:12.5px;font-weight:600;color:var(--text-1)">${esc(m.item.title)}</div>
+                  <div style="font-size:10px;color:var(--text-3)">${esc(m.item.unit||'حبة')}</div>
+                </td>
+                ${weekDays.map(d => {
+                  const dIso = d.toISOString().slice(0, 10);
+                  const isT = dIso === todayIso;
+                  const dayDoses = doses.filter(x => x.date === dIso);
+                  let cellContent = '';
+                  if(dayDoses.length){
+                    cellContent = `<span class="med-dose-pill" title="${dayDoses.map(x=>x.timeStr).join(' • ')}">${dayDoses[0].timeStr}${dayDoses.length > 1 ? ` (+${dayDoses.length - 1})` : ''}</span>`;
+                  } else if(isT){
+                    cellContent = `<button class="med-log-btn" data-act="logDose" data-id="${m.item.id}">+سجل</button>`;
+                  } else if(d < today){
+                    cellContent = '<span style="color:var(--text-3);opacity:.45">—</span>';
+                  } else {
+                    cellContent = '<span style="color:var(--text-3);opacity:.25">·</span>';
+                  }
+                  return `<td class="${isT ? 'today' : ''}">${cellContent}</td>`;
+                }).join('')}
+              </tr>`;
+            }).join('') : `
+              <tr><td colspan="8" style="padding:16px;text-align:center;color:var(--text-3)">لا توجد أدوية لعرضها في المصفوفة</td></tr>
+            `}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="foot">تذكير مشترك وتسجيل موثق لحظيًا 💊</div>
+  </div>`;
 }
 
 /* ---------- الشعور اليومي ---------- */
@@ -2635,10 +3265,24 @@ async function deleteTodayEntries(itemId){
 async function logAct(circleId,kind,payload){ try{ await rest('POST','activity_events',
   {id:uuid(),circle_id:circleId,user_id:meId(),kind,payload:payload||'',created_at:nowIso()},'return=minimal'); }catch(e){} }
 async function addShop(){
-  const inp=$('#shopIn'); const v=inp.value.trim(); if(!v) return;
-  try{ await rest('POST','shared_list_items',{id:uuid(),list_id:inp.dataset.list,title:v,completed:false},'return=minimal');
-    const list=data.sharedLists.find(l=>l.id===inp.dataset.list);
+  const inp=$('#shopIn'); if(!inp) return;
+  const v=inp.value.trim(); if(!v) return;
+  try{
+    let targetListId = inp.dataset.list;
+    if(!targetListId || targetListId === 'undefined'){
+      const stores = getStoreLists();
+      targetListId = (window._activeStoreTab && window._activeStoreTab !== 'ALL') ? window._activeStoreTab : (stores[0] ? stores[0].id : null);
+      if(!targetListId){
+        const sh = sharedFirst();
+        const cid = sh ? sh.circle.id : ((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+        const nl = await ensureList('عام', cid);
+        targetListId = nl.id;
+      }
+    }
+    await rest('POST','shared_list_items',{id:uuid(),list_id:targetListId,title:v,completed:false},'return=minimal');
+    const list=data.sharedLists.find(l=>l.id===targetListId);
     if(list) logAct(list.circle_id,'SHOP_ADDED',v);
+    inp.value='';
     await refreshAll(); renderApp(); toast('أُضيف ✓'); }catch(e){ toast(friendly(e)); }
 }
 async function toggleShop(id){
@@ -3034,20 +3678,26 @@ function openAddMenu(){
   pop.addEventListener('click',()=>setTimeout(()=>{const p=document.getElementById('addPop'); if(p) p.remove();},60));
   setTimeout(()=>{ document.addEventListener('click',function h(ev){ const p=document.getElementById('addPop'); if(p && !p.contains(ev.target)){ p.remove(); document.removeEventListener('click',h); } },true); },60);
 }
-function openMealSheet(){
+function openMealSheet(initialMeal){
   const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
   const dishes=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
+  const curMeal = initialMeal || window._qmMeal || 'فطور';
+  window._qmMeal = curMeal;
   openSheet(sheetHead('🍽 تسجيل وجبة اليوم')+`
     <div class="chips" id="qmMeal">
-      ${[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']].map(([m,e],i)=>`<button class="chip ${i===0?'on':''}" data-m="${m}">${e} ${m}</button>`).join('')}
+      ${[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']].map(([m,e])=>`<button class="chip ${m===curMeal?'on':''}" data-m="${m}">${e} ${m}</button>`).join('')}
     </div>
     <div style="height:10px"></div>
     <div class="field"><label>ماذا تناولتم؟</label><input id="qmText" placeholder="مثال: فول وبيض"></div>
-    ${dishes.length?`<div class="shop-meta" style="margin-bottom:10px">من أطباقكم: ${dishes.slice(0,4).map(d=>esc(d.title)).join(' • ')}</div>`:''}
+    ${dishes.length?`<div class="shop-meta" style="margin-bottom:10px">من أطباقكم المفضلة (اضغط للاختيار):<br>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        ${dishes.slice(0,8).map(d=>`<button type="button" class="mini" data-act="pickMealSuggestion" data-t="${esc(d.title)}">${esc(d.title)}</button>`).join('')}
+      </div></div>`:''}
     <button class="btn" data-act="saveMeal">تسجيل الوجبة</button>`);
-  window._qmMeal='فطور';
-  const w=$('#qmMeal'); w.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(!b) return;
+  const w=$('#qmMeal');
+  if(w) w.addEventListener('click',e=>{ const b=e.target.closest('[data-m]'); if(!b) return;
     window._qmMeal=b.dataset.m; w.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+  setTimeout(()=>{ const i=$('#qmText'); if(i) i.focus(); }, 100);
 }
 async function logMeal(meal,text){
   try{
@@ -3256,6 +3906,29 @@ document.addEventListener('click', async e=>{
       case 'downloadBackup': doDownloadBackup(); break;
       case 'openSchedule': view='schedule'; renderApp(); break;
       case 'openFood': view='food'; renderApp(); break;
+      case 'openShopping': view='shopping'; renderApp(); break;
+      case 'setStoreTab': window._activeStoreTab=el.dataset.tab; renderShopping(); break;
+      case 'setStoreTabAndGo': window._activeStoreTab=el.dataset.tab; view='shopping'; renderApp(); break;
+      case 'openAddStoreSheet': openAddStoreSheet(); break;
+      case 'saveNewStore': await saveNewStore(); break;
+      case 'renameStore': openRenameStoreSheet(el.dataset.id, el.dataset.t); break;
+      case 'saveRenameStore': await saveRenameStore(el.dataset.id); break;
+      case 'deleteStore': await deleteStore(el.dataset.id, el.dataset.t); break;
+      case 'quickReaddShopping': await quickReaddShopping(el.dataset.t); break;
+      case 'openMeds': view='meds'; renderApp(); break;
+      case 'medsPrevWeek': window._medsWeekOffset=(window._medsWeekOffset||0)-1; renderMeds(); break;
+      case 'medsNextWeek': window._medsWeekOffset=(window._medsWeekOffset||0)+1; renderMeds(); break;
+      case 'medsCurrentWeek': window._medsWeekOffset=0; renderMeds(); break;
+      case 'undoLastDose': await undoLastDose(el.dataset.id); break;
+      case 'openEditMed': openEditMedSheet(el.dataset.id); break;
+      case 'saveEditMed': await saveEditMed(el.dataset.id); break;
+      case 'quickMealLog': openMealSheet(el.dataset.meal); break;
+      case 'pickMealSuggestion': { const inp=$('#qmText'); if(inp) inp.value=el.dataset.t; break; }
+      case 'openDishesSheet': openDishesSheet(); break;
+      case 'quickLogDishAsMeal': { const tit=el.dataset.title; closeSheet(); openMealSheet(); setTimeout(()=>{ const inp=$('#qmText'); if(inp) inp.value=tit; },120); break; }
+      case 'pickRandomDish': pickRandomDish(); break;
+      case 'closePickedDish': closePickedDish(); break;
+      case 'logPickedDish': await logPickedDish(el.dataset.meal); break;
       case 'quickDue': { const d=parseInt(el.dataset.d,10); const dt=new Date(); dt.setDate(dt.getDate()+d);
         const iso=dt.toISOString().slice(0,10); const f=$('#tDue'); if(f) f.value=iso; break; }
       case 'addMenu': openAddMenu(); break;
@@ -3473,10 +4146,17 @@ function secSummary(k){
     if(k==='habits'){ const n=habitsFor(me).length; return n? n+' عادة':'لا عادات'; }
     if(k==='overdue'){ const n=(overdueTasks()||[]).length; return n? n+' متأخرة':'لا متأخرات'; }
     if(k==='reminders'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='REMINDER'&&t.assigned_to===me&&t.status!=='DONE').length; return n? n+' تذكير':'لا تذكيرات'; }
-    if(k==='shopping'){ const sh=shoppingFor(); const n=sh?sh.items.length:0; return n? n+' عنصر':'فارغة'; }
+    if(k==='shopping'){
+      const stores = getStoreLists();
+      const totalUnc = stores.reduce((sum, s) => sum + getStoreUncompletedCount(s.id), 0);
+      return totalUnc ? (totalUnc + ' عنصر مطلوب') : 'مكتملة';
+    }
     if(k==='review') return 'ملخّص الأسبوع';
     if(k==='mood'){ const n=moodsOf().length; return n? n+' تسجيل':'لم يُسجّل'; }
-    if(k==='meds'){ const n=medsOf().length; return n? n+' دواء':'لا أدوية'; }
+    if(k==='meds'){
+      const a = medsOf().filter(m => m.activeToday());
+      return a.length ? (a.length + ' دواء نشط اليوم') : 'لا أدوية نشطة';
+    }
     if(k==='places'){ const n=lc('أماكننا المحفوظة'); return n? n+' مكان':'لا أماكن'; }
     if(k==='media'){ const n=lc('مقاطعنا الجميلة'); return n? n+' مقطع':'لا مقاطع'; }
     if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستعجلة':'لا رسائل'; }
@@ -3486,6 +4166,10 @@ function secSummary(k){
 let activeSec=null;
 function pickSec(k){
   if(k==='lifetracker'){ view='lifetracker'; renderApp(); return; }
+  if(k==='shopping'){ view='shopping'; renderApp(); return; }
+  if(k==='food'){ view='food'; renderApp(); return; }
+  if(k==='meds'){ view='meds'; renderApp(); return; }
+  if(k==='schedule'){ view='schedule'; renderApp(); return; }
   const wasOn=activeSec===k;
   activeSec = wasOn ? null : k;
   applyCollapse();
