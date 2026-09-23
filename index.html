@@ -8,9 +8,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" href="/icon.png">
 <link rel="apple-touch-icon" href="/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&family=Readex+Pro:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <title>رفيق — الويب</title>
 <style>
 :root{
+  --app-font:-apple-system,'SF Arabic','Segoe UI','Geeza Pro','Noto Kufi Arabic',Tahoma,sans-serif;
   --bg-app:#FAF1E8; --surface:#FFFFFF; --surface-2:#F9F9F9; --surface-warm:#FBF5EE;
   --divider:#F2EEEA; --border:#E8E3DE; --nav-border:#EEEAE6;
   --text-1:#1D1D1F; --text-2:#7F7F78; --text-3:#A2A19C;
@@ -40,7 +44,7 @@ html[data-theme="dark"]{
   --space-comp:#F0B37A; --space-comp-soft:#352516;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'SF Arabic','Segoe UI','Geeza Pro','Noto Kufi Arabic',Tahoma,sans-serif;
+body{font-family:var(--app-font);
   background:#EDE7E0;color:var(--text-1);touch-action:manipulation}
 html[data-theme="dark"] body{background:#0C0D0C}
 button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;font-size:14px}
@@ -352,8 +356,26 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.16';
+const APP_VERSION = '1.17';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
+const ARABIC_FONTS = [
+  { id: 'system', name: 'خط النظام الافتراضي', family: "-apple-system, 'SF Arabic', 'Segoe UI', 'Geeza Pro', Tahoma, sans-serif", desc: 'الخط القياسي لجهازك' },
+  { id: 'tajawal', name: 'خط تجوال', family: "'Tajawal', sans-serif", desc: 'عصري وناعم ومريح جداً للقراءة' },
+  { id: 'cairo', name: 'خط كايرو', family: "'Cairo', sans-serif", desc: 'كوفي هندسي أنيق ومتقن' },
+  { id: 'noto', name: 'خط نوتو سانز', family: "'Noto Sans Arabic', sans-serif", desc: 'الخط العربي القياسي الموثوق' },
+  { id: 'almarai', name: 'خط المراعي', family: "'Almarai', sans-serif", desc: 'بسيط وانسيابي ورقيق' },
+  { id: 'readex', name: 'خط ريكس برو', family: "'Readex Pro', sans-serif", desc: 'تقني ودقيق فائق الحداثة' },
+  { id: 'ibm', name: 'خط آي بي إم بلكس', family: "'IBM Plex Sans Arabic', sans-serif", desc: 'احترافي ورسمي متزن' },
+  { id: 'amiri', name: 'خط أميري', family: "'Amiri', serif", desc: 'نسخ كلاسيكي تراثي فخم' }
+];
+
+function applyAppFont(fontId){
+  const f = ARABIC_FONTS.find(x => x.id === fontId) || ARABIC_FONTS[0];
+  document.documentElement.style.setProperty('--app-font', f.family);
+  document.body.style.fontFamily = f.family;
+  localStorage.setItem('rafiq_web_font', f.id);
+}
 const CFG = {
   url: 'https://jnggbhyhqwbohpqwybbw.supabase.co',
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuZ2diaHlocXdib2hwcXd5YmJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQyMzcsImV4cCI6MjEwNTE0MDIzN30.4cojsJDBpFEQ8tKv-L9Mi4dTN8apKICUaNbQvJGjCQE',
@@ -912,6 +934,7 @@ function renderApp(){
   const p=meProfile();
   document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
   document.documentElement.dataset.theme=(localStorage.getItem('rafiq_web_dark')==='on')?'dark':'light';
+  applyAppFont(localStorage.getItem('rafiq_web_font') || 'system');
   renderNav();
   const routes = {
     home: renderHome,
@@ -3767,6 +3790,8 @@ function renderMore(){
     <div class="card">
       <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
         <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
+      <div class="setrow"><span class="st">🎨 الخط العربي</span><span class="badge">${(ARABIC_FONTS.find(x => x.id === (localStorage.getItem('rafiq_web_font') || 'system')) || {}).name || 'خط النظام'}</span>
+        <button class="link" data-act="openFontSheet">تغيير</button></div>
       <div class="setrow"><span class="st">📈 متتبع العادات والأنشطة</span><button class="link" data-act="openLifeTracker">افتح</button></div>
       <div class="setrow"><span class="st">📊 الإحصائيات العامة</span><button class="link" data-act="tab" data-v="stats">عرض</button></div>
       <div class="setrow"><span class="st">📱 تحميل تطبيق Android (آخر إصدار v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
@@ -4731,6 +4756,24 @@ function openEditProfile(){
   $('#pAcc').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
     window._pAcc=b.dataset.v; $('#pAcc').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
 }
+function openFontSheet(){
+  const cur = localStorage.getItem('rafiq_web_font') || 'system';
+  openSheet(sheetHead('🎨 اختيار الخط العربي') + `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">اختر الخط الذي تفضله لواجهة رفيق بالكامل:</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${ARABIC_FONTS.map(f => `
+        <button class="space-choice-btn ${cur===f.id?'selected':''}" style="font-family:${f.family}" data-act="pickFont" data-fid="${f.id}">
+          <span style="font-size:20px">${cur===f.id?'✓':'🔤'}</span>
+          <div class="space-choice-text" style="font-family:${f.family}">
+            <div class="space-choice-title" style="font-family:${f.family}">${esc(f.name)} ${cur===f.id?'<span style="color:var(--accent);font-weight:800"> (النشط)</span>':''}</div>
+            <div class="space-choice-desc" style="font-family:${f.family}">${esc(f.desc)} • رافقني، لا تراقبني 🌿 123</div>
+          </div>
+        </button>
+      `).join('')}
+    </div>
+    <button class="btn ghost" style="margin-top:12px" data-act="closeSheet">إغلاق</button>
+  `);
+}
 function openCfg(){
   openSheet(sheetHead('اتصال Supabase')+`
     <div class="field"><label>Project URL</label><input id="cUrl" value="${esc(CFG.url)}" style="direction:ltr"></div>
@@ -4964,6 +5007,15 @@ document.addEventListener('click', async e=>{
       case 'toggleDark': { const cur=localStorage.getItem('rafiq_web_dark')||'auto';
         localStorage.setItem('rafiq_web_dark', cur==='on'?'auto':'on');
         document.documentElement.dataset.theme=localStorage.getItem('rafiq_web_dark')==='on'?'dark':'light'; renderMore(); break; }
+      case 'openFontSheet': openFontSheet(); break;
+      case 'pickFont': {
+        applyAppFont(el.dataset.fid);
+        closeSheet();
+        renderMore();
+        const fn = (ARABIC_FONTS.find(x => x.id === el.dataset.fid) || {}).name || '';
+        toast('تم اعتماد: ' + fn + ' ✓');
+        break;
+      }
       case 'openCfg': openCfg(); break;
       case 'saveCfg': { const u=$('#cUrl').value.trim().replace(/\/+$/,''), k=$('#cKey').value.trim();
         if(!u.startsWith('https://')||!k){ toast('تحقق من القيم'); return; }
