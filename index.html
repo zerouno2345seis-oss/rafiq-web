@@ -120,9 +120,9 @@ h2{font-size:16px;font-weight:600}
 #nav .in{pointer-events:auto;width:100%;max-width:520px;height:var(--nav-h);background:var(--surface);
   border-top:1px solid var(--nav-border);display:flex}
 @media(min-width:800px){#nav .in{max-width:760px}}
-#nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:11px;font-weight:500}
-#nav button.on{color:var(--accent)}
-#nav .ic{font-size:19px;line-height:1}
+#nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#777873;font-size:11.5px;font-weight:600;padding:6px 0;position:relative;transition:color .12s}
+#nav button.on{color:var(--accent);font-weight:700}
+#nav .ic{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
 .overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
 .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
   padding:16px 16px calc(22px + env(safe-area-inset-bottom));max-height:86dvh;overflow-y:auto;animation:slideUp .22s ease}
@@ -305,9 +305,9 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .space-stripe-shared{border-inline-start:5px solid var(--space-shared) !important}
 .space-stripe-comp{border-inline-start:5px solid var(--space-comp) !important}
 
-.space-badge-me{display:inline-flex;align-items:center;gap:3px;background:var(--space-me-soft);color:var(--space-me);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
-.space-badge-shared{display:inline-flex;align-items:center;gap:3px;background:var(--space-shared-soft);color:var(--space-shared);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
-.space-badge-comp{display:inline-flex;align-items:center;gap:3px;background:var(--space-comp-soft);color:var(--space-comp);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
+.space-badge-me{display:inline-flex;align-items:center;gap:4px;background:var(--space-me-soft);color:var(--space-me);font-weight:700;font-size:11.5px;padding:3px 9px;border-radius:8px;flex:0 0 auto}
+.space-badge-shared{display:inline-flex;align-items:center;gap:4px;background:var(--space-shared-soft);color:var(--space-shared);font-weight:700;font-size:11.5px;padding:3px 9px;border-radius:8px;flex:0 0 auto}
+.space-badge-comp{display:inline-flex;align-items:center;gap:4px;background:var(--space-comp-soft);color:var(--space-comp);font-weight:700;font-size:11.5px;padding:3px 9px;border-radius:8px;flex:0 0 auto}
 
 .dots-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--text-2);line-height:1;cursor:pointer;flex:0 0 auto;transition:all .12s ease;user-select:none;background:none;border:none}
 .dots-btn:hover,.dots-btn:active{background:var(--surface-2);color:var(--text-1)}
@@ -327,12 +327,44 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .activity-subtab-btn{flex:1;padding:9px;border-radius:10px;font-size:13.5px;font-weight:700;text-align:center;cursor:pointer;color:var(--text-2);transition:all .15s}
 .activity-subtab-btn.on{background:var(--surface);color:var(--text-1);box-shadow:0 2px 8px rgba(0,0,0,.08)}
 
-/* Spaces Screen Grand Cards */
-.space-realm-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;transition:transform .12s, box-shadow .12s}
+/* Spaces Screen Grand Cards & Enhanced UI */
+.space-realm-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:16px 16px 14px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.03);transition:transform .12s, box-shadow .12s}
 .space-realm-card:hover{box-shadow:var(--shadow)}
 .space-realm-me{border-inline-start:6px solid var(--space-me)}
 .space-realm-shared{border-inline-start:6px solid var(--space-shared)}
 .space-realm-comp{border-inline-start:6px solid var(--space-comp)}
+
+.space-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.space-card-title-group{display:flex;align-items:center;gap:12px;min-width:0}
+.space-card-avatar{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex:0 0 auto}
+.space-card-name{font-size:16px;font-weight:800;color:var(--text-1);display:flex;align-items:center;gap:8px;line-height:1.2}
+.space-card-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block}
+.space-card-sub{font-size:11.5px;color:var(--text-3);margin-top:3px}
+
+/* Space Gauge / Ring */
+.space-ring-wrap{position:relative;width:58px;height:58px;flex:0 0 auto}
+.space-ring-wrap svg{transform:rotate(-90deg)}
+.space-ring-wrap .space-ring-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.space-ring-wrap .space-ring-lbl small{font-size:9.5px;font-weight:600;color:var(--text-3);margin-top:2px}
+
+/* Space Metric Chips */
+.space-chips-wrap{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.space-stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:10px;font-size:12.5px;font-weight:600;border:1px solid transparent;user-select:none;white-space:nowrap;line-height:1.2}
+.space-stat-chip .chip-ic{font-size:14px;line-height:1}
+.space-stat-chip .chip-val{font-weight:800;font-size:13px}
+
+/* Space Card Action Buttons */
+.space-card-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.space-btn-main{width:100%;height:44px;border-radius:12px;font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 14px;cursor:pointer;border:1.5px solid;transition:all .15s;white-space:nowrap;box-sizing:border-box}
+.space-btn-main:active{transform:scale(.99)}
+.space-btn-main .btn-label{display:inline-flex;align-items:center;gap:7px}
+.space-btn-main .btn-count{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px}
+.space-btn-main .btn-arrow{font-size:16px;line-height:1;transition:transform .15s}
+[dir="rtl"] .space-btn-main:hover .btn-arrow{transform:translateX(-3px)}
+
+.space-quick-row{display:flex;gap:7px;width:100%;box-sizing:border-box}
+.space-quick-btn{flex:1;min-width:0;height:38px;border-radius:10px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:1.2px solid;padding:0 8px;white-space:nowrap;transition:all .15s;box-sizing:border-box}
+.space-quick-btn:active{opacity:.85;transform:scale(.98)}
 
 /* Space Ownership Sheet Choices */
 .space-choice-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);text-align:start;cursor:pointer;margin-bottom:8px;transition:all .15s}
@@ -926,8 +958,14 @@ function spaceMenuBtn(type, id){
 
 function renderNav(){
   const activeTabId = (view === 'habits' || view === 'tasks') ? 'activity' : view;
-  $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
-    `<button data-act="tab" data-v="${id}" class="${activeTabId===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
+  const hasUpdate = window._webUpdateAvailable === true;
+  $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>{
+    const isMore = id === 'more';
+    return `<button data-act="tab" data-v="${id}" class="${activeTabId===id?'on':''}">
+      <span class="ic" style="position:relative">${ic}${isMore && hasUpdate ? '<span style="position:absolute;top:-1px;right:-3px;width:7px;height:7px;border-radius:50%;background:#EF4444;border:1.5px solid var(--surface)"></span>' : ''}</span>
+      <span>${l}</span>
+    </button>`;
+  }).join('')}</div>`;
 }
 
 function renderApp(){
@@ -3497,6 +3535,47 @@ function renderActivity(){
 /* ---------- شاشة المساحات (Spaces Dashboard) ---------- */
 window._activeSpaceDrilldown = null;
 
+function spaceRingSVG(pct, spaceKey){
+  const r = 24, c = +(2 * Math.PI * r).toFixed(1);
+  const safePct = Math.min(100, Math.max(0, Math.round(pct || 0)));
+  const off = +(c * (1 - safePct / 100)).toFixed(1);
+  let strokeColor = 'var(--space-me)';
+  let trackColor = 'var(--space-me-soft)';
+  if(spaceKey === 'shared'){
+    strokeColor = 'var(--space-shared)';
+    trackColor = 'var(--space-shared-soft)';
+  } else if(spaceKey === 'companion'){
+    strokeColor = 'var(--space-comp)';
+    trackColor = 'var(--space-comp-soft)';
+  }
+  const isHundred = safePct >= 100;
+  return `<div class="space-ring-wrap" title="نسبة الإنجاز: ${safePct}%">
+    <svg width="58" height="58" viewBox="0 0 58 58">
+      <circle cx="29" cy="29" r="${r}" fill="none" stroke="${trackColor}" stroke-width="5"/>
+      <circle cx="29" cy="29" r="${r}" fill="none" stroke="${strokeColor}" stroke-width="5" stroke-linecap="round"
+        stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+    </svg>
+    <div class="space-ring-lbl">
+      <span style="font-size:${isHundred ? '12.5px' : '14px'};font-weight:800;color:${strokeColor}">${safePct}%</span>
+      <small>إنجاز</small>
+    </div>
+  </div>`;
+}
+
+function spaceMetricChip(icon, count, label, spaceKey){
+  let bg = 'var(--space-me-soft)', color = 'var(--space-me)', border = 'rgba(36,80,69,0.18)';
+  if(spaceKey === 'shared'){
+    bg = 'var(--space-shared-soft)'; color = 'var(--space-shared)'; border = 'rgba(29,78,216,0.18)';
+  } else if(spaceKey === 'companion'){
+    bg = 'var(--space-comp-soft)'; color = 'var(--space-comp)'; border = 'rgba(217,119,6,0.18)';
+  }
+  return `<span class="space-stat-chip" style="background:${bg};color:${color};border-color:${border}">
+    <span class="chip-ic">${icon}</span>
+    <span class="chip-val">${count}</span>
+    <span>${label}</span>
+  </span>`;
+}
+
 function renderSpaces(){
   const me = meProfile();
   if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
@@ -3554,105 +3633,151 @@ function renderSpaces(){
 
     <!-- 1. بطاقة مساحتي الخاصة (🟢) -->
     <div class="space-realm-card space-realm-me">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="background:var(--space-me-soft);color:var(--space-me)">${esc((me.display_name||'؟')[0])}</div>
+      <div class="space-card-head">
+        <div class="space-card-title-group">
+          <div class="space-card-avatar" style="background:var(--space-me-soft);color:var(--space-me)">
+            ${esc((me.display_name||'أنا')[0])}
+          </div>
           <div>
-            <b style="font-size:16px;color:var(--text-1)">🟢 مساحتي الخاصة</b>
-            <div style="font-size:11.5px;color:var(--text-3)">خاصة بك 100% • سرية ومحمية</div>
+            <div class="space-card-name">
+              <span>مساحتي الخاصة</span>
+              <span class="space-card-badge" style="background:var(--space-me-soft);color:var(--space-me)">خاص بي</span>
+            </div>
+            <div class="space-card-sub">خاصة بك 100% • سرية ومحمية تماماً</div>
           </div>
         </div>
-        ${ringSVG(myPct, 'own')}
+        ${spaceRingSVG(myPct, 'me')}
       </div>
 
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
-        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">🌱 ${myHabits.length} عادات خاصة</span>
-        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">✅ ${myTasks.length} مهام خاصة</span>
-        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">💊 ${myMeds.length} أدوية شخصية</span>
-        ${myShop.length ? `<span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">🛒 ${myShop.length} مشتريات</span>` : ''}
+      <div class="space-chips-wrap">
+        ${spaceMetricChip('🌱', myHabits.length, 'عادات خاصة', 'me')}
+        ${spaceMetricChip('✅', myTasks.length, 'مهام خاصة', 'me')}
+        ${spaceMetricChip('💊', myMeds.length, 'أدوية شخصية', 'me')}
+        ${myShop.length ? spaceMetricChip('🛒', myShop.length, 'مشتريات', 'me') : ''}
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn ghost" style="flex:1;background:var(--space-me-soft);color:var(--space-me);border-color:var(--space-me);font-weight:700" data-act="setSpaceDrilldown" data-space="me">
-          🔍 استعراض مساحتي (${myTotal + myMeds.length + myShop.length})
+      <div class="space-card-actions">
+        <button class="space-btn-main" style="background:var(--space-me-soft);color:var(--space-me);border-color:var(--space-me)" data-act="setSpaceDrilldown" data-space="me">
+          <span class="btn-label">
+            <span>🔍</span>
+            <span>استعراض مساحتي الخاصة</span>
+            <span class="btn-count" style="background:var(--space-me);color:#fff">${myTotal + myMeds.length + myShop.length}</span>
+          </span>
+          <span class="btn-arrow">←</span>
         </button>
-        <button class="btn mini" style="flex:0 0 auto;background:var(--space-me);color:#fff" data-act="openAddTask">
-          ＋ إضافة
-        </button>
+        <div class="space-quick-row">
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-me);border-color:rgba(36,80,69,.25)" data-act="openAddTask">
+            <span>＋ مهمة خاصة</span>
+          </button>
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-me);border-color:rgba(36,80,69,.25)" data-act="openAddHabit">
+            <span>🌱 عادة جديدة</span>
+          </button>
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-me);border-color:rgba(36,80,69,.25)" data-act="openAddMed">
+            <span>💊 دواء</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 2. بطاقة مساحتنا المشتركة (🔵) -->
     <div class="space-realm-card space-realm-shared">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="background:var(--space-shared-soft);color:var(--space-shared)">👥</div>
+      <div class="space-card-head">
+        <div class="space-card-title-group">
+          <div class="space-card-avatar" style="background:var(--space-shared-soft);color:var(--space-shared)">
+            👥
+          </div>
           <div>
-            <b style="font-size:16px;color:var(--text-1)">🔵 مساحتنا المشتركة</b>
-            <div style="font-size:11.5px;color:var(--text-3)">مفتوحة لكليكما للتعاون والتشجيع</div>
+            <div class="space-card-name">
+              <span>مساحتنا المشتركة</span>
+              <span class="space-card-badge" style="background:var(--space-shared-soft);color:var(--space-shared)">كلانا</span>
+            </div>
+            <div class="space-card-sub">مفتوحة لكليكما للتعاون، التسوق والتشجيع</div>
           </div>
         </div>
-        ${ringSVG(shPct, 'comp')}
+        ${spaceRingSVG(shPct, 'shared')}
       </div>
 
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
-        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">🛒 ${shStores.length} متاجر مشتركة</span>
-        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">🍽️ ${shFood.length} وجبات مسجلة</span>
-        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">✅ ${shTasks.length} مهام مشتركة</span>
-        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">💊 ${shMeds.length} أدوية مشتركة</span>
+      <div class="space-chips-wrap">
+        ${spaceMetricChip('🛒', shStores.length, 'متاجر مشتركة', 'shared')}
+        ${spaceMetricChip('🍽️', shFood.length, 'وجبات مسجلة', 'shared')}
+        ${spaceMetricChip('✅', shTasks.length, 'مهام مشتركة', 'shared')}
+        ${spaceMetricChip('💊', shMeds.length, 'أدوية مشتركة', 'shared')}
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn ghost" style="flex:1;background:var(--space-shared-soft);color:var(--space-shared);border-color:var(--space-shared);font-weight:700" data-act="setSpaceDrilldown" data-space="shared">
-          🔍 استعراض المشترك
+      <div class="space-card-actions">
+        <button class="space-btn-main" style="background:var(--space-shared-soft);color:var(--space-shared);border-color:var(--space-shared)" data-act="setSpaceDrilldown" data-space="shared">
+          <span class="btn-label">
+            <span>🔍</span>
+            <span>استعراض مساحتنا المشتركة</span>
+            <span class="btn-count" style="background:var(--space-shared);color:#fff">${shTotal + shStores.length + shFood.length + shMeds.length}</span>
+          </span>
+          <span class="btn-arrow">←</span>
         </button>
-        <button class="btn ghost mini" style="flex:0 0 auto;color:var(--space-shared)" data-act="openShopping">
-          🛒 التسوق
-        </button>
-        <button class="btn ghost mini" style="flex:0 0 auto;color:var(--space-shared)" data-act="openFood">
-          🍽 الطعام
-        </button>
+        <div class="space-quick-row">
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-shared);border-color:rgba(29,78,216,.25)" data-act="openShopping">
+            <span>🛒 التسوق</span>
+          </button>
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-shared);border-color:rgba(29,78,216,.25)" data-act="openFood">
+            <span>🍽️ الوجبات</span>
+          </button>
+          <button class="space-quick-btn" style="background:var(--surface);color:var(--space-shared);border-color:rgba(29,78,216,.25)" data-act="openAddTask">
+            <span>＋ مهمة</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 3. بطاقة مساحة رفيقي (🟠) -->
     <div class="space-realm-card space-realm-comp">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar sm comp" style="width:40px;height:40px;font-size:18px;background:var(--space-comp-soft);color:var(--space-comp)">
-            ${esc((comp ? comp.display_name : '؟')[0])}
+      <div class="space-card-head">
+        <div class="space-card-title-group">
+          <div class="space-card-avatar" style="background:var(--space-comp-soft);color:var(--space-comp)">
+            ${esc((comp ? comp.display_name : 'رفيق')[0])}
           </div>
           <div>
-            <b style="font-size:16px;color:var(--text-1)">🟠 مساحة رفيقي ${comp ? `(${esc(comp.display_name)})` : ''}</b>
-            <div style="font-size:11.5px;color:var(--text-3)">المهام والأدوية المسندة لرفيقك</div>
+            <div class="space-card-name">
+              <span>مساحة رفيقي ${comp ? `(${esc(comp.display_name)})` : ''}</span>
+              <span class="space-card-badge" style="background:var(--space-comp-soft);color:var(--space-comp)">الرفيق</span>
+            </div>
+            <div class="space-card-sub">المهام والأدوية المسندة لرفيقك</div>
           </div>
         </div>
-        ${comp ? ringSVG(compPct, 'comp') : ''}
+        ${comp ? spaceRingSVG(compPct, 'companion') : ''}
       </div>
 
       ${comp ? `
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
-          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">✅ ${compTasks.length} مهام مسندة</span>
-          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">💊 ${compMeds.length} أدوية للرفيق</span>
-          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">🌱 ${compHabits.length} عادات</span>
+        <div class="space-chips-wrap">
+          ${spaceMetricChip('✅', compTasks.length, 'مهام مسندة', 'companion')}
+          ${spaceMetricChip('💊', compMeds.length, 'أدوية للرفيق', 'companion')}
+          ${spaceMetricChip('🌱', compHabits.length, 'عادات مسجلة', 'companion')}
         </div>
 
         <!-- زر دمج أو فصل المتابعة الذكية -->
-        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:12px;padding:8px 12px;margin:10px 0;border:1px solid var(--border)">
-          <div style="font-size:12px;color:var(--text-1)">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:12px;padding:10px 14px;margin:12px 0;border:1px solid var(--border)">
+          <div style="font-size:12.5px;color:var(--text-1)">
             <b>إدماج في المتابعة المشتركة</b>
-            <div style="font-size:10.5px;color:var(--text-3)">${compIntegrated ? 'يظهر إنجازه في خلاصتك اليومية' : 'مفصول ومتابع في مساحته فقط'}</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:2px">${compIntegrated ? 'يظهر إنجازه في خلاصتك اليومية' : 'مفصول ومتابع في مساحته فقط'}</div>
           </div>
           <button class="switch ${compIntegrated?'on':''}" data-act="toggleCompIntegration"><i></i></button>
         </div>
 
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn ghost" style="flex:1;background:var(--space-comp-soft);color:var(--space-comp);border-color:var(--space-comp);font-weight:700" data-act="setSpaceDrilldown" data-space="companion">
-            🔍 استعراض مساحة رفيقي (${compTotal + compMeds.length})
+        <div class="space-card-actions">
+          <button class="space-btn-main" style="background:var(--space-comp-soft);color:var(--space-comp);border-color:var(--space-comp)" data-act="setSpaceDrilldown" data-space="companion">
+            <span class="btn-label">
+              <span>🔍</span>
+              <span>استعراض مساحة رفيقي</span>
+              <span class="btn-count" style="background:var(--space-comp);color:#fff">${compTotal + compMeds.length}</span>
+            </span>
+            <span class="btn-arrow">←</span>
           </button>
-          <button class="btn mini" style="flex:0 0 auto;background:var(--space-comp);color:#fff" data-act="openAddTask">
-            ＋ إسناد مهمة
-          </button>
+          <div class="space-quick-row">
+            <button class="space-quick-btn" style="background:var(--surface);color:var(--space-comp);border-color:rgba(217,119,6,.25)" data-act="openAddTask">
+              <span>＋ إسناد مهمة</span>
+            </button>
+            <button class="space-quick-btn" style="background:var(--surface);color:var(--space-comp);border-color:rgba(217,119,6,.25)" data-act="openAddMed">
+              <span>💊 دواء للرفيق</span>
+            </button>
+          </div>
         </div>
       ` : `
         <div class="empty" style="padding:16px 0">
