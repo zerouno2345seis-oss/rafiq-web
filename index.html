@@ -2348,6 +2348,7 @@ function renderLifeTracker(){
                   const isWide = colCount <= 2;
                   const isMedium = colCount === 3;
                   const isDense = colCount >= 4;
+                  const densityClass = isDense ? 'dense' : (isMedium ? 'medium' : 'wide');
 
                   return `
                     <div class="trk-act-row">
