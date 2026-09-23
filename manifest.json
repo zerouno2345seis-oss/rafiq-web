@@ -1,0 +1,64 @@
+{
+  "name": "رفيق — رفيقك الذكي",
+  "short_name": "رفيق",
+  "description": "تطبيق ذكي لإدارة المهام، العادات، الأدوية، والأنشطة المشتركة مع رفيقك",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAF1E8",
+  "theme_color": "#FAF1E8",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["lifestyle", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "المساحات",
+      "short_name": "المساحات",
+      "description": "استعراض مساحتي، مساحتنا المشتركة، ومساحة رفيقي",
+      "url": "/#spaces",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "النشاط",
+      "short_name": "النشاط",
+      "description": "عاداتي وأهدافي ومهام اليوم",
+      "url": "/#activity",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "الأدوية",
+      "short_name": "الأدوية",
+      "description": "منظمة وجرعات الأدوية ومصفوفة الأسبوع",
+      "url": "/#meds",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

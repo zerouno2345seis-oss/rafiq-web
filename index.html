@@ -4,10 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FAF1E8">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="رفيق">
+<meta name="application-name" content="رفيق">
+<meta name="description" content="تطبيق ذكي لإدارة المهام، العادات، الأدوية، والأنشطة المشتركة مع رفيقك">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="icon" type="image/png" href="/icon.png">
-<link rel="apple-touch-icon" href="/icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&family=Readex+Pro:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1024,6 +1032,16 @@ function renderHome(){
       <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
     </div>
+    ${(!isPwaInstalled && (window._canInstallPwa || (window._isIosSafari && window._isIosSafari())) && !sessionStorage.getItem('rafiq_pwa_banner_dismissed')) ? `
+    <div class="card" style="background:var(--accent-verysoft);border:1.5px solid var(--accent-2);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:12px">
+      <img src="/icon-192.png" style="width:38px;height:38px;border-radius:10px;flex-shrink:0" alt="رفيق">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13.5px;color:var(--text-1)">تثبيت تطبيق رفيق 📲</div>
+        <div style="font-size:11.5px;color:var(--text-2);margin-top:2px">لتجربة شاشة كاملة وسريعة بدون متصفح</div>
+      </div>
+      <button class="btn" data-act="${window._canInstallPwa ? 'installPwa' : 'openPwaIosGuide'}" style="background:var(--accent);color:#fff;padding:6px 12px;font-size:12px;border-radius:8px">تثبيت</button>
+      <button data-act="dismissPwaBanner" aria-label="إغلاق" style="font-size:16px;color:var(--text-3);padding:4px">✕</button>
+    </div>` : ''}
     <!-- شريط تصفية المساحات السريع -->
     <div class="space-filter-bar">
       <button class="space-pill all ${(!window._homeSpaceFilter||window._homeSpaceFilter==='all')?'active':''}" data-act="homeSpaceFilter" data-f="all">🌐 الكل</button>
@@ -3919,7 +3937,16 @@ function renderMore(){
         <button class="link" data-act="openFontSheet">تغيير</button></div>
       <div class="setrow"><span class="st">📈 متتبع العادات والأنشطة</span><button class="link" data-act="openLifeTracker">افتح</button></div>
       <div class="setrow"><span class="st">📊 الإحصائيات العامة</span><button class="link" data-act="tab" data-v="stats">عرض</button></div>
-      <div class="setrow"><span class="st">📱 تحميل تطبيق Android (آخر إصدار v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
+      <div class="setrow"><span class="st">📲 تثبيت تطبيق الويب (PWA)</span>
+        ${(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+          ? `<span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-weight:700">✓ مُثبّت كـ PWA</span>`
+          : window._canInstallPwa
+            ? `<button class="link" style="color:var(--accent);font-weight:700" data-act="installPwa">تثبيت الآن 📲</button>`
+            : (window._isIosSafari && window._isIosSafari())
+              ? `<button class="link" data-act="openPwaIosGuide">طريقة التثبيت 📲</button>`
+              : `<button class="link" data-act="openPwaInstructions">تثبيت التطبيق 📲</button>`}
+      </div>
+      <div class="setrow"><span class="st">📱 تحميل تطبيق Android (ملف APK v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
       <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
       <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
       <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
@@ -5004,6 +5031,10 @@ document.addEventListener('click', async e=>{
       case 'openNotifs': openNotifs(); break;
       case 'openReport': openReport(); break;
       case 'askNotify': askNotify(); toast('إن وافق المتصفح ستصل التنبيهات 🔔'); break;
+      case 'installPwa': await triggerPwaInstall(); break;
+      case 'openPwaIosGuide': openPwaIosGuide(); break;
+      case 'openPwaInstructions': openPwaInstructionsSheet(); break;
+      case 'dismissPwaBanner': sessionStorage.setItem('rafiq_pwa_banner_dismissed','1'); renderHome(); break;
       case 'printReport': doPrintReport(); break;
       case 'openBackup': openBackup(); break;
       case 'downloadBackup': doDownloadBackup(); break;
@@ -5446,6 +5477,115 @@ document.addEventListener('keydown',ev=>{
     else if(!ev.shiftKey && document.activeElement===last){ ev.preventDefault(); first.focus(); }
   }
 });
+
+/* ==========================================================================
+   Progressive Web App (PWA) Management
+   ========================================================================== */
+let deferredPrompt = null;
+let isPwaInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+window._canInstallPwa = false;
+
+window._isIosSafari = function() {
+  const ua = window.navigator.userAgent;
+  const isIos = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isWebkit = /WebKit/.test(ua);
+  const isChrome = /CriOS/.test(ua);
+  const isFirefox = /FxiOS/.test(ua);
+  return isIos && isWebkit && !isChrome && !isFirefox;
+};
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  window._canInstallPwa = true;
+  if (view === 'more') renderMore();
+  else if (view === 'home') renderHome();
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  window._canInstallPwa = false;
+  isPwaInstalled = true;
+  toast('🎉 تم تثبيت تطبيق رفيق بنجاح على جهازك!');
+  if (view === 'more') renderMore();
+  else if (view === 'home') renderHome();
+});
+
+async function triggerPwaInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      toast('جاري تثبيت رفيق...');
+    }
+    deferredPrompt = null;
+    window._canInstallPwa = false;
+    if (view === 'more') renderMore();
+    else if (view === 'home') renderHome();
+  } else if (window._isIosSafari && window._isIosSafari()) {
+    openPwaIosGuide();
+  } else {
+    openPwaInstructionsSheet();
+  }
+}
+
+function openPwaIosGuide() {
+  openSheet(`
+    ${sheetHead('تثبيت رفيق على iPhone / iPad 📲')}
+    <div style="padding:16px 4px;text-align:center">
+      <img src="/icon-192.png" style="width:72px;height:72px;border-radius:18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">تثبيت التطبيق على الشاشة الرئيسية</h3>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:18px">يعمل رفيق كتطبيق كامل بدون شريط المتصفح وبسرعة فائقة</p>
+      
+      <div style="background:var(--surface-warm);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:right;margin-bottom:18px">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</div>
+          <div style="font-size:13.5px;line-height:1.5">اضغط على زر المشاركة <b><svg style="display:inline-block;vertical-align:middle;width:17px;height:17px;margin:0 2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> (Share)</b> في شريط متصفح Safari.</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</div>
+          <div style="font-size:13.5px;line-height:1.5">مرر للأسفل واختر <b>«إضافة إلى الصفحة الرئيسية» ➕</b> (Add to Home Screen).</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</div>
+          <div style="font-size:13.5px;line-height:1.5">اضغط <b>«إضافة» (Add)</b> في الزاوية العلوية ليظهر التطبيق في شاشتك الرئيسية!</div>
+        </div>
+      </div>
+      
+      <button class="btn full" data-act="closeSheet" style="background:var(--accent);color:#fff">فهمت ذلك ✓</button>
+    </div>
+  `);
+}
+
+function openPwaInstructionsSheet() {
+  openSheet(`
+    ${sheetHead('تثبيت تطبيق الويب 📲')}
+    <div style="padding:16px 4px;text-align:center">
+      <img src="/icon-192.png" style="width:72px;height:72px;border-radius:18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">تثبيت تطبيق رفيق</h3>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:18px">يمكنك تثبيت رفيق كتطبيق مستقل من قائمة المتصفح لديك</p>
+      
+      <div style="background:var(--surface-warm);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:right;margin-bottom:18px;font-size:13.5px;line-height:1.7">
+        <div>• <b>متصفح كروم / إيدج:</b> اضغط على أيقونة التثبيت ⊕ في شريط العنوان أو من قائمة (⋮) اختر <b>«تثبيت رفيق»</b>.</div>
+        <div style="margin-top:6px">• <b>هواتف أندرويد:</b> من قائمة المتصفح (⋮) اضغط على <b>«تثبيت التطبيق»</b> أو «إضافة إلى الشاشة الرئيسية».</div>
+        <div style="margin-top:6px">• <b>أجهزة Apple (iOS):</b> زر المشاركة ⎋ ← «إضافة إلى الصفحة الرئيسية ➕».</div>
+      </div>
+      
+      <button class="btn full" data-act="closeSheet" style="background:var(--accent);color:#fff">حسناً ✓</button>
+    </div>
+  `);
+}
+
+// تسجيل عامل الخدمة Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      console.log('[PWA] Service Worker registered:', reg.scope);
+    }).catch((err) => {
+      console.warn('[PWA] Service Worker registration failed:', err);
+    });
+  });
+}
 
 (async function boot(){
   if(!session){ renderAuth(); return; }
