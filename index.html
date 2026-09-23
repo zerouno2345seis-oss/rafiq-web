@@ -258,8 +258,10 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-mode-switch{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:4px;margin-bottom:12px}
 .trk-mode-btn{flex:1;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer}
 .trk-mode-btn.on{background:var(--surface);color:var(--accent-dark);box-shadow:var(--shadow)}
-.trk-entries-grid{display:grid;grid-template-columns:repeat(var(--trk-cols, 1), 1fr);gap:8px}
-@media(max-width:580px){.trk-entries-grid{grid-template-columns:repeat(auto-fit, minmax(140px, 1fr))}}
+.trk-act-rows-wrap{display:flex;flex-direction:column;gap:10px;width:100%}
+.trk-act-row{width:100%}
+.trk-entries-grid{display:grid;grid-template-columns:repeat(var(--trk-cols, 1), minmax(0, 1fr));gap:8px;width:100%}
+@media(max-width:580px){.trk-entries-grid{grid-template-columns:repeat(auto-fit, minmax(110px, 1fr))}}
 .trk-entry-card{border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:8px;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);cursor:pointer;transition:transform .12s;min-height:52px;min-width:0}
 .trk-entry-card:active{transform:scale(.98)}
 .trk-entry-card .ico{font-size:20px;width:38px;height:38px;border-radius:10px;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
@@ -269,6 +271,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-entry-card .tim{font-size:10.5px;opacity:.95;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trk-entry-card .qty-tag{font-size:10px;font-weight:700;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px}
 .trk-entry-card .trk-arr{font-size:14px;opacity:.7;flex:0 0 auto}
+@media(max-width:440px){.trk-entry-card .trk-arr{display:none}}
 .trk-color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:6px 0}
 .trk-color-dot{width:42px;height:42px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px}
 .trk-color-dot.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -2210,6 +2213,26 @@ function renderLifeTracker(){
     countsByCat[e.categoryId] = (countsByCat[e.categoryId] || 0) + 1;
   });
 
+  // تجميع الأنشطة بالصفوف: كل صف يتناول نشاطًا واحدًا وينقسم حسب عدد تسجيلاته
+  const catGroups = [];
+  const seenCats = new Set();
+  dayEntries.forEach(entry => {
+    if (!seenCats.has(entry.categoryId)) {
+      seenCats.add(entry.categoryId);
+      const cat = catMap[entry.categoryId] || { id: entry.categoryId, name: 'نشاط', icon: '📌', colorHex: '#3B82F6' };
+      const entries = dayEntries.filter(e => e.categoryId === entry.categoryId);
+      catGroups.push({ cat, entries });
+    }
+  });
+
+  function formatSub(sub){
+    if(!sub) return '';
+    const s = String(sub).trim();
+    if(s.startsWith('(') && s.endsWith(')')) return s;
+    if(s.includes('(') && s.includes(')')) return s;
+    return `(${s})`;
+  }
+
   $('#view').innerHTML = `
     <div class="screen" style="position:relative">
       <div class="row" style="min-height:44px;border-top:none;margin-bottom:8px">
@@ -2260,27 +2283,36 @@ function renderLifeTracker(){
 
         <div class="card" style="min-height:180px;padding:12px">
           ${dayEntries.length ? `
-            <div class="trk-entries-grid" style="--trk-cols: ${Math.min(dayEntries.length, 5)}">
-              ${dayEntries.map(entry => {
-                const cat = catMap[entry.categoryId] || { name:'نشاط', icon:'📌', colorHex:'#3B82F6' };
-                const hasRange = !!(entry.startedAt && entry.endedAt);
-                const timeLabel = hasRange
-                  ? `⏱️ من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-                  : formatArabicTime(entry.loggedAt);
-
+            <div class="trk-act-rows-wrap">
+              ${catGroups.map(group => {
+                const colCount = Math.min(group.entries.length, 5);
+                const cat = group.cat;
                 return `
-                  <div class="trk-entry-card" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}">
-                    <div class="ico">${cat.icon}</div>
-                    <div class="meta">
-                      <div class="tit">
-                        <span>${esc(cat.name)}</span>
-                        ${entry.subcategory ? `<span class="sub">(${esc(entry.subcategory)})</span>` : ''}
-                        ${entry.quantity ? `<span class="qty-tag">${esc(entry.quantity)}</span>` : ''}
-                      </div>
-                      <div class="tim">${timeLabel}</div>
-                      ${entry.note ? `<div style="font-size:10.5px;opacity:.9;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 ${esc(entry.note)}</div>` : ''}
+                  <div class="trk-act-row">
+                    <div class="trk-entries-grid" style="--trk-cols: ${colCount}">
+                      ${group.entries.map(entry => {
+                        const hasRange = !!(entry.startedAt && entry.endedAt);
+                        const timeLabel = hasRange
+                          ? `⏱️ من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+                          : formatArabicTime(entry.loggedAt);
+
+                        return `
+                          <div class="trk-entry-card" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}">
+                            <div class="ico">${cat.icon}</div>
+                            <div class="meta">
+                              <div class="tit">
+                                <span>${esc(cat.name)}</span>
+                                ${entry.subcategory ? `<span class="sub">${esc(formatSub(entry.subcategory))}</span>` : ''}
+                                ${entry.quantity ? `<span class="qty-tag">${esc(entry.quantity)}</span>` : ''}
+                              </div>
+                              <div class="tim">${timeLabel}</div>
+                              ${entry.note ? `<div style="font-size:10.5px;opacity:.9;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 ${esc(entry.note)}</div>` : ''}
+                            </div>
+                            <span class="trk-arr">➜</span>
+                          </div>
+                        `;
+                      }).join('')}
                     </div>
-                    <span class="trk-arr">➜</span>
                   </div>
                 `;
               }).join('')}
