@@ -1167,6 +1167,7 @@ function _catToRow(cat){
     reminder_frequency: cat.reminderFrequency || 'DAILY',
     reminder_days_of_week: cat.reminderDaysOfWeek || [],
     reminder_day_of_month: cat.reminderDayOfMonth || 1,
+    visibility: cat.visibility || 'PRIVATE',
     updated_at: new Date().toISOString()
   };
 }
@@ -1174,6 +1175,7 @@ function _catToRow(cat){
 function _rowToCat(row){
   return {
     id: row.id,
+    userId: row.user_id,
     name: row.name,
     icon: row.icon || '📌',
     colorHex: row.color_hex || '#4CAF50',
@@ -1186,7 +1188,8 @@ function _rowToCat(row){
     reminderMinute: row.reminder_minute || 0,
     reminderFrequency: row.reminder_frequency || 'DAILY',
     reminderDaysOfWeek: row.reminder_days_of_week || [],
-    reminderDayOfMonth: row.reminder_day_of_month || 1
+    reminderDayOfMonth: row.reminder_day_of_month || 1,
+    visibility: row.visibility || 'PRIVATE'
   };
 }
 
@@ -1207,6 +1210,7 @@ function _entryToRow(ent){
 function _rowToEntry(row){
   return {
     id: row.id,
+    userId: row.user_id,
     categoryId: row.category_id,
     subcategory: row.subcategory || null,
     quantity: row.quantity || null,
@@ -1264,8 +1268,8 @@ async function syncTrackerFromCloud(){
       localStorage.setItem('rafiq_tracker_migrated_'+meId(), '1');
     }
     const [cloudCats, cloudEntries] = await Promise.all([
-      rest('GET','tracker_categories','user_id=eq.'+meId()+'&order=sort_order.asc&select=*'),
-      rest('GET','tracker_entries','user_id=eq.'+meId()+'&order=logged_at.desc&select=*')
+      rest('GET','tracker_categories','order=sort_order.asc&select=*'),
+      rest('GET','tracker_entries','order=logged_at.desc&select=*')
     ]);
     if(cloudCats && cloudCats.length > 0){
       const localData = getTrackerData();
@@ -1370,7 +1374,7 @@ function renderLifeTracker(){
     <div class="screen" style="position:relative">
       <div class="row" style="min-height:44px;border-top:none;margin-bottom:8px">
         <button class="link" data-act="goHome">➜ رجوع</button>
-        <b style="flex:1;text-align:center;font-size:18px">📈 متتبع الحياة</b>
+        <b style="flex:1;text-align:center;font-size:18px">📈 متتبع العادات والأنشطة</b>
         <button class="hicon-btn" data-act="openCategorySettings" aria-label="إعدادات الفئات" style="font-size:17px">⚙️</button>
       </div>
 
@@ -1381,6 +1385,7 @@ function renderLifeTracker(){
             <button class="trk-cat-pill" data-act="openSmartLog" data-id="${cat.id}" style="border-color:${cat.colorHex}50;background:${cat.colorHex}0C">
               <span>${cat.icon}</span>
               <span style="color:${cat.colorHex}">${esc(cat.name)}</span>
+              ${cat.visibility==='CIRCLE' ? '<span style="font-size:10px;opacity:.75" title="مشترك مع رفيقي">👥</span>' : ''}
               ${cnt > 0 ? `<span class="cnt" style="background:${cat.colorHex}25;color:${cat.colorHex}">${cnt}</span>` : ''}
             </button>
           `;
@@ -1697,6 +1702,7 @@ function openCategoryEditor(catId){
   window._catColor = cat.colorHex;
   window._catReminderEnabled = !!cat.reminderEnabled;
   window._catReminderFreq = cat.reminderFrequency || 'DAILY';
+  window._catVisibility = cat.visibility || 'PRIVATE';
 
   const remTime = `${String(cat.reminderHour||8).padStart(2,'0')}:${String(cat.reminderMinute||0).padStart(2,'0')}`;
 
@@ -1735,6 +1741,21 @@ function openCategoryEditor(catId){
         <button class="chip ${cat.reminderFrequency==='DAILY'?'on':''}" data-act="pickCeFreq" data-f="DAILY" style="flex:1;justify-content:center">📅 يومي</button>
         <button class="chip ${cat.reminderFrequency==='WEEKLY'?'on':''}" data-act="pickCeFreq" data-f="WEEKLY" style="flex:1;justify-content:center">📊 أسبوعي</button>
         <button class="chip ${cat.reminderFrequency==='MONTHLY'?'on':''}" data-act="pickCeFreq" data-f="MONTHLY" style="flex:1;justify-content:center">🗓️ شهري</button>
+      </div>
+    </div>
+
+    <div style="margin:14px 0 16px">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:8px">مستوى الخصوصية والمشاركة:</label>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="chip ${(!cat.visibility||cat.visibility==='PRIVATE')?'on':''}" data-act="pickCeVisibility" data-v="PRIVATE" style="flex:1;justify-content:center;min-height:44px;font-size:13px">
+          🔒 خاصة بي
+        </button>
+        <button type="button" class="chip ${cat.visibility==='CIRCLE'?'on':''}" data-act="pickCeVisibility" data-v="CIRCLE" style="flex:1;justify-content:center;min-height:44px;font-size:13px">
+          👥 مشاركة مع رفيقي
+        </button>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);margin-top:6px" id="ceVisHelp">
+        ${cat.visibility==='CIRCLE' ? 'تظهر هذه الفئة وسجلاتها لرفيقك في الدائرة المشتركة' : 'مخفية وخاصة بك وحدك لا يراها أحد'}
       </div>
     </div>
 
@@ -1841,7 +1862,8 @@ function saveTrackerCategory(){
         reminderEnabled: window._catReminderEnabled,
         reminderHour: rHour,
         reminderMinute: rMin,
-        reminderFrequency: window._catReminderFreq || 'DAILY'
+        reminderFrequency: window._catReminderFreq || 'DAILY',
+        visibility: window._catVisibility || 'PRIVATE'
       });
       trk.categories[idx] = savedCat;
     }
@@ -1857,7 +1879,8 @@ function saveTrackerCategory(){
       reminderEnabled: window._catReminderEnabled,
       reminderHour: rHour,
       reminderMinute: rMin,
-      reminderFrequency: window._catReminderFreq || 'DAILY'
+      reminderFrequency: window._catReminderFreq || 'DAILY',
+      visibility: window._catVisibility || 'PRIVATE'
     };
     trk.categories.push(savedCat);
   }
@@ -1874,7 +1897,7 @@ function openCategorySettings(){
   const cats = trk.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
 
   openSheet(sheetHead('⚙️ تخصيص وإعداد الفئات')+`
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">يمكنك إعادة ترتيب الفئات أو تعديلها أو إضافة فئات جديدة:</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">يمكنك إعادة ترتيب الفئات أو تعديلها أو إضافة فئات جديدة وتحديد مشاركتها مع رفيقك:</p>
     <button class="btn ghost" data-act="openCategoryEditor" data-id="" style="margin-bottom:12px">➕ إضافة فئة جديدة</button>
     <div style="display:flex;flex-direction:column;gap:8px">
       ${cats.map((cat, idx) => `
@@ -1883,7 +1906,10 @@ function openCategorySettings(){
             ${cat.icon}
           </div>
           <div style="flex:1;min-width:0">
-            <b style="font-size:14px;color:var(--text-1)">${esc(cat.name)}</b>
+            <div style="display:flex;align-items:center;gap:6px">
+              <b style="font-size:14px;color:var(--text-1)">${esc(cat.name)}</b>
+              ${cat.visibility==='CIRCLE' ? '<span class="badge" style="background:var(--accent-soft);color:var(--accent);font-size:10.5px">👥 مشترك</span>' : '<span class="badge" style="font-size:10.5px">🔒 خاص</span>'}
+            </div>
             <div style="font-size:11px;color:var(--text-3)">${cat.subcategories&&cat.subcategories.length ? cat.subcategories.join(' • ') : 'بدون فئات فرعية'}</div>
           </div>
           <div style="display:flex;gap:4px">
@@ -3354,6 +3380,7 @@ document.addEventListener('click', async e=>{
       case 'pickTrackerColor': { window._catColor=el.dataset.col; const prev=document.getElementById('ceColorPreview'); if(prev){ prev.style.background=el.dataset.col; prev.textContent=''; } closePopup(); break; }
       case 'toggleCeReminder': { window._catReminderEnabled=!window._catReminderEnabled; el.classList.toggle('on',window._catReminderEnabled); const sec=document.getElementById('ceReminderSection'); if(sec) sec.style.display=window._catReminderEnabled?'block':'none'; break; }
       case 'pickCeFreq': { window._catReminderFreq=el.dataset.f; document.querySelectorAll('[data-act="pickCeFreq"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
+      case 'pickCeVisibility': { window._catVisibility=el.dataset.v; document.querySelectorAll('[data-act="pickCeVisibility"]').forEach(b=>b.classList.toggle('on',b.dataset.v===el.dataset.v)); const hp=document.getElementById('ceVisHelp'); if(hp){ hp.textContent=el.dataset.v==='CIRCLE'?'تظهر هذه الفئة وسجلاتها لرفيقك في الدائرة المشتركة':'مخفية وخاصة بك وحدك لا يراها أحد'; } break; }
       case 'saveTrackerCategory': saveTrackerCategory(); break;
       case 'moveCatUp': { const trk2=getTrackerData(); const cats2=trk2.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx2=cats2.findIndex(c=>c.id===el.dataset.id); if(idx2>0){ const tmp2=cats2[idx2].sortOrder||idx2; const prev2=cats2[idx2-1].sortOrder||idx2-1; cats2[idx2]=Object.assign({},cats2[idx2],{sortOrder:prev2}); cats2[idx2-1]=Object.assign({},cats2[idx2-1],{sortOrder:tmp2}); trk2.categories=cats2; saveTrackerData(trk2); upsertTrackerCategoryCloud(cats2[idx2]); upsertTrackerCategoryCloud(cats2[idx2-1]); } openCategorySettings(); break; }
       case 'moveCatDown': { const trk3=getTrackerData(); const cats3=trk3.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx3=cats3.findIndex(c=>c.id===el.dataset.id); if(idx3>=0&&idx3<cats3.length-1){ const tmp3=cats3[idx3].sortOrder||idx3; const nxt3=cats3[idx3+1].sortOrder||idx3+1; cats3[idx3]=Object.assign({},cats3[idx3],{sortOrder:nxt3}); cats3[idx3+1]=Object.assign({},cats3[idx3+1],{sortOrder:tmp3}); trk3.categories=cats3; saveTrackerData(trk3); upsertTrackerCategoryCloud(cats3[idx3]); upsertTrackerCategoryCloud(cats3[idx3+1]); } openCategorySettings(); break; }
