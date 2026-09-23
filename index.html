@@ -87,12 +87,13 @@ h2{font-size:16px;font-weight:600}
 .add-pop{position:fixed;z-index:99;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column;gap:2px}
 .add-row{display:flex;align-items:center;gap:10px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:var(--text-1);padding:10px 12px;border-radius:12px;cursor:pointer;text-align:start;width:100%}
 .add-ic{width:26px;height:26px;border-radius:8px;background:var(--accent-verysoft);display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
-.sec-strip{background:var(--surface);border-bottom:1px solid var(--divider);padding:9px 12px 0}
-.sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+.sec-strip{background:var(--surface);border:1px solid var(--nav-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:10px 10px 6px;margin-bottom:12px}
+.sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
 .sec-pills::-webkit-scrollbar{display:none}
-.pill{border:0;border-inline-start:1px solid var(--border);border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-1);font:inherit;font-size:11px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.pill{border:0;border-inline-start:1px solid var(--border);border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-1);font:inherit;font-size:11px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s ease;-webkit-tap-highlight-color:transparent}
+.pill:hover:not(.on){background:var(--accent-verysoft)}
 .pill.on{background:var(--accent);color:#fff;font-weight:700}
-.sec-note{font-size:11px;color:var(--text-3);padding:0 3px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-note{font-size:11.5px;color:var(--text-3);padding:6px 4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;font-weight:500}
 .tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
 .tile{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit}
 .tile .tl{font-size:11.5px;color:var(--text-2)}
@@ -838,14 +839,14 @@ function renderHome(){
         const ds=dl? (data.shopping||[]).filter(i=>i.list_id===dl.id) : [];
         return ds.length? `<div class="shop-meta" style="padding-top:6px">🍽 أطباق نحبها: ${ds.map(d=>esc(d.title)).join(' • ')}</div>`:''; })()}
     </div>
-    <div class="sec" data-sec="habits"><h2>عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
+    <div class="sec" data-sec="habits"><h2>🌱 عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
     <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
       `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
     <div class="card" data-sec="urgent">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🚨</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">رسائل مستجلة</div>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">رسائل مستعجلة</div>
       <div class="shop-meta">تصل بصوت مميز مع أزرار: تم / اتصال</div></div></div>
-      <div class="add-item"><input id="urgentIn" placeholder="اكتب رسالة مستجلة لرفيقك..."><button data-act="sendUrgent">🚨</button></div>
+      <div class="add-item"><input id="urgentIn" placeholder="اكتب رسالة مستعجلة لرفيقك..."><button data-act="sendUrgent">🚨</button></div>
       ${(data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').map(u=>`<div class="row" style="min-height:42px;border-top:none">
         <span style="font-size:17px">🚨</span>
         <div style="flex:1;min-width:0"><div class="htitle">${esc(u.title)}</div>
@@ -854,7 +855,7 @@ function renderHome(){
         <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a>
         <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delUrgent" data-id="${u.id}">حذف</button></div>`).join('')}
     </div>
-    <div class="sec" data-sec="shopping"><h2>قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
+    <div class="sec" data-sec="shopping"><h2>🛒 قائمة التسوق المشتركة</h2><button class="link" data-act="shopAll">عرض الكل</button></div>
     <div class="card">${shop?`
       <div class="row" style="min-height:32px"><div class="bar"><i style="width:${shop.done*100/(shop.items.length||1)}%"></i></div>
         <span style="font-size:12px;color:var(--text-2);font-weight:600">${shop.done} / ${shop.items.length} منجزة</span></div>
@@ -965,8 +966,9 @@ function renderHome(){
         <button class="btn ghost" data-act="addPlace" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
       </div>
     </div>
-    <div class="foot">رفيق — نسخة الويب v1.0 • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
+    <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
   </div>`;
+  applyCollapse();
 }
 function shoppingFor(){
   if(!data||!data.sharedLists.length) return null;
@@ -3442,9 +3444,24 @@ function bootFailed(msg, src){
 function collapsedSet(){ try{ const s=new Set((localStorage.getItem('rafiq_collapsed')||'').split(',').filter(Boolean)); s.delete('lifetracker'); return s; }catch(e){ return new Set(); } }
 function saveCollapsed(set){ try{ set.delete('lifetracker'); localStorage.setItem('rafiq_collapsed',[...set].join(',')); }catch(e){} }
 function toggleSec(k){ const set=collapsedSet(); if(set.has(k)) set.delete(k); else set.add(k); saveCollapsed(set); applyCollapse(); }
-function collapseAllSec(){ const keys=['food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
+function collapseAllSec(){ saveCollapsed(new Set(SEC_META.map(m=>m[0]))); applyCollapse(); }
 function expandAllSec(){ saveCollapsed(new Set()); applyCollapse(); }
-const SEC_META=[['lifetracker','📈','متتبع العادات'],['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
+const SEC_META=[
+  ['lifetracker','📈','متتبع العادات'],
+  ['food','🍽','طعامنا'],
+  ['schedule','📅','جدولي'],
+  ['remind','🔔','ذكّرني'],
+  ['habits','🌱','عادات اليوم'],
+  ['overdue','⏰','المتأخرة'],
+  ['reminders','📨','التذكيرات'],
+  ['shopping','🛒','التسوق'],
+  ['review','🗓','المراجعة'],
+  ['mood','🌤','شعورنا'],
+  ['meds','💊','أدويتنا'],
+  ['places','📍','أماكننا'],
+  ['media','🎬','المقاطع'],
+  ['urgent','🚨','مستعجلة']
+];
 function secSummary(k){
   try{
     const today=new Date().toISOString().slice(0,10), me=meId();
@@ -3462,60 +3479,75 @@ function secSummary(k){
     if(k==='meds'){ const n=medsOf().length; return n? n+' دواء':'لا أدوية'; }
     if(k==='places'){ const n=lc('أماكننا المحفوظة'); return n? n+' مكان':'لا أماكن'; }
     if(k==='media'){ const n=lc('مقاطعنا الجميلة'); return n? n+' مقطع':'لا مقاطع'; }
-    if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستجلة':'لا رسائل'; }
+    if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستعجلة':'لا رسائل'; }
   }catch(e){}
   return '';
 }
 let activeSec=null;
 function pickSec(k){
   if(k==='lifetracker'){ view='lifetracker'; renderApp(); return; }
-  const wasOn=activeSec===k; activeSec = wasOn? null : k;
-  const set=new Set();
-  if(activeSec){ SEC_META.forEach(m=>{ if(m[0]!==activeSec) set.add(m[0]); }); }
-  saveCollapsed(set); applyCollapse();
-  if(activeSec){ const el=document.querySelector('[data-sec="'+activeSec+'"]'); if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),60); }
+  const wasOn=activeSec===k;
+  activeSec = wasOn ? null : k;
+  applyCollapse();
+  if(activeSec){
+    const el=document.querySelector('[data-sec="'+activeSec+'"]');
+    if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),60);
+  }
 }
 function applyCollapse(){
-  const view=document.getElementById('view'); if(!view) return;
-  const set=collapsedSet();
-  const secs=[...view.querySelectorAll('[data-sec]')];
-  secs.forEach(el=>{
-    const k=el.dataset.sec, isCol=set.has(k), isCard=el.classList.contains('card');
-    if(isCard){ el.style.display=isCol?'none':''; }
-    else {
-      el.style.display=isCol?'none':'';
-      let n=el.nextElementSibling;
-      while(n && !n.hasAttribute('data-sec')){ n.style.display=isCol?'none':''; n=n.nextElementSibling; }
+  try{
+    const viewEl=document.getElementById('view'); if(!viewEl) return;
+    const isFiltered=Boolean(activeSec);
+    const set=isFiltered? new Set(SEC_META.map(m=>m[0]).filter(k=>k!==activeSec)) : collapsedSet();
+    const secs=[...viewEl.querySelectorAll('[data-sec]')];
+    secs.forEach(el=>{
+      const k=el.dataset.sec, isCol=set.has(k), isCard=el.classList.contains('card');
+      if(isCard){ el.style.display=isCol?'none':''; }
+      else {
+        el.style.display=isCol?'none':'';
+        let n=el.nextElementSibling;
+        while(n && !n.hasAttribute('data-sec')){ n.style.display=isCol?'none':''; n=n.nextElementSibling; }
+      }
+      const host=isCard? el.firstElementChild : el;
+      if(!host) return;
+      let ch=host.querySelector('.rafiq-chev');
+      if(!ch){
+        ch=document.createElement('span');
+        ch.className='rafiq-chev';
+        ch.onclick=(e)=>{e.stopPropagation();toggleSec(k);};
+        host.appendChild(ch);
+      }
+      ch.textContent=isCol?'▸':'▾';
+      ch.title=isCol?'توسيع':'طي';
+    });
+    // شريط الأقسام الثابت
+    const pills=document.getElementById('secPills');
+    if(pills){
+      const meta=SEC_META;
+      pills.innerHTML=meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:15px;line-height:1.2">${m[1]}</span><span style="font-size:10.5px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('');
+      pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
+      const note=document.getElementById('secNote');
+      if(note){
+        const m=SEC_META.find(x=>x[0]===activeSec);
+        note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : 'اضغط قسمًا ليفتح أمامك مباشرة ⇣';
+        note.style.display = 'block';
+      }
     }
-    if(isCard || true) { const host=el; let ch=host.querySelector('.rafiq-chev'); if(ch){ ch.textContent=isCol?'▸':'▾'; } }
-    // السهم
-    const host=isCard? el.firstElementChild : el;
-    if(!host) return;
-    let ch=host.querySelector('.rafiq-chev');
-    if(!ch){ ch=document.createElement('span'); ch.className='rafiq-chev'; ch.onclick=(e)=>{e.stopPropagation();toggleSec(k);}; host.appendChild(ch); }
-    ch.textContent=isCol?'▸':'▾';
-    ch.title=isCol?'توسيع':'طي';
-  });
-  // شريط الأقسام الثابت
-  const pills=document.getElementById('secPills');
-  if(pills){
-    const ord=(vmOrder&&vmOrder.length?vmOrder:SEC_META.map(m=>m[0]));
-    const meta=ord.map(k=>SEC_META.find(m=>m[0]===k)).filter(Boolean);
-    pills.innerHTML=meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}"><span style="font-size:14px">${m[1]}</span><span>${m[2]}</span></button>`).join('');
-    pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
-    const note=document.getElementById('secNote');
-    if(note){ const m=SEC_META.find(x=>x[0]===activeSec); note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : ''; note.style.display = m? 'block':'none'; }
+    // لوحة الأيقونات (الداشبورد)
+    const grid=document.getElementById('collapseGrid');
+    if(grid){
+      grid.innerHTML=''; grid.style.display='none';
+    }
+    // شريط التحكم
+    const bar=document.getElementById('collapseBar');
+    if(bar){
+      const any=[...secs].some(el=>!set.has(el.dataset.sec));
+      bar.textContent=any?'طي الكل ▴':'توسيع الكل ▾';
+      bar.onclick=()=>{ if(any) collapseAllSec(); else expandAllSec(); };
+    }
+  }catch(err){
+    console.error('applyCollapse error:', err);
   }
-  // لوحة الأيقونات (الداشبورد)
-  const grid=document.getElementById('collapseGrid');
-  if(grid){
-    const items=SEC_META.filter(m=>set.has(m[0]));
-    grid.innerHTML=''; grid.style.display='none';
-  }
-  // شريط التحكم
-  const bar=document.getElementById('collapseBar');
-  if(bar){ const any=[...secs].some(el=>!set.has(el.dataset.sec)); bar.textContent=any?'طي الكل ▴':'توسيع الكل ▾';
-    bar.onclick=()=>{ if(any) collapseAllSec(); else expandAllSec(); }; }
 }
 (new MutationObserver(()=>applyCollapse())).observe(document.getElementById('view')||document.body,{childList:true});
 
