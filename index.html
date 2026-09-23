@@ -227,6 +227,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
 const APP_VERSION = '1.13';
+const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 const CFG = {
   url: 'https://jnggbhyhqwbohpqwybbw.supabase.co',
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuZ2diaHlocXdib2hwcXd5YmJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQyMzcsImV4cCI6MjEwNTE0MDIzN30.4cojsJDBpFEQ8tKv-L9Mi4dTN8apKICUaNbQvJGjCQE',
