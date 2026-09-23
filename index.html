@@ -271,7 +271,9 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-entry-card .sub{font-size:11.5px;opacity:.9;font-weight:500;white-space:nowrap}
 .trk-entry-card .tim{font-size:11px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .trk-entry-card .qty-tag{font-size:10px;font-weight:700;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0}
-.trk-entry-card .trk-arr{font-size:14px;opacity:.7;flex:0 0 auto}
+.trk-entry-card .trk-arr{font-size:12px;opacity:.75;flex:0 0 auto;transition:all .15s}
+.trk-entry-card:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.trk-entry-card:hover .trk-arr{opacity:1;transform:scale(1.2)}
 /* بطاقات كثيفة (3 أعمدة فأكثر): خط أصغر ومختصر دون تشويه الأيقونة وبنفس الارتفاع */
 .trk-entry-card.medium{padding:7px 10px;gap:7px}
 .trk-entry-card.medium .ico{width:32px;height:32px;flex:0 0 32px;min-width:32px;max-width:32px;min-height:32px;max-height:32px;font-size:17px;border-radius:8px}
@@ -2307,6 +2309,10 @@ function renderLifeTracker(){
 
         <div class="card" style="min-height:180px;padding:12px">
           ${dayEntries.length ? `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px">
+              <b style="font-size:13.5px;color:var(--text-1)">سجلات اليوم (${dayEntries.length})</b>
+              <span style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:4px">اضغط على أي نشاط للتعديل أو الحذف ✍️🗑️</span>
+            </div>
             <div class="trk-act-rows-wrap">
               ${catGroups.map(group => {
                 const colCount = Math.min(group.entries.length, 5);
@@ -2328,7 +2334,7 @@ function renderLifeTracker(){
                         const subLabel = formatSub(entry.subcategory, isDense, cat.name);
 
                         return `
-                          <div class="trk-entry-card ${densityClass}" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}">
+                          <div class="trk-entry-card ${densityClass}" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
                             <div class="ico">${cat.icon}</div>
                             <div class="meta">
                               <div class="tit">
@@ -2339,7 +2345,7 @@ function renderLifeTracker(){
                               <div class="tim">⏱️ ${timeLabel}</div>
                               ${(!isDense && entry.note) ? `<div style="font-size:10px;opacity:.9;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 ${esc(entry.note)}</div>` : ''}
                             </div>
-                            <span class="trk-arr">➜</span>
+                            <span class="trk-arr" title="تعديل أو حذف">✏️</span>
                           </div>
                         `;
                       }).join('')}
@@ -2837,31 +2843,185 @@ function openEntryDetails(entryId){
   const trk = getTrackerData();
   const entry = trk.entries.find(e => e.id === entryId);
   if(!entry) return;
-  const cat = trk.categories.find(c => c.id === entry.categoryId) || { name:'نشاط', icon:'📌', colorHex:'#3B82F6' };
-  const hasRange = !!(entry.startedAt && entry.endedAt);
-  const timeLabel = hasRange
-    ? `⏱️ من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-    : formatArabicTime(entry.loggedAt);
+  const cat = trk.categories.find(c => c.id === entry.categoryId) || { id: entry.categoryId, name:'نشاط', icon:'📌', colorHex:'#3B82F6' };
+  
+  window._editEntryId = entry.id;
+  window._editEntryCatId = cat.id;
+  window._editEntrySubcat = entry.subcategory || '';
 
-  openSheet(sheetHead(`${cat.icon} ${cat.name}`)+`
-    <div style="background:${cat.colorHex}18;border:1.5px solid ${cat.colorHex}60;border-radius:14px;padding:14px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <span style="font-size:24px">${cat.icon}</span>
+  const entryDate = (entry.startedAt || entry.loggedAt || new Date().toISOString()).slice(0, 10);
+  
+  let sTime = '08:00';
+  let eTime = '08:30';
+  if(entry.startedAt && entry.startedAt.length >= 16){
+    sTime = entry.startedAt.slice(11, 16);
+  } else if(entry.loggedAt && entry.loggedAt.length >= 16){
+    sTime = entry.loggedAt.slice(11, 16);
+  }
+  if(entry.endedAt && entry.endedAt.length >= 16){
+    eTime = entry.endedAt.slice(11, 16);
+  } else {
+    eTime = sTime;
+  }
+
+  const presetsMap = {
+    cat_walk: ['15 دقيقة', '30 دقيقة', '45 دقيقة', '60 دقيقة', '2 كم', '5 كم'],
+    cat_read: ['5 صفحات', '10 صفحات', '20 صفحة', '30 صفحة', '15 دقيقة', '30 دقيقة'],
+    cat_sport: ['15 دقيقة', '30 دقيقة', '45 دقيقة', '60 دقيقة', '90 دقيقة'],
+    cat_water: ['1 كوب (250 مل)', '2 كوب (500 مل)', '3 أكواب', 'قارورة (1 لتر)'],
+    cat_sleep: ['قيلولة (30 د)', 'ساعة', 'ساعتان', '6 ساعات', '7 ساعات', '8 ساعات'],
+    cat_food: ['وجبة كاملة', 'وجبة خفيفة', 'سناك صحي', 'مشروب'],
+    cat_meds: ['جرعة واحدة', 'حبة واحدة', 'حبتان', '500 ملغ', '1000 ملغ'],
+    cat_illness: ['ألم خفيف', 'ألم متوسط', 'شديد', 'حرارة مرتفعة']
+  };
+  const presets = presetsMap[cat.id] || ['15 دقيقة', '30 دقيقة', '45 دقيقة', '1 مرة', '2 مرة'];
+
+  openSheet(sheetHead(`تعديل النشاط: ${cat.icon} ${cat.name}`)+`
+    <div style="background:${cat.colorHex}18;border:1.5px solid ${cat.colorHex}50;border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:26px">${cat.icon}</span>
         <div>
-          <b style="font-size:16px;color:var(--text-1)">${esc(cat.name)}</b>
-          ${entry.subcategory ? `<span style="font-size:13px;color:var(--text-2)"> (${esc(entry.subcategory)})</span>` : ''}
+          <b style="font-size:15px;color:var(--text-1)">${esc(cat.name)}</b>
+          <div style="font-size:11.5px;color:var(--text-2);margin-top:2px">تاريخ السجل: ${entryDate}</div>
         </div>
       </div>
-      <div style="font-size:13px;font-weight:600;color:var(--accent-dark);margin-bottom:4px">${timeLabel}</div>
-      ${entry.quantity ? `<div style="font-size:12px;font-weight:bold;margin-bottom:6px">المدة أو الكمية: ${esc(entry.quantity)}</div>` : ''}
-      <div style="font-size:12px;color:var(--text-2)">تاريخ التسجيل: ${(entry.loggedAt||'').slice(0,10)}</div>
+      <button class="mini" data-act="openSwitchCategoryPopup" data-id="${entry.id}" style="padding:5px 10px;font-size:11.5px;border-radius:8px">تغيير الفئة ⇄</button>
     </div>
 
-    <div class="field"><label>تعديل الملاحظة</label><textarea id="edNote" rows="2">${esc(entry.note||'')}</textarea></div>
+    <div class="field">
+      <label>تاريخ السجل</label>
+      <input type="date" id="edDate" value="${entryDate}">
+    </div>
 
-    <div style="display:flex;gap:8px">
-      <button class="btn" data-act="saveEntryNote" data-id="${entry.id}" style="flex:1">حفظ الملاحظة</button>
-      <button class="btn danger" data-act="delTrackerEntry" data-id="${entry.id}" style="flex:1">حذف السجل</button>
+    <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+      <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">⏱️ توقيت البداية والنهاية:</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1">
+          <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت البداية:</label>
+          <input type="time" id="edStartTime" value="${sTime}" style="width:100%">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت النهاية:</label>
+          <input type="time" id="edEndTime" value="${eTime}" style="width:100%">
+        </div>
+      </div>
+      <div id="edDurationPreview" style="background:var(--accent-soft);color:var(--accent-dark);padding:7px 10px;border-radius:8px;font-size:11.5px;font-weight:700;text-align:center">
+        ⏳ المدة: ${esc(entry.quantity || '30 دقيقة')}
+      </div>
+    </div>
+
+    ${(cat.subcategories && cat.subcategories.length) ? `
+      <div style="margin-bottom:12px">
+        <label style="font-size:12.5px;font-weight:600;display:block;margin-bottom:6px">التصنيف الفرعي:</label>
+        <div class="chips" id="edSubcatChips" style="margin-bottom:8px">
+          ${cat.subcategories.map(sub => `
+            <button class="chip ${sub===entry.subcategory?'on':''}" data-act="pickEdSubcat" data-s="${esc(sub)}">${esc(sub)}</button>
+          `).join('')}
+        </div>
+        <input id="edSubcatInput" value="${esc(entry.subcategory||'')}" placeholder="أو اكتب تصنيفًا مخصصًا..." style="font-size:12.5px">
+      </div>
+    ` : `
+      <div class="field">
+        <label>التصنيف الفرعي (اختياري)</label>
+        <input id="edSubcatInput" value="${esc(entry.subcategory||'')}" placeholder="مثال: فطور، قيلولة، سير سريع...">
+      </div>
+    `}
+
+    <div class="field">
+      <label>الكمية أو القيمة (اختياري)</label>
+      <input id="edQuantity" value="${esc(entry.quantity||'')}" placeholder="مثال: 30 دقيقة، 500 مل، 20 صفحة...">
+      <div class="chips" style="margin-top:6px">
+        ${presets.map(p => `
+          <button class="chip ${p===entry.quantity?'on':''}" data-act="pickEdPreset" data-p="${esc(p)}">${esc(p)}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="field">
+      <label>ملاحظة إضافية (اختياري)</label>
+      <textarea id="edNote" rows="2" placeholder="أي ملاحظات حول هذا النشاط...">${esc(entry.note||'')}</textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn" data-act="saveFullEntryEdit" data-id="${entry.id}" style="flex:2">💾 حفظ التعديلات</button>
+      <button class="btn danger" data-act="delTrackerEntry" data-id="${entry.id}" style="flex:1">🗑️ حذف النشاط</button>
+    </div>
+  `);
+
+  const recalcEd = () => {
+    const sT = $('#edStartTime') ? $('#edStartTime').value : sTime;
+    const eT = $('#edEndTime') ? $('#edEndTime').value : eTime;
+    if(sT && eT){
+      const s = new Date(`2000-01-01T${sT}:00`);
+      const e = new Date(`2000-01-01T${eT}:00`);
+      const diffMin = Math.round((e - s) / 60000);
+      const prev = $('#edDurationPreview');
+      if(prev){
+        if(diffMin > 0){
+          prev.textContent = '⏳ المدة المحسوبة: ' + formatMinutesToArabic(diffMin);
+          const qInp = $('#edQuantity');
+          if(qInp && !qInp.dataset.manual) qInp.value = formatMinutesToArabic(diffMin);
+        } else if(diffMin === 0){
+          prev.textContent = '⏳ نفس وقت البداية والنهاية';
+        } else {
+          prev.textContent = '⚠️ وقت النهاية يسبق وقت البداية';
+        }
+      }
+    }
+  };
+  ['edStartTime', 'edEndTime'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.oninput = recalcEd; el.onchange = recalcEd; }
+  });
+  if($('#edQuantity')) $('#edQuantity').oninput = () => { $('#edQuantity').dataset.manual = '1'; };
+}
+
+async function saveFullEntryEdit(entryId){
+  const trk = getTrackerData();
+  const idx = trk.entries.findIndex(e => e.id === entryId);
+  if(idx < 0){ toast('لم يتم العثور على السجل'); return; }
+
+  const edDate = ($('#edDate')||{}).value || window._trackerDate || new Date().toISOString().slice(0, 10);
+  const sTime = ($('#edStartTime')||{}).value || '08:00';
+  const eTime = ($('#edEndTime')||{}).value || '08:30';
+  const qty = ($('#edQuantity')||{}).value || null;
+  const note = ($('#edNote')||{}).value || null;
+  const subcatInp = ($('#edSubcatInput')||{}).value;
+  const subcat = (subcatInp !== undefined && subcatInp !== null) ? subcatInp : (window._editEntrySubcat || null);
+
+  const startedAt = `${edDate}T${sTime}:00`;
+  const endedAt = `${edDate}T${eTime}:00`;
+  const loggedAt = startedAt;
+
+  trk.entries[idx] = Object.assign({}, trk.entries[idx], {
+    subcategory: subcat && subcat.trim() ? subcat.trim() : null,
+    quantity: qty && qty.trim() ? qty.trim() : null,
+    startedAt: startedAt,
+    endedAt: endedAt,
+    loggedAt: loggedAt,
+    note: note && note.trim() ? note.trim() : null
+  });
+
+  saveTrackerData(trk);
+  closeSheet();
+  renderLifeTracker();
+  toast('تم حفظ التعديلات بنجاح ✓');
+  updateTrackerEntryCloud(trk.entries[idx]);
+}
+
+function openSwitchCategoryPopup(entryId){
+  const trk = getTrackerData();
+  const entry = trk.entries.find(e => e.id === entryId);
+  if(!entry) return;
+  openPopup(popupHead('تغيير فئة النشاط')+`
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 0">
+      ${trk.categories.map(c => `
+        <button class="row" style="padding:10px 12px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;width:100%;text-align:start;display:flex;align-items:center;gap:10px" data-act="applySwitchCategory" data-id="${entry.id}" data-cat="${c.id}">
+          <span style="font-size:22px;width:34px;height:34px;border-radius:8px;background:${c.colorHex}20;display:flex;align-items:center;justify-content:center">${c.icon}</span>
+          <b style="flex:1;font-size:14px;color:var(--text-1)">${esc(c.name)}</b>
+          ${entry.categoryId === c.id ? '<span style="color:var(--accent);font-weight:700">✓ الحالية</span>' : '<span class="btn-arrow">←</span>'}
+        </button>
+      `).join('')}
     </div>
   `);
 }
@@ -5498,8 +5658,47 @@ document.addEventListener('click', async e=>{
       case 'moveCatDown': { const trk3=getTrackerData(); const cats3=trk3.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx3=cats3.findIndex(c=>c.id===el.dataset.id); if(idx3>=0&&idx3<cats3.length-1){ const tmp3=cats3[idx3].sortOrder||idx3; const nxt3=cats3[idx3+1].sortOrder||idx3+1; cats3[idx3]=Object.assign({},cats3[idx3],{sortOrder:nxt3}); cats3[idx3+1]=Object.assign({},cats3[idx3+1],{sortOrder:tmp3}); trk3.categories=cats3; saveTrackerData(trk3); upsertTrackerCategoryCloud(cats3[idx3]); upsertTrackerCategoryCloud(cats3[idx3+1]); } openCategorySettings(); break; }
       case 'delTrackerCategory': { if(!confirm('حذف هذه الفئة؟')) break; const trkD=getTrackerData(); trkD.categories=trkD.categories.filter(c=>c.id!==el.dataset.id); saveTrackerData(trkD); openCategorySettings(); toast('حُذفت الفئة ✓'); deleteTrackerCategoryCloud(el.dataset.id); break; }
       case 'openEntryDetails': openEntryDetails(el.dataset.id); break;
+      case 'saveFullEntryEdit': await saveFullEntryEdit(el.dataset.id); break;
+      case 'openSwitchCategoryPopup': openSwitchCategoryPopup(el.dataset.id); break;
+      case 'applySwitchCategory': {
+        const trk = getTrackerData();
+        const entry = trk.entries.find(e => e.id === el.dataset.id);
+        if(entry){
+          entry.categoryId = el.dataset.cat;
+          saveTrackerData(trk);
+          updateTrackerEntryCloud(entry);
+          closePopup();
+          openEntryDetails(entry.id);
+          renderLifeTracker();
+          toast('تم تغيير فئة النشاط ✓');
+        }
+        break;
+      }
+      case 'pickEdSubcat': {
+        window._editEntrySubcat = el.dataset.s;
+        document.querySelectorAll('#edSubcatChips .chip').forEach(b => b.classList.toggle('on', b.dataset.s === el.dataset.s));
+        const inp = document.getElementById('edSubcatInput');
+        if(inp) inp.value = el.dataset.s;
+        break;
+      }
+      case 'pickEdPreset': {
+        const inp = document.getElementById('edQuantity');
+        if(inp) { inp.value = el.dataset.p; inp.dataset.manual = '1'; }
+        document.querySelectorAll('[data-act="pickEdPreset"]').forEach(b => b.classList.toggle('on', b.dataset.p === el.dataset.p));
+        break;
+      }
       case 'saveEntryNote': { const trkN=getTrackerData(); const idxN=trkN.entries.findIndex(e=>e.id===el.dataset.id); if(idxN>=0){ const noteEl=document.getElementById('edNote'); trkN.entries[idxN]=Object.assign({},trkN.entries[idxN],{note:noteEl?noteEl.value||null:null}); saveTrackerData(trkN); updateTrackerEntryCloud(trkN.entries[idxN]); } closeSheet(); renderLifeTracker(); toast('حُفظت الملاحظة ✓'); break; }
-      case 'delTrackerEntry': { if(!confirm('حذف هذا السجل؟')) break; const trkE=getTrackerData(); trkE.entries=trkE.entries.filter(e=>e.id!==el.dataset.id); saveTrackerData(trkE); closeSheet(); renderLifeTracker(); toast('حُذف السجل ✓'); deleteTrackerEntryCloud(el.dataset.id); break; }
+      case 'delTrackerEntry': {
+        if(!confirm('هل تريد بالتأكيد حذف هذا النشاط؟')) break;
+        const trkE = getTrackerData();
+        trkE.entries = trkE.entries.filter(e => e.id !== el.dataset.id);
+        saveTrackerData(trkE);
+        closeSheet();
+        renderLifeTracker();
+        toast('تم حذف النشاط بنجاح ✓');
+        deleteTrackerEntryCloud(el.dataset.id);
+        break;
+      }
       case 'openPdfExport': openPdfExport(); break;
       case 'pickPdfPreset': { window._pdfPreset=el.dataset.k; document.querySelectorAll('[data-act="pickPdfPreset"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); const cd=document.getElementById('pdfCustomDates'); if(cd) cd.style.display=(el.dataset.k==='CUSTOM')?'block':'none'; break; }
       case 'pdfSelectAllCats': { const trkAll=getTrackerData(); window._pdfCats=trkAll.categories.map(c=>c.id); document.querySelectorAll('[data-act="togglePdfCat"]').forEach(b=>b.classList.add('on')); break; }
