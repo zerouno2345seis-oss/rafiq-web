@@ -266,26 +266,26 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-entry-card:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.15)}
 .trk-entry-card:active{transform:scale(.98)}
 
-/* Card Icon */
-.trk-entry-card .ico{font-size:18px;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;flex:0 0 36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;box-shadow:0 2px 5px rgba(0,0,0,.08)}
+/* Card Icon - Proposal 1: Solid pure white circular badge */
+.trk-entry-card .ico{font-size:18px;width:36px;height:36px;border-radius:50%;background:#ffffff;color:#0f172a;display:flex;align-items:center;justify-content:center;flex:0 0 36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
 
-/* Edit Action Icon/Button */
-.trk-entry-card .trk-btn-edit{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 28px;transition:transform .15s, background .15s}
-.trk-entry-card:hover .trk-btn-edit{transform:scale(1.15);background:rgba(255,255,255,.35)}
+/* Edit Action Icon/Button - Proposal 1: Solid pure white circular button */
+.trk-entry-card .trk-btn-edit{width:32px;height:32px;border-radius:50%;background:#ffffff;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 32px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:transform .15s, box-shadow .15s}
+.trk-entry-card:hover .trk-btn-edit{transform:scale(1.12);box-shadow:0 3px 8px rgba(0,0,0,.18)}
 
 /* --- 1. Wide Card (1 or 2 items per row) --- */
 .trk-entry-card.wide{justify-content:space-between;padding:6px 14px;gap:12px}
 .trk-entry-card.wide .trk-card-right{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto}
 .trk-entry-card.wide .trk-card-titles{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
-.trk-entry-card.wide .trk-tit-main{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card.wide .trk-sub-label{font-size:11.5px;opacity:.9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.wide .trk-tit-main{font-size:14px;font-weight:800;line-height:1.2;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.wide .trk-sub-label{font-size:12px;color:rgba(255,255,255,.92);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .trk-entry-card.wide .trk-card-center{display:flex;align-items:center;justify-content:center;gap:8px;flex:1 1 auto;min-width:0}
-.trk-entry-card.wide .trk-pill-time{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(4px);padding:4px 12px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.trk-entry-card.wide .trk-note-preview{font-size:11px;opacity:.9;background:rgba(0,0,0,.15);padding:3px 8px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.trk-entry-card.wide .trk-pill-time{background:#ffffff;color:#0f172a;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.1);display:inline-flex;align-items:center;gap:6px}
+.trk-entry-card.wide .trk-note-preview{font-size:11px;color:#ffffff;background:rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
 
 .trk-entry-card.wide .trk-card-left{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.trk-entry-card.wide .trk-pill-qty{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2);padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.trk-entry-card.wide .trk-pill-qty{background:#ffffff;color:#0f172a;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.1)}
 
 @media(max-width:640px){
   .trk-entry-card.wide .trk-card-center{display:none}
@@ -293,24 +293,24 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 
 /* --- 2. Medium Card (3 items per row) --- */
 .trk-entry-card.medium{padding:6px 10px;gap:8px}
-.trk-entry-card.medium .ico{width:32px;height:32px;flex:0 0 32px;min-width:32px;max-width:32px;min-height:32px;max-height:32px;font-size:16px;border-radius:8px}
+.trk-entry-card.medium .ico{width:30px;height:30px;flex:0 0 30px;min-width:30px;max-width:30px;min-height:30px;max-height:30px;font-size:15px;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.1)}
 .trk-entry-card.medium .trk-card-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
-.trk-entry-card.medium .trk-m-line1{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.medium .trk-m-line1{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:800;color:#ffffff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trk-entry-card.medium .trk-m-line1 span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card.medium .trk-m-sub{font-size:10.5px;opacity:.9;font-weight:500}
-.trk-entry-card.medium .trk-m-line2{font-size:10.5px;opacity:.95;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
-.trk-entry-card.medium .trk-m-qty{background:rgba(0,0,0,.18);padding:1px 6px;border-radius:6px;font-size:9.5px;font-weight:700}
-.trk-entry-card.medium .trk-btn-edit{width:22px;height:22px;flex:0 0 22px;font-size:10px}
+.trk-entry-card.medium .trk-m-sub{font-size:11px;color:rgba(255,255,255,.92);font-weight:600}
+.trk-entry-card.medium .trk-m-line2{font-size:10.5px;color:rgba(255,255,255,.95);display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.trk-entry-card.medium .trk-m-pill{background:#ffffff;color:#0f172a;border-radius:999px;padding:2px 8px;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.trk-entry-card.medium .trk-btn-edit{width:26px;height:26px;flex:0 0 26px;font-size:11px}
 
 /* --- 3. Dense Card (4 or 5 items per row, e.g. Water) --- */
 .trk-entry-card.dense{padding:5px 8px;gap:6px}
-.trk-entry-card.dense .ico{width:28px;height:28px;flex:0 0 28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;font-size:15px;border-radius:7px}
+.trk-entry-card.dense .ico{width:28px;height:28px;flex:0 0 28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;font-size:14px;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.1)}
 .trk-entry-card.dense .trk-card-dense-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden}
-.trk-entry-card.dense .trk-dense-line1{font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-line1{font-size:12px;font-weight:800;color:#ffffff;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trk-entry-card.dense .trk-dense-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card.dense .trk-dense-sub{font-size:9.5px;opacity:.9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card.dense .trk-dense-line2{font-size:9.5px;opacity:.95;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card.dense .trk-dense-qty{font-size:8.5px;opacity:.9;white-space:nowrap}
+.trk-entry-card.dense .trk-dense-sub{font-size:10px;color:rgba(255,255,255,.92);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-line2{font-size:10px;color:rgba(255,255,255,.92);font-weight:600;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-qty{font-size:9px;color:rgba(255,255,255,.95);white-space:nowrap}
 .trk-entry-card.dense .trk-btn-edit{display:none}
 .trk-color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:6px 0}
 .trk-color-dot{width:42px;height:42px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px}
@@ -2395,8 +2395,8 @@ function renderLifeTracker(){
                                     ${subLabel ? `<span class="trk-m-sub">${esc(subLabel)}</span>` : ''}
                                   </div>
                                   <div class="trk-m-line2">
-                                    <span>⏱️ ${timeLabel}</span>
-                                    ${entry.quantity ? `<span class="trk-m-qty">${esc(entry.quantity)}</span>` : ''}
+                                    <span class="trk-m-pill">⏱️ ${timeLabel}</span>
+                                    ${entry.quantity ? `<span class="trk-m-pill">⏳ ${esc(entry.quantity)}</span>` : ''}
                                   </div>
                                 </div>
                                 <div class="trk-btn-edit" title="تعديل أو حذف">✏️</div>
