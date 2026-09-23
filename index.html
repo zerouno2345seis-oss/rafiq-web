@@ -262,34 +262,56 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-act-row{width:100%}
 .trk-entries-grid{display:grid;grid-template-columns:repeat(var(--trk-cols, 1), minmax(0, 1fr));gap:8px;width:100%}
 @media(max-width:580px){.trk-entries-grid{grid-template-columns:repeat(auto-fit, minmax(110px, 1fr))}}
-.trk-entry-card{border-radius:14px;padding:8px 12px;display:flex;align-items:center;gap:8px;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);cursor:pointer;transition:transform .12s;height:54px;min-height:54px;max-height:54px;box-sizing:border-box;min-width:0;overflow:hidden}
+.trk-entry-card{border-radius:14px;padding:6px 12px;display:flex;align-items:center;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);cursor:pointer;transition:transform .15s, filter .15s, box-shadow .15s;height:54px;min-height:54px;max-height:54px;box-sizing:border-box;min-width:0;overflow:hidden;position:relative;user-select:none}
+.trk-entry-card:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.15)}
 .trk-entry-card:active{transform:scale(.98)}
-.trk-entry-card .ico{font-size:19px;width:36px;height:36px;border-radius:10px;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;flex:0 0 36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px}
-.trk-entry-card .meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden}
-.trk-entry-card .tit{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card .tit span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trk-entry-card .sub{font-size:11.5px;opacity:.9;font-weight:500;white-space:nowrap}
-.trk-entry-card .tim{font-size:11px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
-.trk-entry-card .qty-tag{font-size:10px;font-weight:700;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0}
-.trk-entry-card .trk-arr{font-size:12px;opacity:.75;flex:0 0 auto;transition:all .15s}
-.trk-entry-card:hover{filter:brightness(1.05);transform:translateY(-1px)}
-.trk-entry-card:hover .trk-arr{opacity:1;transform:scale(1.2)}
-/* بطاقات كثيفة (3 أعمدة فأكثر): خط أصغر ومختصر دون تشويه الأيقونة وبنفس الارتفاع */
-.trk-entry-card.medium{padding:7px 10px;gap:7px}
-.trk-entry-card.medium .ico{width:32px;height:32px;flex:0 0 32px;min-width:32px;max-width:32px;min-height:32px;max-height:32px;font-size:17px;border-radius:8px}
-.trk-entry-card.medium .tit{font-size:12px;gap:3px}
-.trk-entry-card.medium .sub{font-size:10px}
-.trk-entry-card.medium .tim{font-size:10px}
-.trk-entry-card.medium .qty-tag{font-size:9px;padding:1px 4px}
 
-.trk-entry-card.dense{padding:6px 8px;gap:6px}
-.trk-entry-card.dense .ico{width:30px;height:30px;flex:0 0 30px;min-width:30px;max-width:30px;min-height:30px;max-height:30px;font-size:16px;border-radius:8px}
-.trk-entry-card.dense .tit{font-size:11px;gap:3px}
-.trk-entry-card.dense .sub{font-size:9.5px;opacity:.85}
-.trk-entry-card.dense .tim{font-size:9.5px}
-.trk-entry-card.dense .qty-tag{font-size:8.5px;padding:0 3px;border-radius:4px}
-.trk-entry-card.dense .trk-arr{display:none}
-@media(max-width:440px){.trk-entry-card .trk-arr{display:none}}
+/* Card Icon */
+.trk-entry-card .ico{font-size:18px;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;flex:0 0 36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;box-shadow:0 2px 5px rgba(0,0,0,.08)}
+
+/* Edit Action Icon/Button */
+.trk-entry-card .trk-btn-edit{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 28px;transition:transform .15s, background .15s}
+.trk-entry-card:hover .trk-btn-edit{transform:scale(1.15);background:rgba(255,255,255,.35)}
+
+/* --- 1. Wide Card (1 or 2 items per row) --- */
+.trk-entry-card.wide{justify-content:space-between;padding:6px 14px;gap:12px}
+.trk-entry-card.wide .trk-card-right{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto}
+.trk-entry-card.wide .trk-card-titles{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.trk-entry-card.wide .trk-tit-main{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.wide .trk-sub-label{font-size:11.5px;opacity:.9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.trk-entry-card.wide .trk-card-center{display:flex;align-items:center;justify-content:center;gap:8px;flex:1 1 auto;min-width:0}
+.trk-entry-card.wide .trk-pill-time{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(4px);padding:4px 12px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.trk-entry-card.wide .trk-note-preview{font-size:11px;opacity:.9;background:rgba(0,0,0,.15);padding:3px 8px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+
+.trk-entry-card.wide .trk-card-left{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.trk-entry-card.wide .trk-pill-qty{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2);padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+
+@media(max-width:640px){
+  .trk-entry-card.wide .trk-card-center{display:none}
+}
+
+/* --- 2. Medium Card (3 items per row) --- */
+.trk-entry-card.medium{padding:6px 10px;gap:8px}
+.trk-entry-card.medium .ico{width:32px;height:32px;flex:0 0 32px;min-width:32px;max-width:32px;min-height:32px;max-height:32px;font-size:16px;border-radius:8px}
+.trk-entry-card.medium .trk-card-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.trk-entry-card.medium .trk-m-line1{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.medium .trk-m-line1 span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.medium .trk-m-sub{font-size:10.5px;opacity:.9;font-weight:500}
+.trk-entry-card.medium .trk-m-line2{font-size:10.5px;opacity:.95;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.trk-entry-card.medium .trk-m-qty{background:rgba(0,0,0,.18);padding:1px 6px;border-radius:6px;font-size:9.5px;font-weight:700}
+.trk-entry-card.medium .trk-btn-edit{width:22px;height:22px;flex:0 0 22px;font-size:10px}
+
+/* --- 3. Dense Card (4 or 5 items per row, e.g. Water) --- */
+.trk-entry-card.dense{padding:5px 8px;gap:6px}
+.trk-entry-card.dense .ico{width:28px;height:28px;flex:0 0 28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;font-size:15px;border-radius:7px}
+.trk-entry-card.dense .trk-card-dense-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden}
+.trk-entry-card.dense .trk-dense-line1{font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-sub{font-size:9.5px;opacity:.9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-line2{font-size:9.5px;opacity:.95;display:flex;align-items:center;gap:3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-entry-card.dense .trk-dense-qty{font-size:8.5px;opacity:.9;white-space:nowrap}
+.trk-entry-card.dense .trk-btn-edit{display:none}
 .trk-color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:6px 0}
 .trk-color-dot{width:42px;height:42px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px}
 .trk-color-dot.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -2246,17 +2268,20 @@ function renderLifeTracker(){
   function formatSub(sub, isDense, catName){
     if(!sub) return '';
     let s = String(sub).trim();
+    s = s.replace(/^\(+|\)+$/g, '').trim();
     if(catName){
       const re = new RegExp(catName, 'g');
-      const stripped = s.replace(re, '').replace(/\s+/g, ' ').trim();
-      if(stripped && stripped !== '()' && stripped !== 'كوب') s = stripped;
+      s = s.replace(re, '').replace(/\s+/g, ' ').trim();
     }
-    if(isDense && s.length > 14){
-      s = s.slice(0, 12) + '..';
+    s = s.replace(/^\(+|\)+$/g, '').trim();
+    if(isDense){
+      if(s.includes('كوب')) s = 'كوب';
+      else if(s.includes('قارورة')) s = 'قارورة';
+      else if(s.length > 8) s = s.slice(0, 7) + '..';
+    } else {
+      if(s.length > 14) s = s.slice(0, 13) + '..';
     }
-    if(s.startsWith('(') && s.endsWith(')')) return s;
-    if(s.includes('(') && s.includes(')')) return s;
-    return `(${s})`;
+    return s;
   }
 
   $('#view').innerHTML = `
@@ -2315,43 +2340,91 @@ function renderLifeTracker(){
             </div>
             <div class="trk-act-rows-wrap">
               ${catGroups.map(group => {
-                const colCount = Math.min(group.entries.length, 5);
-                const isDense = colCount >= 4;
-                const isMedium = colCount === 3;
-                const densityClass = isDense ? 'dense' : (isMedium ? 'medium' : '');
+                const chunks = [];
+                for(let i = 0; i < group.entries.length; i += 5){
+                  chunks.push(group.entries.slice(i, i + 5));
+                }
                 const cat = group.cat;
-                return `
-                  <div class="trk-act-row">
-                    <div class="trk-entries-grid" style="--trk-cols: ${colCount}">
-                      ${group.entries.map(entry => {
-                        const hasRange = !!(entry.startedAt && entry.endedAt);
-                        const timeLabel = isDense
-                          ? formatArabicTime(entry.startedAt || entry.loggedAt)
-                          : (hasRange
-                              ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-                              : formatArabicTime(entry.loggedAt));
 
-                        const subLabel = formatSub(entry.subcategory, isDense, cat.name);
+                return chunks.map(chunk => {
+                  const colCount = chunk.length;
+                  const isWide = colCount <= 2;
+                  const isMedium = colCount === 3;
+                  const isDense = colCount >= 4;
 
-                        return `
-                          <div class="trk-entry-card ${densityClass}" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
-                            <div class="ico">${cat.icon}</div>
-                            <div class="meta">
-                              <div class="tit">
-                                <span>${esc(cat.name)}</span>
-                                ${subLabel ? `<span class="sub">${esc(subLabel)}</span>` : ''}
-                                ${entry.quantity ? `<span class="qty-tag">${esc(entry.quantity)}</span>` : ''}
+                  return `
+                    <div class="trk-act-row">
+                      <div class="trk-entries-grid" style="--trk-cols: ${colCount}">
+                        ${chunk.map(entry => {
+                          const hasRange = !!(entry.startedAt && entry.endedAt);
+                          const timeLabel = isDense
+                            ? formatArabicTime(entry.startedAt || entry.loggedAt)
+                            : (hasRange
+                                ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+                                : formatArabicTime(entry.loggedAt));
+
+                          const subLabel = formatSub(entry.subcategory, isDense, cat.name);
+
+                          if(isWide){
+                            return `
+                              <div class="trk-entry-card wide" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
+                                <div class="trk-card-right">
+                                  <div class="ico">${cat.icon}</div>
+                                  <div class="trk-card-titles">
+                                    <span class="trk-tit-main">${esc(cat.name)}</span>
+                                    ${subLabel ? `<span class="trk-sub-label">${esc(subLabel)}</span>` : ''}
+                                  </div>
+                                </div>
+                                <div class="trk-card-center">
+                                  <div class="trk-pill-time">⏱️ ${timeLabel}</div>
+                                  ${entry.note ? `<div class="trk-note-preview" title="${esc(entry.note)}">📝 ${esc(entry.note)}</div>` : ''}
+                                </div>
+                                <div class="trk-card-left">
+                                  ${entry.quantity ? `<div class="trk-pill-qty">⏳ ${esc(entry.quantity)}</div>` : ''}
+                                  <div class="trk-btn-edit" title="تعديل أو حذف">✏️</div>
+                                </div>
                               </div>
-                              <div class="tim">⏱️ ${timeLabel}</div>
-                              ${(!isDense && entry.note) ? `<div style="font-size:10px;opacity:.9;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 ${esc(entry.note)}</div>` : ''}
-                            </div>
-                            <span class="trk-arr" title="تعديل أو حذف">✏️</span>
-                          </div>
-                        `;
-                      }).join('')}
+                            `;
+                          } else if(isMedium){
+                            return `
+                              <div class="trk-entry-card medium" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
+                                <div class="ico">${cat.icon}</div>
+                                <div class="trk-card-body">
+                                  <div class="trk-m-line1">
+                                    <span class="trk-tit-main">${esc(cat.name)}</span>
+                                    ${subLabel ? `<span class="trk-m-sub">${esc(subLabel)}</span>` : ''}
+                                  </div>
+                                  <div class="trk-m-line2">
+                                    <span>⏱️ ${timeLabel}</span>
+                                    ${entry.quantity ? `<span class="trk-m-qty">${esc(entry.quantity)}</span>` : ''}
+                                  </div>
+                                </div>
+                                <div class="trk-btn-edit" title="تعديل أو حذف">✏️</div>
+                              </div>
+                            `;
+                          } else {
+                            // Dense
+                            return `
+                              <div class="trk-entry-card dense" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
+                                <div class="ico">${cat.icon}</div>
+                                <div class="trk-card-dense-body">
+                                  <div class="trk-dense-line1">
+                                    <span class="trk-dense-name">${esc(cat.name)}</span>
+                                    ${subLabel ? `<span class="trk-dense-sub">• ${esc(subLabel)}</span>` : ''}
+                                  </div>
+                                  <div class="trk-dense-line2">
+                                    <span>⏱️ ${timeLabel}</span>
+                                    ${(entry.quantity && !subLabel.includes(entry.quantity) && entry.quantity.length <= 8) ? `<span class="trk-dense-qty">• ${esc(entry.quantity)}</span>` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                            `;
+                          }
+                        }).join('')}
+                      </div>
                     </div>
-                  </div>
-                `;
+                  `;
+                }).join('');
               }).join('')}
             </div>
           ` : `
