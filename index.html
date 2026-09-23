@@ -21,6 +21,9 @@
   --ring-track:#EDF0EC; --shadow:0 2px 12px rgba(0,0,0,.055);
   --r-card:18px; --r-chip:12px; --r-btn:14px; --nav-h:64px;
   --field-bg:#F3EBE1; --field-border:#CFC7BC;
+  --space-me:#308A65; --space-me-soft:#E8F4EE;
+  --space-shared:#3B82F6; --space-shared-soft:#EBF3FA;
+  --space-comp:#E7A261; --space-comp-soft:#FDF3E7;
 }
 html[data-accent="rose"]{
   --accent-dark:#AE3C60; --accent:#E05789; --accent-2:#E896B5;
@@ -32,6 +35,9 @@ html[data-theme="dark"]{
   --text-1:#F6F6F4; --text-2:#AAA9A5; --text-3:#8A8984;
   --ring-track:#2C2E2C; --shadow:0 2px 12px rgba(0,0,0,.45);
   --field-bg:#232523; --field-border:#4A4C4A;
+  --space-me:#4EAA83; --space-me-soft:#1B2E24;
+  --space-shared:#60A5FA; --space-shared-soft:#1E293B;
+  --space-comp:#F0B37A; --space-comp-soft:#352516;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'SF Arabic','Segoe UI','Geeza Pro','Noto Kufi Arabic',Tahoma,sans-serif;
@@ -289,6 +295,51 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .meds-matrix-table td.med-name-cell{text-align:start;padding:8px 8px;white-space:nowrap}
 .med-dose-pill{display:inline-block;padding:3px 6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent-2)}
 .med-log-btn{display:inline-block;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;border:none}
+
+/* --- Universal Spaces, Badges, Stripes & 3-Dots Menu Styles --- */
+.space-stripe-me{border-inline-start:5px solid var(--space-me) !important}
+.space-stripe-shared{border-inline-start:5px solid var(--space-shared) !important}
+.space-stripe-comp{border-inline-start:5px solid var(--space-comp) !important}
+
+.space-badge-me{display:inline-flex;align-items:center;gap:3px;background:var(--space-me-soft);color:var(--space-me);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
+.space-badge-shared{display:inline-flex;align-items:center;gap:3px;background:var(--space-shared-soft);color:var(--space-shared);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
+.space-badge-comp{display:inline-flex;align-items:center;gap:3px;background:var(--space-comp-soft);color:var(--space-comp);font-weight:700;font-size:11px;padding:2px 7px;border-radius:8px;flex:0 0 auto}
+
+.dots-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--text-2);line-height:1;cursor:pointer;flex:0 0 auto;transition:all .12s ease;user-select:none;background:none;border:none}
+.dots-btn:hover,.dots-btn:active{background:var(--surface-2);color:var(--text-1)}
+
+/* Quick Home Space Filter Bar */
+.space-filter-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.space-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:22px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;white-space:nowrap;transition:all .15s ease;user-select:none}
+.space-pill:hover{border-color:var(--text-3);color:var(--text-1)}
+.space-pill.active{border-color:currentColor;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.space-pill.all.active{background:var(--accent-soft);color:var(--accent-dark);border-color:var(--accent)}
+.space-pill.me.active{background:var(--space-me-soft);color:var(--space-me);border-color:var(--space-me)}
+.space-pill.shared.active{background:var(--space-shared-soft);color:var(--space-shared);border-color:var(--space-shared)}
+.space-pill.companion.active{background:var(--space-comp-soft);color:var(--space-comp);border-color:var(--space-comp)}
+
+/* Activity Screen Tabs */
+.activity-subtabs{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;margin-bottom:14px;border:1px solid var(--border)}
+.activity-subtab-btn{flex:1;padding:9px;border-radius:10px;font-size:13.5px;font-weight:700;text-align:center;cursor:pointer;color:var(--text-2);transition:all .15s}
+.activity-subtab-btn.on{background:var(--surface);color:var(--text-1);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+/* Spaces Screen Grand Cards */
+.space-realm-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;transition:transform .12s, box-shadow .12s}
+.space-realm-card:hover{box-shadow:var(--shadow)}
+.space-realm-me{border-inline-start:6px solid var(--space-me)}
+.space-realm-shared{border-inline-start:6px solid var(--space-shared)}
+.space-realm-comp{border-inline-start:6px solid var(--space-comp)}
+
+/* Space Ownership Sheet Choices */
+.space-choice-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);text-align:start;cursor:pointer;margin-bottom:8px;transition:all .15s}
+.space-choice-btn.selected{border-width:2px}
+.space-choice-me.selected{border-color:var(--space-me);background:var(--space-me-soft)}
+.space-choice-shared.selected{border-color:var(--space-shared);background:var(--space-shared-soft)}
+.space-choice-comp.selected{border-color:var(--space-comp);background:var(--space-comp-soft)}
+.space-choice-icon{font-size:24px;flex:0 0 auto}
+.space-choice-text{flex:1;min-width:0}
+.space-choice-title{font-size:14.5px;font-weight:700;color:var(--text-1);margin-bottom:2px}
+.space-choice-desc{font-size:11.5px;color:var(--text-2)}
 </style>
 </head>
 <body>
@@ -772,12 +823,91 @@ function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null;
 </script>
 <script>
 'use strict';
-/* ================= الواجهة الرئيسية ================= */
-const TABS=[['home','الرئيسية','🏠'],['habits','العادات','🎯'],['lifetracker','متتبع العادات','📈'],['tasks','المهام','✅'],['more','المزيد','⋯']];
-function renderNav(){
-  $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
-    `<button data-act="tab" data-v="${id}" class="${view===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
+/* ================= الواجهة الرئيسية والتنقل ================= */
+const TABS=[['home','الرئيسية','🏠'],['activity','النشاط','⚡'],['lifetracker','متتبع العادات','📈'],['spaces','المساحات','🌐'],['more','المزيد','⋯']];
+
+function allCompanions(){
+  const me=meId();
+  const comps=[];
+  const seen=new Set();
+  (circlesOf()||[]).forEach(ci=>{
+    (ci.members||[]).forEach(m=>{
+      if(m&&m.m&&m.m.user_id!==me&&!seen.has(m.m.user_id)){
+        seen.add(m.m.user_id);
+        if(m.p) comps.push(m.p);
+      }
+    });
+  });
+  return comps;
 }
+
+function getItemSpace(type, item){
+  if(!item) return 'shared';
+  const me=meId();
+
+  if(type==='task'){
+    if(item.assigned_to && item.assigned_to!==me) return 'companion';
+    if(item.visibility==='PRIVATE' || (item.assigned_to===me && item.visibility!=='CIRCLE')) return 'me';
+    if(item.recipients && item.recipients.length===1 && item.recipients[0]!==me) return 'companion';
+    return 'shared';
+  }
+
+  if(type==='habit' || type==='item'){
+    const f=item.frequency||'';
+    if(f.startsWith('MED|')){
+      const p=(typeof parseMed==='function')?parseMed(item):null;
+      if(p){
+        if(p.patient==='companion') return 'companion';
+        if(p.patient==='both') return 'shared';
+        return 'me';
+      }
+    }
+    if(item.visibility==='PRIVATE'){
+      return (item.owner_id && item.owner_id!==me)? 'companion' : 'me';
+    }
+    if(item.recipients && Array.isArray(item.recipients) && item.recipients.length===1 && item.recipients[0]!==me){
+      return 'companion';
+    }
+    return 'shared';
+  }
+
+  if(type==='med'){
+    const pat=item.patient || ((typeof parseMed==='function')?(parseMed(item.item||item)||{}).patient:'');
+    if(pat==='companion') return 'companion';
+    if(pat==='both') return 'shared';
+    return 'me';
+  }
+
+  if(type==='shopping' || type==='food' || type==='dish' || type==='place' || type==='media' || type==='shared_list_item'){
+    if(item.assigned_to){
+      return item.assigned_to===me? 'me' : 'companion';
+    }
+    const note=item.note||'';
+    if(note.includes('SPACE:me') || note.includes('SPACE|me')) return 'me';
+    if(note.includes('SPACE:companion') || note.includes('SPACE:comp') || note.includes('SPACE|comp')) return 'companion';
+    if(note.includes('SPACE:shared') || note.includes('SPACE|shared')) return 'shared';
+    return 'shared';
+  }
+
+  return 'shared';
+}
+
+function spaceMeta(sp){
+  if(sp==='me') return { key:'me', label:'خاص بي', shortLabel:'أنا', emoji:'🟢', color:'var(--space-me)', bg:'var(--space-me-soft)', stripe:'space-stripe-me', badgeCls:'space-badge-me' };
+  if(sp==='companion') return { key:'companion', label:'خاص برفيقي', shortLabel:'رفيقي', emoji:'🟠', color:'var(--space-comp)', bg:'var(--space-comp-soft)', stripe:'space-stripe-comp', badgeCls:'space-badge-comp' };
+  return { key:'shared', label:'مشترك بيننا', shortLabel:'كلانا', emoji:'🔵', color:'var(--space-shared)', bg:'var(--space-shared-soft)', stripe:'space-stripe-shared', badgeCls:'space-badge-shared' };
+}
+
+function spaceMenuBtn(type, id){
+  return `<button class="dots-btn" data-act="openSpaceMenu" data-type="${type}" data-id="${id}" title="تحديد المساحة والملكية" aria-label="خيارات">⋯</button>`;
+}
+
+function renderNav(){
+  const activeTabId = (view === 'habits' || view === 'tasks') ? 'activity' : view;
+  $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
+    `<button data-act="tab" data-v="${id}" class="${activeTabId===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
+}
+
 function renderApp(){
   const p=meProfile();
   document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
@@ -785,6 +915,8 @@ function renderApp(){
   renderNav();
   const routes = {
     home: renderHome,
+    activity: renderActivity,
+    spaces: renderSpaces,
     lifetracker: renderLifeTracker,
     habits: renderHabits,
     stats: renderStats,
@@ -808,9 +940,20 @@ function ringSVG(pct,cls){
 function renderHome(){
   const me=meProfile(); if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
   const comp=companionOf();
-  const myPct=dailyPct(meId()), hisPct=comp?dailyPct(comp.id):0;
+  const spF=window._homeSpaceFilter || 'all';
+
+  let habits=habitsFor(me.id);
+  if(spF === 'me') habits = habits.filter(h => getItemSpace('habit', h) === 'me');
+  else if(spF === 'shared') habits = (data.items||[]).filter(h => getItemSpace('habit', h) === 'shared' && !isSpecialItem(h));
+  else if(spF === 'companion') habits = comp ? habitsFor(comp.id) : [];
+
+  let myPct=dailyPct(meId()), hisPct=comp?dailyPct(comp.id):0;
+  if(spF === 'me'){
+    const myH = habitsFor(me.id).filter(h => getItemSpace('habit', h) === 'me');
+    const myDone = myH.filter(h => habitProg(me.id, h).done).length;
+    myPct = myH.length ? Math.round(myDone / myH.length * 100) : 100;
+  }
   const days=last7();
-  const habits=habitsFor(me.id);
   const shop=shoppingFor();
   $('#view').innerHTML=`
   <div class="screen">
@@ -820,11 +963,18 @@ function renderHome(){
       <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
     </div>
+    <!-- شريط تصفية المساحات السريع -->
+    <div class="space-filter-bar">
+      <button class="space-pill all ${(!window._homeSpaceFilter||window._homeSpaceFilter==='all')?'active':''}" data-act="homeSpaceFilter" data-f="all">🌐 الكل</button>
+      <button class="space-pill me ${window._homeSpaceFilter==='me'?'active':''}" data-act="homeSpaceFilter" data-f="me">🟢 أنا (خاص بي)</button>
+      <button class="space-pill shared ${window._homeSpaceFilter==='shared'?'active':''}" data-act="homeSpaceFilter" data-f="shared">🔵 كلانا (مشترك)</button>
+      <button class="space-pill companion ${window._homeSpaceFilter==='companion'?'active':''}" data-act="homeSpaceFilter" data-f="companion">🟠 رفيقي</button>
+    </div>
     <div class="progress-row">
       <div class="pcard"><div class="who"><div class="avatar sm">${esc((me.display_name||'؟')[0])}</div> أنت 👑</div>
         ${ringSVG(myPct,'own')}
         <div style="font-size:13px;font-weight:600">${habits.filter(h=>habitProg(me.id,h).done).length} / ${habits.length}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">من عادات اليوم</div></div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">${spF!=='all'?'عادات '+spaceMeta(spF).shortLabel:'من عادات اليوم'}</div></div>
       ${comp?`<div class="pcard"><div class="who"><div class="avatar sm comp">${esc((comp.display_name||'؟')[0])}</div> رفيقك ❤️</div>
         ${ringSVG(hisPct,'comp')}
         <div style="font-size:13px;font-weight:600">${habitsFor(comp.id).filter(h=>habitProg(comp.id,h).done).length} / ${habitsFor(comp.id).length}</div>
@@ -923,9 +1073,39 @@ function renderHome(){
         </div>
       ` : ''}
     </div>
-    <div class="sec" data-sec="habits"><h2>🌱 عادات اليوم</h2><button class="link" data-act="tab" data-v="habits">عرض الكل</button></div>
-    <div class="card">${habits.length?habits.map(h=>habitRow(me.id,h)).join(''):
-      `<div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.</div>`}</div>
+    <div class="sec" data-sec="habits"><h2>🌱 عادات اليوم ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2><button class="link" data-act="tab" data-v="activity">النشاط الكامل ➜</button></div>
+    <div class="card">${habits.length?habits.map(h=>habitRow(spF==='companion'&&comp?comp.id:me.id,h)).join(''):
+      `<div class="empty"><span class="e">🌱</span>لا توجد عادات ${spF!=='all'?'في مساحة «'+spaceMeta(spF).label+'»':'بعد'}.<br><button class="mini" style="margin-top:8px" data-act="openAddHabit">＋ إضافة عادة</button></div>`}</div>
+    
+    <!-- بطاقة المهام السريعة على الرئيسية -->
+    <div class="sec" data-sec="tasks">
+      <h2>✅ مهام اليوم ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2>
+      <button class="link" data-act="tab" data-v="activity">كل المهام ➜</button>
+    </div>
+    <div class="card" data-sec="tasks">
+      ${(()=>{
+        const tasks = visibleTasks().filter(t => (spF==='all' || getItemSpace('task', t)===spF) && t.status!=='DONE');
+        if(!tasks.length){
+          return `<div class="shop-meta" style="padding:4px 0;text-align:center">لا توجد مهام معلقة ${spF!=='all'?'في مساحة «'+spaceMeta(spF).label+'»':'اليوم'} ✓</div>`;
+        }
+        return tasks.slice(0, 5).map(t => {
+          const sp = getItemSpace('task', t);
+          const sm = spaceMeta(sp);
+          return `<div class="row ${sm.stripe}">
+            <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
+            <div style="flex:1;min-width:0">
+              <div class="htitle">${esc(t.title)}</div>
+              <div class="shop-meta"><span class="${sm.badgeCls}">${sm.emoji}</span> ${t.due_at?new Date(t.due_at).toLocaleDateString('ar'):''}</div>
+            </div>
+            ${spaceMenuBtn('task', t.id)}
+          </div>`;
+        }).join('') + (tasks.length > 5 ? `<div style="text-align:center;padding-top:6px"><button class="link" data-act="tab" data-v="activity">+ ${tasks.length - 5} مهام أخرى ➜</button></div>` : '');
+      })()}
+      <div class="add-item" style="margin-top:8px">
+        <input id="quickTaskIn" placeholder="أضف مهمة سريعة...">
+        <button data-act="quickAddTask">＋</button>
+      </div>
+    </div>
     <div class="card" data-sec="urgent">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🚨</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">رسائل مستعجلة</div>
@@ -940,7 +1120,7 @@ function renderHome(){
         <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delUrgent" data-id="${u.id}">حذف</button></div>`).join('')}
     </div>
     <div class="sec" data-sec="shopping">
-      <h2>🛒 قائمة التسوق المشتركة</h2>
+      <h2>🛒 قائمة التسوق ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2>
       <button class="link" data-act="openShopping">فتح كل المتاجر ➜</button>
     </div>
     <div class="card" data-sec="shopping">
@@ -950,9 +1130,10 @@ function renderHome(){
         if(!stores.length || !shop){
           return `<div class="empty"><span class="e">🛒</span>لا توجد قائمة مشتركة بعد.<br><button class="mini" data-act="openAddStoreSheet" style="margin-top:8px">＋ إنشاء أول متجر</button></div>`;
         }
-        const totalItems = shop.items.length;
-        const totalDone = shop.done;
-        const pendingItems = shop.items.filter(i=>!i.completed);
+        const allShopItems = spF==='all' ? shop.items : shop.items.filter(i=>getItemSpace('shopping', i)===spF);
+        const totalItems = allShopItems.length;
+        const totalDone = allShopItems.filter(i=>i.completed).length;
+        const pendingItems = allShopItems.filter(i=>!i.completed);
         return `
           <div class="row" style="min-height:32px;border-top:none">
             <div class="bar"><i style="width:${totalDone*100/(totalItems||1)}%"></i></div>
@@ -1016,11 +1197,11 @@ function renderHome(){
     </div>
     <div class="card" data-sec="meds">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">💊</span>
-      <div style="flex:1;min-width:0;cursor:pointer" data-act="openMeds"><div style="font-size:15px;font-weight:600">أدويتنا</div>
-      <div class="shop-meta">${(()=>{ const a=medsOf().filter(m=>m.activeToday()); return a.length? ('لديكم '+a.length+' دواء نشط اليوم') : 'لا أدوية مسجلة — أضف دواءك أو دواء رفيقك'; })()}</div></div>
+      <div style="flex:1;min-width:0;cursor:pointer" data-act="openMeds"><div style="font-size:15px;font-weight:600">أدويتنا ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</div>
+      <div class="shop-meta">${(()=>{ const a=medsOf().filter(m=>m.activeToday() && (spF==='all'||getItemSpace('med',m)===spF)); return a.length? ('لديكم '+a.length+' دواء نشط اليوم') : 'لا أدوية مسجلة في هذا النطاق'; })()}</div></div>
       <button class="link" data-act="openMeds" style="margin-inline-end:6px">فتح المنظمة ➜</button>
       <button class="link" data-act="openAddMed">＋ دواء</button></div>
-      ${(()=>{ const act=medsOf().filter(m=>m.activeToday()); if(!act.length) return '';
+      ${(()=>{ const act=medsOf().filter(m=>m.activeToday() && (spF==='all'||getItemSpace('med',m)===spF)); if(!act.length) return '<div class="shop-meta" style="padding:6px 0;text-align:center">لا توجد أدوية مسجلة اليوم</div>';
         const tog=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
           <span style="font-size:12px;color:var(--text-3)">عرض:</span>
           <button class="chip ${medsTable?'':'on'}" data-act="toggleMedsView" data-v="list">قائمة</button>
@@ -1034,7 +1215,7 @@ function renderHome(){
                 <span style="width:4px;height:30px;border-radius:2px;background:${col};flex:0 0 auto"></span>
                 <div style="flex:1.6;min-width:0;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.item.title)}</div>
                 <div style="flex:1;font-size:11.5px;color:${col};font-weight:600">${medWho(m.patient)}</div>
-                <div style="flex:1.4">${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">${Math.round(lg)}/${m.perDay} سجّل</button>`:`<span class="badge">✅ تم</span>`}</div>
+                <div style="flex:1.4;display:flex;align-items:center;gap:4px">${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">${Math.round(lg)}/${m.perDay} سجّل</button>`:`<span class="badge">✅ تم</span>`}${spaceMenuBtn('med', m.item.id)}</div>
               </div>`; }).join('');
         }
         return tog+act.map(m=>{ const lg=medLogged(m); const rem=Math.max(0,m.perDay-Math.round(lg)); const col=medColor(m.patient);
@@ -1045,17 +1226,18 @@ function renderHome(){
           <div class="shop-meta">${medWho(m.patient)} • ${esc(m.scheduleAr())} • ${esc(m.item.unit||'')} • ${esc(m.statusAr())}${m.item.owner_id!==meId()?' • من رفيقك':''}</div></div>
           ${rem>0?`<button class="mini" data-act="logDose" data-id="${m.item.id}">سجّل جرعة (${Math.round(lg)}/${m.perDay})</button>`
                  :`<span class="badge">✅ اكتمل اليوم</span>`}
+          ${spaceMenuBtn('med', m.item.id)}
         </div>`; }).join(''); })()}
     </div>
     <div class="card" data-sec="media">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🎬</span>
-      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">مقاطعنا الجميلة</div>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">مقاطعنا الجميلة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</div>
       <div class="shop-meta">${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
-        const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id).length : 0;
-        return n? (n+' مقطع/رابط محفوظ') : 'احفظ روابط يوتيوب/إنستغرام الجميلة'; })()}</div></div>
+        const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
+        return its.length? (its.length+' مقطع/رابط محفوظ') : 'احفظ روابط يوتيوب/إنستغرام الجميلة'; })()}</div></div>
       <button class="link" data-act="addMedia">＋ رابط</button></div>
       ${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
-        const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id) : [];
+        const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
         return its.map(i=>{ const th=ytThumb(i.note||'');
           return `<div class="row" style="min-height:52px">
           ${th?`<img src="${th}" alt="" loading="lazy" style="width:64px;height:40px;object-fit:cover;border-radius:8px;flex:0 0 auto">`:'<span style="font-size:16px">🎬</span>'}
@@ -1063,18 +1245,21 @@ function renderHome(){
             <div class="htitle" style="color:var(--text-1)">${esc(i.title)}</div>
             <div class="shop-meta">${esc((i.note||'').slice(0,50))}</div></a>
           <button class="link" data-act="renameItem" data-id="${i.id}" data-t="${esc(i.title)}">تسمية</button>
+          ${spaceMenuBtn('media', i.id)}
           <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`; }).join(''); })()}
     </div>
-    <div class="sec" data-sec="places"><h2>📍 أماكننا المحفوظة</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
+    <div class="sec" data-sec="places"><h2>📍 أماكننا المحفوظة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
     <div class="card">${(()=>{ const pl=placesOf();
-      return pl.items.length? pl.items.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
+      const filteredPl = pl.items.filter(pp => spF==='all' || getItemSpace('place', pp)===spF);
+      return filteredPl.length? filteredPl.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
         <a href="${esc(pp.note||'#')}" target="_blank" style="flex:1;min-width:0">
           <div class="htitle" style="color:var(--text-1)">${esc(pp.title)}</div>
           <div class="shop-meta">${esc((pp.note||'').slice(0,52))}</div>
         </a><span class="badge">فتح ➜</span>
         <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${pp.id}" data-t="${esc(pp.title)}">تسمية</button>
+        ${spaceMenuBtn('place', pp.id)}
         <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delPlace" data-id="${pp.id}">✕</button></div>`).join('')
-      : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
+      : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة في هذا النطاق بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
       <div style="display:flex;gap:8px;padding-top:10px">
         <button class="btn ghost" data-act="addCurrentPlace" style="flex:1">📍 أضف مكاني الحالي</button>
         <button class="btn ghost" data-act="addPlace" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
@@ -1119,10 +1304,18 @@ function shoppingFor(){
 function shopRow(si){
   const by = si.completed && si.completed_by ? nameOf(si.completed_by) : null;
   const store = getStoreLists().find(s => s.id === si.list_id);
-  return `<div class="row"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
-    <div style="flex:1;min-width:0"><div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
-    <div class="shop-meta">${store?`<span style="color:var(--accent-dark);font-weight:600">📍 ${esc(store.title)}</span> • `:''}${si.completed&&by?`أنجزها ${esc(by)} • ${relAr(si.completed_at)}`:''}</div></div>
+  const sp = getItemSpace('shopping', si);
+  const sm = spaceMeta(sp);
+  return `<div class="row ${sm.stripe}"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
+        <span class="${sm.badgeCls}">${sm.emoji}</span>
+      </div>
+      <div class="shop-meta">${store?`<span style="color:var(--accent-dark);font-weight:600">📍 ${esc(store.title)}</span> • `:''}${si.completed&&by?`أنجزها ${esc(by)} • ${relAr(si.completed_at)}`:''}</div>
+    </div>
     <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${si.id}" data-t="${esc(si.title)}">تسمية</button>
+    ${spaceMenuBtn('shopping', si.id)}
     <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${si.id}">✕</button></div>`;
 }
 
@@ -1256,19 +1449,7 @@ function renderShopping(){
           <b style="font-size:15px">📋 جميع طلبات التسوق المطلوبة (${allPending.length})</b>
           <span style="font-size:11.5px;color:var(--text-3)">${totalCompleted} منجزة من ${totalAll}</span>
         </div>
-        ${allPending.length ? allPending.map(item => {
-          const st = stores.find(s => s.id === item.list_id);
-          const storeName = st ? st.title : 'عام';
-          return `<div class="row">
-            <button class="check" data-act="toggleShop" data-id="${item.id}">✓</button>
-            <div style="flex:1;min-width:0">
-              <div class="htitle">${esc(item.title)}</div>
-              <div class="shop-meta"><span style="color:var(--accent-dark);font-weight:600">📍 ${esc(storeName)}</span></div>
-            </div>
-            <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${item.id}" data-t="${esc(item.title)}">تسمية</button>
-            <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delShop" data-id="${item.id}">✕</button>
-          </div>`;
-        }).join('') : `
+        ${allPending.length ? allPending.map(item => shopRow(item)).join('') : `
           <div class="empty" style="padding:24px 0"><span class="e">🛒</span>سلة التسوق فارغة حالياً في جميع المتاجر ✓</div>
         `}
         <div class="add-item" style="margin-top:10px">
@@ -1316,10 +1497,19 @@ function renderShopping(){
 }
 function habitRow(uid,item){
   const hp=habitProg(uid,item);
-  return `<div class="row"><span class="hicon">${typeEmoji(item.type)}</span><span class="htitle">${esc(item.title)}</span>
+  const sp=getItemSpace('habit', item);
+  const sm=spaceMeta(sp);
+  return `<div class="row ${sm.stripe}">
+    <span class="hicon">${typeEmoji(item.type)}</span>
+    <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+      <span class="htitle">${esc(item.title)}</span>
+      <span class="${sm.badgeCls}">${sm.emoji}</span>
+    </div>
     ${hp.bin?`<button class="check ${hp.done?'on':''}" data-act="binHabit" data-id="${item.id}" data-on="${hp.done?0:1}">✓</button>`
       :`<div class="bar solo"><i style="width:${hp.pct}%"></i></div><span class="hval ${hp.done?'ok':''}">${trimN(hp.v)} / ${trimN(item.target_value)} ${item.unit||''}</span>
-        <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}</div>`;
+        <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}
+    ${spaceMenuBtn('habit', item.id)}
+  </div>`;
 }
 
 function nameOf(uid){ if(uid===meId()) return 'أنت';
@@ -1479,10 +1669,21 @@ function renderFood(){
     ${meals.map(([meal,emoji])=>{ const items=entries.filter(i=>(i.note||'').split('|')[1]===meal)
         .sort((a,b)=>((b.note||'').split('|')[0]).localeCompare((a.note||'').split('|')[0]));
       return `<div class="card"><b style="font-size:15px">${emoji} ${meal} (${items.length})</b>
-        ${items.length? items.slice(0,12).map(i=>`<div class="row" style="min-height:44px">
-          <div style="flex:1;min-width:0"><div class="htitle">${esc(i.title)}</div>
-          <div class="shop-meta">${esc((i.note||'').split('|')[0])}</div></div>
-          <button class="mini" data-act="relogMeal" data-meal="${meal}" data-title="${esc(i.title)}">سجّله اليوم ↩︎</button></div>`).join('')
+        ${items.length? items.slice(0,12).map(i=>{
+          const sp = getItemSpace('food', i);
+          const sm = spaceMeta(sp);
+          return `<div class="row ${sm.stripe}" style="min-height:44px">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="htitle">${esc(i.title)}</div>
+                <span class="${sm.badgeCls}">${sm.emoji}</span>
+              </div>
+              <div class="shop-meta">${esc((i.note||'').split('|')[0])}</div>
+            </div>
+            <button class="mini" data-act="relogMeal" data-meal="${meal}" data-title="${esc(i.title)}">سجّله اليوم ↩︎</button>
+            ${spaceMenuBtn('food', i.id)}
+          </div>`;
+        }).join('')
         :'<div class="shop-meta" style="padding:6px 0">لا تسجيلات بعد</div>'}
       </div>`; }).join('')}
     <div class="card">
@@ -1490,8 +1691,18 @@ function renderFood(){
         <b style="font-size:15px">🍽 أطباق نحبها (${dishes.length})</b>
         <button class="mini" data-act="openAddDish">➕ إضافة طبق</button>
       </div>
-      ${dishes.length? dishes.map(d=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(d.title)}</span>
-        <button class="link" style="color:var(--error)" data-act="delDish" data-id="${d.id}">حذف</button></div>`).join('')
+      ${dishes.length? dishes.map(d=>{
+        const sp = getItemSpace('dish', d);
+        const sm = spaceMeta(sp);
+        return `<div class="row ${sm.stripe}" style="min-height:40px">
+          <div style="flex:1;display:flex;align-items:center;gap:6px">
+            <span class="htitle">${esc(d.title)}</span>
+            <span class="${sm.badgeCls}">${sm.emoji}</span>
+          </div>
+          <button class="link" style="color:var(--error)" data-act="delDish" data-id="${d.id}">حذف</button>
+          ${spaceMenuBtn('dish', d.id)}
+        </div>`;
+      }).join('')
       : '<div class="shop-meta" style="padding:6px 0">لا توجد أطباق محفوظة بعد. اضغط «إضافة طبق» لحفظ أطباقكم المفضلة!</div>'}
     </div>
     <div class="foot">كله مشترك مع رفيقك لحظيًا 🍽</div></div>`;
@@ -2569,17 +2780,23 @@ async function logDose(itemId){
 }
 function openMedDetail(id){
   const m=medsOf().find(x=>x.item.id===id); if(!m) return;
+  const sp=getItemSpace('med', m);
+  const sm=spaceMeta(sp);
   openSheet(sheetHead('💊 '+m.item.title)+`
-    <div class="card" style="box-shadow:none;margin:0 0 10px">
-      <div style="font-size:13.5px;line-height:2">الجدول: <b>${esc(m.scheduleAr())}</b><br>
-      الجرعة: ${esc(m.item.unit||'-')} × ${m.perDay} يوميًا<br>
-      البداية: ${esc(m.start||'—')}<br>
-      النهاية: ${esc(m.ongoing?'مستمر مدى الحياة ✳':(m.end||'—'))}<br>
-      لمن: ${m.patient==='companion'?'رفيقي':(m.patient==='both'?'كلانا':'أنا')}<br>
-      المشاركة: ${m.item.visibility==='PRIVATE'?'🔒 خاص':(m.item.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون')}<br>
-      جرعات اليوم: <b>${medLogged(m)} / ${m.perDay}</b></div>
+    <div class="card" style="box-shadow:none;margin:0 0 10px;background:var(--surface-2)">
+      <div style="font-size:13.5px;line-height:2">
+        المساحة: <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span><br>
+        الجدول: <b>${esc(m.scheduleAr())}</b><br>
+        الجرعة: ${esc(m.item.unit||'-')} × ${m.perDay} يوميًا<br>
+        البداية: ${esc(m.start||'—')}<br>
+        النهاية: ${esc(m.ongoing?'مستمر مدى الحياة ✳':(m.end||'—'))}<br>
+        لمن: <b style="color:${medColor(m.patient)}">${medWho(m.patient)}</b><br>
+        جرعات اليوم: <b>${medLogged(m)} / ${m.perDay}</b>
+      </div>
     </div>
     <button class="btn" data-act="logDose" data-id="${m.item.id}">سجّل جرعة الآن</button>
+    <div style="height:8px"></div>
+    <button class="btn ghost" data-act="openSpaceMenu" data-type="med" data-id="${m.item.id}">⋯ تخصيص المساحة والملكية</button>
     <div style="height:8px"></div>
     <button class="btn ghost" data-act="openEditMed" data-id="${m.item.id}">✏️ تعديل الدواء</button>
     <div style="height:8px"></div>
@@ -2795,7 +3012,7 @@ function renderMeds(){
               آخر جرعة: ${lastDoseTxt} • لمن: <span style="color:${patCol};font-weight:600">${patLbl}</span>
             </div>
           </div>
-          <button class="link" style="font-size:20px;padding:4px 8px" data-act="medDetail" data-id="${m.item.id}">⋯</button>
+          ${spaceMenuBtn('med', m.item.id)}
         </div>
 
         <div style="margin-top:10px">
@@ -2990,12 +3207,17 @@ function renderHabits(){
       <span class="badge" style="background:var(--accent);color:#fff">افتح</span>
     </div>
     <div class="sec"><h2>عاداتي وأهدافي</h2><button class="link" data-act="openAddHabit">+ عادة جديدة</button></div>
-    ${habits.length?habits.map(item=>{ const hp=habitProg(meId(),item);
-      return `<div class="card"><div class="row"><span class="hicon">${typeEmoji(item.type)}</span>
+    ${habits.length?habits.map(item=>{
+      const hp=habitProg(meId(),item);
+      const sp=getItemSpace('habit', item);
+      const sm=spaceMeta(sp);
+      return `<div class="card ${sm.stripe}"><div class="row"><span class="hicon">${typeEmoji(item.type)}</span>
         <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">${esc(item.title)}</div>
-        <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap">
+        <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+          <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
           <span class="badge">${visLabel(item.visibility)}</span>
           ${item.visibility!=='PRIVATE'?`<span class="badge">${esc(circleName(item.circle_id))}</span>`:''}</div></div>
+        ${spaceMenuBtn('habit', item.id)}
         <button class="link" style="color:var(--error)" data-act="delItem" data-id="${item.id}">حذف</button></div>
       <div class="row" style="border-top:none;padding-top:4px">
         ${hp.bin?`<span class="htitle" style="color:${hp.done?'var(--accent)':'var(--text-2)'}">${hp.done?'✓ تم اليوم':'لم يُنجز بعد'}</span>
@@ -3068,6 +3290,7 @@ function evText(k,who,payload){ if(k==='REMINDER') return who+' يذكّرك: «
 <script>
 'use strict';
 /* ---------- المهام ---------- */
+/* ---------- المهام ---------- */
 function renderTasks(){
   const tasks=visibleTasks();
   const f=window._taskFilter||'ALL';
@@ -3078,16 +3301,459 @@ function renderTasks(){
       `<button class="chip ${f===k?'on':''}" data-act="taskFilter" data-v="${k}">${l}</button>`).join('')}</div>
     ${list.length?list.map(t=>{
       const cn=circleName(t.circle_id);
-      return `<div class="card"><div class="task-row">
+      const sp=getItemSpace('task', t);
+      const sm=spaceMeta(sp);
+      return `<div class="card ${sm.stripe}"><div class="task-row">
         <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
         <div style="flex:1;min-width:0"><div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
-        <div class="badges">${cn?`<span class="badge">${esc(cn)}</span>`:''}<span class="badge">${visLabel(t.visibility)}</span>
-        ${t.assigned_to?`<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>`:''}
-        ${t.due_at?`<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>`:''}
-        ${recurrenceOf(t)?`<span class="badge">🔁 ${recurrenceAr(recurrenceOf(t))}</span>`:''}</div></div>
-        ${t.status!=='DONE'&&recurrenceOf(t)?`<div style="display:flex;justify-content:flex-end;padding-top:6px"><button class="mini" data-act="completeRecurring" data-id="${t.id}">✅ أنجزت هذه الدورة</button></div>`:''}</div></div>`;
+        <div class="badges">
+          <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
+          ${cn?`<span class="badge">${esc(cn)}</span>`:''}
+          ${t.assigned_to?`<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>`:''}
+          ${t.due_at?`<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>`:''}
+          ${recurrenceOf(t)?`<span class="badge">🔁 ${recurrenceAr(recurrenceOf(t))}</span>`:''}
+        </div></div>
+        ${spaceMenuBtn('task', t.id)}
+      </div>
+      ${t.status!=='DONE'&&recurrenceOf(t)?`<div style="display:flex;justify-content:flex-end;padding-top:6px;width:100%"><button class="mini" data-act="completeRecurring" data-id="${t.id}">✅ أنجزت هذه الدورة</button></div>`:''}
+      </div>`;
     }).join(''):`<div class="card"><div class="empty"><span class="e">📝</span>لا توجد مهام هنا.<br>أضف أول مهمة وابدأ الإنجاز.</div></div>`}
     <p class="foot">اضغط حالة المهمة لتبديلها: للتنفيذ ← جارية ← منجزة</p></div>`;
+}
+
+/* ---------- شاشة النشاط (عاداتي + مهامي) ---------- */
+window._activitySubTab = 'habits';
+
+function renderActivity(){
+  const me = meProfile();
+  if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
+  const uid = meId();
+  const comp = companionOf();
+
+  const habits = habitsFor(uid);
+  const hDone = habits.filter(h => habitProg(uid, h).done).length;
+
+  const tasks = visibleTasks();
+  const tDone = tasks.filter(t => t.status === 'DONE').length;
+
+  const totalAll = habits.length + tasks.length;
+  const totalDoneAll = hDone + tDone;
+  const overallPct = totalAll > 0 ? Math.round(totalDoneAll / totalAll * 100) : 0;
+
+  const sub = window._activitySubTab || 'habits';
+  const taskFilter = window._taskFilter || 'ALL';
+  const filteredTasks = tasks.filter(t => taskFilter === 'ALL' || t.status === taskFilter)
+    .sort((a,b) => (a.status === 'DONE') - (b.status === 'DONE'));
+
+  $('#view').innerHTML = `
+  <div class="screen">
+    <!-- بطاقة التقدم اليومي الشامل للنشاط -->
+    <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:var(--surface)">
+      ${ringSVG(overallPct, 'own')}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:18px">⚡</span>
+          <b style="font-size:16px;color:var(--text-1)">إجمالي نشاط اليوم</b>
+        </div>
+        <div style="font-size:13px;color:var(--text-2);margin-top:3px">
+          ${totalDoneAll} من ${totalAll} نشاط منجز (${overallPct}%)
+        </div>
+        <div style="font-size:11.5px;color:var(--text-3);margin-top:2px">
+          عادات اليوم: <b>${hDone}/${habits.length}</b> • مهامك: <b>${tDone}/${tasks.length}</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- التبويبان الفرعيان: عاداتي ومهامي -->
+    <div class="activity-subtabs">
+      <button class="activity-subtab-btn ${sub==='habits'?'on':''}" data-act="activitySubTab" data-tab="habits">
+        🌱 عاداتي (${habits.length})
+      </button>
+      <button class="activity-subtab-btn ${sub==='tasks'?'on':''}" data-act="activitySubTab" data-tab="tasks">
+        ✅ مهامي (${tasks.length})
+      </button>
+    </div>
+
+    ${sub === 'habits' ? `
+      <!-- اختصار متتبع العادات والأنشطة الذكي -->
+      <div class="card" data-act="openLifeTracker" style="background:var(--accent-soft);border:1.5px solid var(--accent);cursor:pointer;margin-bottom:12px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">📈</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14.5px;font-weight:700;color:var(--text-1)">متتبع العادات والأنشطة اليومية</div>
+          <div style="font-size:11.5px;color:var(--text-2)">تسجيل المشي، الدواء، النوم، الفئات الذكية والأوقات ➜</div>
+        </div>
+        <span class="badge" style="background:var(--accent);color:#fff">افتح</span>
+      </div>
+
+      <div class="sec">
+        <h2>عاداتي وأهدافي</h2>
+        <button class="link" data-act="openAddHabit">+ عادة جديدة</button>
+      </div>
+
+      ${habits.length ? habits.map(item => {
+        const hp = habitProg(uid, item);
+        const sp = getItemSpace('habit', item);
+        const sm = spaceMeta(sp);
+        return `
+        <div class="card ${sm.stripe}">
+          <div class="row">
+            <span class="hicon">${typeEmoji(item.type)}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:600">${esc(item.title)}</div>
+              <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+                <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
+                <span class="badge">${visLabel(item.visibility)}</span>
+                ${item.visibility !== 'PRIVATE' ? `<span class="badge">${esc(circleName(item.circle_id))}</span>` : ''}
+              </div>
+            </div>
+            ${spaceMenuBtn('habit', item.id)}
+            <button class="link" style="color:var(--error)" data-act="delItem" data-id="${item.id}">حذف</button>
+          </div>
+          <div class="row" style="border-top:none;padding-top:4px">
+            ${hp.bin ? `
+              <span class="htitle" style="color:${hp.done ? 'var(--accent)' : 'var(--text-2)'}">${hp.done ? '✓ تم اليوم' : 'لم يُنجز بعد'}</span>
+              <button class="check ${hp.done ? 'on' : ''}" data-act="binHabit" data-id="${item.id}" data-on="${hp.done ? 0 : 1}">✓</button>
+            ` : `
+              <div class="bar"><i style="width:${hp.pct}%"></i></div>
+              <span class="hval">${trimN(hp.v)} / ${trimN(item.target_value)} ${item.unit || ''}</span>
+              <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>
+            `}
+          </div>
+        </div>`;
+      }).join('') : `
+        <div class="card"><div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.<div style="height:12px"></div><button class="btn" style="max-width:220px;margin:0 auto" data-act="openAddHabit">+ إضافة</button></div></div>
+      `}
+    ` : `
+      <!-- مهامي -->
+      <div class="sec">
+        <h2>قائمة المهام</h2>
+        <button class="link" data-act="openAddTask">+ مهمة جديدة</button>
+      </div>
+
+      <div class="chips" style="margin-bottom:10px">
+        ${[['ALL','الكل'],['TODO','للتنفيذ'],['IN_PROGRESS','جارية'],['DONE','منجزة']].map(([k,l]) =>
+          `<button class="chip ${taskFilter===k?'on':''}" data-act="taskFilter" data-v="${k}">${l}</button>`).join('')}
+      </div>
+
+      ${filteredTasks.length ? filteredTasks.map(t => {
+        const cn = circleName(t.circle_id);
+        const sp = getItemSpace('task', t);
+        const sm = spaceMeta(sp);
+        return `
+        <div class="card ${sm.stripe}">
+          <div class="task-row">
+            <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
+            <div style="flex:1;min-width:0">
+              <div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+              <div class="badges">
+                <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
+                ${cn ? `<span class="badge">${esc(cn)}</span>` : ''}
+                ${t.assigned_to ? `<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>` : ''}
+                ${t.due_at ? `<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>` : ''}
+                ${recurrenceOf(t) ? `<span class="badge">🔁 ${recurrenceAr(recurrenceOf(t))}</span>` : ''}
+              </div>
+            </div>
+            ${spaceMenuBtn('task', t.id)}
+          </div>
+          ${t.status !== 'DONE' && recurrenceOf(t) ? `
+            <div style="display:flex;justify-content:flex-end;padding-top:6px;width:100%">
+              <button class="mini" data-act="completeRecurring" data-id="${t.id}">✅ أنجزت هذه الدورة</button>
+            </div>
+          ` : ''}
+        </div>`;
+      }).join('') : `
+        <div class="card"><div class="empty"><span class="e">📝</span>لا توجد مهام في هذا التصنيف.<br>أضف مهمة جديدة للبدء.</div></div>
+      `}
+      <p class="foot">اضغط حالة المهمة لتبديلها: للتنفيذ ← جارية ← منجزة</p>
+    `}
+
+    <div class="foot" style="margin-top:16px">سجّل نشاطك بلمسة واحدة — رافقني، لا تراقبني 🌱</div>
+  </div>`;
+}
+
+/* ---------- شاشة المساحات (Spaces Dashboard) ---------- */
+window._activeSpaceDrilldown = null;
+
+function renderSpaces(){
+  const me = meProfile();
+  if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
+  const uid = meId();
+  const comp = companionOf();
+  const comps = allCompanions();
+  const compIntegrated = localStorage.getItem('rafiq_comp_integrated') !== 'false';
+
+  if(window._activeSpaceDrilldown){
+    renderSpacesDrilldown(window._activeSpaceDrilldown);
+    return;
+  }
+
+  // 1. My Space (🟢)
+  const myHabits = habitsFor(uid).filter(h => getItemSpace('habit', h) === 'me');
+  const myHabitsDone = myHabits.filter(h => habitProg(uid, h).done).length;
+  const myTasks = visibleTasks().filter(t => getItemSpace('task', t) === 'me');
+  const myTasksDone = myTasks.filter(t => t.status === 'DONE').length;
+  const myMeds = (medsOf()||[]).filter(m => getItemSpace('med', m) === 'me');
+  const myShop = (data.shopping||[]).filter(s => getItemSpace('shopping', s) === 'me' && !RESERVED_SHOPPING_TITLES.includes(s.title));
+  const myTotal = myHabits.length + myTasks.length;
+  const myDone = myHabitsDone + myTasksDone;
+  const myPct = myTotal > 0 ? Math.round(myDone / myTotal * 100) : (myHabits.length ? dailyPct(uid) : 100);
+
+  // 2. Shared Space (🔵)
+  const shHabits = (data.items||[]).filter(i => getItemSpace('habit', i) === 'shared' && !isSpecialItem(i));
+  const shTasks = visibleTasks().filter(t => getItemSpace('task', t) === 'shared');
+  const shTasksDone = shTasks.filter(t => t.status === 'DONE').length;
+  const shMeds = (medsOf()||[]).filter(m => getItemSpace('med', m) === 'shared');
+  const shStores = getStoreLists();
+  const shFood = foodEntries();
+  const shTotal = shTasks.length + shHabits.length;
+  const shDone = shTasksDone;
+  const shPct = shTotal > 0 ? Math.round(shDone / shTotal * 100) : 100;
+
+  // 3. Companion Space (🟠)
+  const compId = comp ? comp.id : (comps[0] ? comps[0].id : null);
+  const compHabits = compId ? habitsFor(compId) : [];
+  const compHabitsDone = compId ? compHabits.filter(h => habitProg(compId, h).done).length : 0;
+  const compTasks = visibleTasks().filter(t => getItemSpace('task', t) === 'companion');
+  const compTasksDone = compTasks.filter(t => t.status === 'DONE').length;
+  const compMeds = (medsOf()||[]).filter(m => getItemSpace('med', m) === 'companion');
+  const compTotal = compTasks.length + compHabits.length;
+  const compDone = compTasksDone + compHabitsDone;
+  const compPct = compTotal > 0 ? Math.round(compDone / compTotal * 100) : (comp ? dailyPct(comp.id) : 0);
+
+  $('#view').innerHTML = `
+  <div class="screen">
+    <div class="sec" style="margin-top:4px">
+      <h2>🌐 نظام المساحات</h2>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+      تنظيم ثلاثي ذكي يفصل بين ما هو خاص بك وحدك، وما تشاركونه معاً، وما يخص رفيقك.
+    </p>
+
+    <!-- 1. بطاقة مساحتي الخاصة (🟢) -->
+    <div class="space-realm-card space-realm-me">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:var(--space-me-soft);color:var(--space-me)">${esc((me.display_name||'؟')[0])}</div>
+          <div>
+            <b style="font-size:16px;color:var(--text-1)">🟢 مساحتي الخاصة</b>
+            <div style="font-size:11.5px;color:var(--text-3)">خاصة بك 100% • سرية ومحمية</div>
+          </div>
+        </div>
+        ${ringSVG(myPct, 'own')}
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
+        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">🌱 ${myHabits.length} عادات خاصة</span>
+        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">✅ ${myTasks.length} مهام خاصة</span>
+        <span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">💊 ${myMeds.length} أدوية شخصية</span>
+        ${myShop.length ? `<span class="badge" style="background:var(--space-me-soft);color:var(--space-me)">🛒 ${myShop.length} مشتريات</span>` : ''}
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn ghost" style="flex:1;background:var(--space-me-soft);color:var(--space-me);border-color:var(--space-me);font-weight:700" data-act="setSpaceDrilldown" data-space="me">
+          🔍 استعراض مساحتي (${myTotal + myMeds.length + myShop.length})
+        </button>
+        <button class="btn mini" style="flex:0 0 auto;background:var(--space-me);color:#fff" data-act="openAddTask">
+          ＋ إضافة
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. بطاقة مساحتنا المشتركة (🔵) -->
+    <div class="space-realm-card space-realm-shared">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:var(--space-shared-soft);color:var(--space-shared)">👥</div>
+          <div>
+            <b style="font-size:16px;color:var(--text-1)">🔵 مساحتنا المشتركة</b>
+            <div style="font-size:11.5px;color:var(--text-3)">مفتوحة لكليكما للتعاون والتشجيع</div>
+          </div>
+        </div>
+        ${ringSVG(shPct, 'comp')}
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
+        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">🛒 ${shStores.length} متاجر مشتركة</span>
+        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">🍽️ ${shFood.length} وجبات مسجلة</span>
+        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">✅ ${shTasks.length} مهام مشتركة</span>
+        <span class="badge" style="background:var(--space-shared-soft);color:var(--space-shared)">💊 ${shMeds.length} أدوية مشتركة</span>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn ghost" style="flex:1;background:var(--space-shared-soft);color:var(--space-shared);border-color:var(--space-shared);font-weight:700" data-act="setSpaceDrilldown" data-space="shared">
+          🔍 استعراض المشترك
+        </button>
+        <button class="btn ghost mini" style="flex:0 0 auto;color:var(--space-shared)" data-act="openShopping">
+          🛒 التسوق
+        </button>
+        <button class="btn ghost mini" style="flex:0 0 auto;color:var(--space-shared)" data-act="openFood">
+          🍽 الطعام
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. بطاقة مساحة رفيقي (🟠) -->
+    <div class="space-realm-card space-realm-comp">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar sm comp" style="width:40px;height:40px;font-size:18px;background:var(--space-comp-soft);color:var(--space-comp)">
+            ${esc((comp ? comp.display_name : '؟')[0])}
+          </div>
+          <div>
+            <b style="font-size:16px;color:var(--text-1)">🟠 مساحة رفيقي ${comp ? `(${esc(comp.display_name)})` : ''}</b>
+            <div style="font-size:11.5px;color:var(--text-3)">المهام والأدوية المسندة لرفيقك</div>
+          </div>
+        </div>
+        ${comp ? ringSVG(compPct, 'comp') : ''}
+      </div>
+
+      ${comp ? `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:var(--text-2)">
+          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">✅ ${compTasks.length} مهام مسندة</span>
+          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">💊 ${compMeds.length} أدوية للرفيق</span>
+          <span class="badge" style="background:var(--space-comp-soft);color:var(--space-comp)">🌱 ${compHabits.length} عادات</span>
+        </div>
+
+        <!-- زر دمج أو فصل المتابعة الذكية -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:12px;padding:8px 12px;margin:10px 0;border:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text-1)">
+            <b>إدماج في المتابعة المشتركة</b>
+            <div style="font-size:10.5px;color:var(--text-3)">${compIntegrated ? 'يظهر إنجازه في خلاصتك اليومية' : 'مفصول ومتابع في مساحته فقط'}</div>
+          </div>
+          <button class="switch ${compIntegrated?'on':''}" data-act="toggleCompIntegration"><i></i></button>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn ghost" style="flex:1;background:var(--space-comp-soft);color:var(--space-comp);border-color:var(--space-comp);font-weight:700" data-act="setSpaceDrilldown" data-space="companion">
+            🔍 استعراض مساحة رفيقي (${compTotal + compMeds.length})
+          </button>
+          <button class="btn mini" style="flex:0 0 auto;background:var(--space-comp);color:#fff" data-act="openAddTask">
+            ＋ إسناد مهمة
+          </button>
+        </div>
+      ` : `
+        <div class="empty" style="padding:16px 0">
+          <span class="e">🤝</span>
+          لا يوجد رفيق مرتبط حالياً.<br>
+          <button class="mini" style="margin-top:8px" data-act="tab" data-v="more">انضم لدائرة مشتركة أو ادعُ رفيقك</button>
+        </div>
+      `}
+    </div>
+
+    <div class="foot" style="margin-top:16px">
+      تحكم في كل عنصر بلمسة واحدة عبر زر الثلاث نقاط (⋯) في أي مكان.
+    </div>
+  </div>`;
+}
+
+function renderSpacesDrilldown(spaceKey){
+  const me = meId();
+  const sm = spaceMeta(spaceKey);
+  const comp = companionOf();
+
+  // Filter all items for this space
+  const tasks = visibleTasks().filter(t => getItemSpace('task', t) === spaceKey);
+  const habits = (data.items||[]).filter(i => getItemSpace('habit', i) === spaceKey && !isSpecialItem(i));
+  const meds = (medsOf()||[]).filter(m => getItemSpace('med', m) === spaceKey);
+  const shopping = (data.shopping||[]).filter(s => getItemSpace('shopping', s) === spaceKey && !RESERVED_SHOPPING_TITLES.includes(s.title));
+  const food = foodEntries().filter(f => getItemSpace('food', f) === spaceKey);
+  const totalCount = tasks.length + habits.length + meds.length + shopping.length + food.length;
+
+  $('#view').innerHTML = `
+  <div class="screen">
+    <div class="row" style="min-height:44px;border-top:none">
+      <button class="link" data-act="clearSpaceDrilldown">➜ رجوع للمساحات</button>
+      <b style="flex:1;text-align:center;font-size:17px">${sm.emoji} مساحة «${sm.label}»</b>
+      <span style="width:40px"></span>
+    </div>
+
+    <div class="card" style="background:${sm.bg};border:1.5px solid ${sm.color};padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <b style="font-size:15px;color:var(--text-1)">إجمالي العناصر: ${totalCount}</b>
+        <span class="${sm.badgeCls}">${sm.label}</span>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-2);margin-top:4px">
+        كل ما يندرج تحت هذا النطاق مع إمكانية نقله أو تعديله عبر زر (⋯).
+      </div>
+    </div>
+
+    <!-- المهام -->
+    ${tasks.length ? `
+      <div class="sec"><h2>✅ المهام (${tasks.length})</h2></div>
+      ${tasks.map(t => {
+        return `<div class="card ${sm.stripe}"><div class="task-row">
+          <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
+          <div style="flex:1;min-width:0">
+            <div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+            <div class="badges">
+              <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
+              ${t.assigned_to ? `<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>` : ''}
+              ${t.due_at ? `<span class="badge">📅 ${new Date(t.due_at).toLocaleDateString('ar')}</span>` : ''}
+            </div>
+          </div>
+          ${spaceMenuBtn('task', t.id)}
+        </div></div>`;
+      }).join('')}
+    ` : ''}
+
+    <!-- العادات -->
+    ${habits.length ? `
+      <div class="sec"><h2>🌱 العادات والأهداف (${habits.length})</h2></div>
+      ${habits.map(h => {
+        return `<div class="card ${sm.stripe}"><div class="row">
+          <span class="hicon">${typeEmoji(h.type)}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:600">${esc(h.title)}</div>
+            <div style="margin-top:4px"><span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span></div>
+          </div>
+          ${spaceMenuBtn('habit', h.id)}
+        </div></div>`;
+      }).join('')}
+    ` : ''}
+
+    <!-- الأدوية -->
+    ${meds.length ? `
+      <div class="sec"><h2>💊 الأدوية (${meds.length})</h2></div>
+      ${meds.map(m => {
+        return `<div class="card ${sm.stripe}"><div class="row">
+          <span style="font-size:20px">💊</span>
+          <div style="flex:1;min-width:0">
+            <div class="htitle">${esc(m.item.title)}</div>
+            <div class="shop-meta">${esc(m.scheduleAr())} • لمن: ${medWho(m.patient)}</div>
+          </div>
+          <button class="mini" data-act="logDose" data-id="${m.item.id}">سجّل جرعة</button>
+          ${spaceMenuBtn('med', m.item.id)}
+        </div></div>`;
+      }).join('')}
+    ` : ''}
+
+    <!-- التسوق -->
+    ${shopping.length ? `
+      <div class="sec"><h2>🛒 بنود التسوق (${shopping.length})</h2></div>
+      ${shopping.map(s => shopRow(s)).join('')}
+    ` : ''}
+
+    <!-- الطعام -->
+    ${food.length ? `
+      <div class="sec"><h2>🍽️ وجبات الطعام (${food.length})</h2></div>
+      ${food.slice(0, 10).map(f => `<div class="card ${sm.stripe}"><div class="row">
+        <span style="font-size:18px">🍽️</span>
+        <div style="flex:1;min-width:0">
+          <div class="htitle">${esc(f.title)}</div>
+          <div class="shop-meta">${(f.note||'').split('|')[0]}</div>
+        </div>
+        ${spaceMenuBtn('food', f.id)}
+      </div></div>`).join('')}
+    ` : ''}
+
+    ${!totalCount ? `
+      <div class="card"><div class="empty"><span class="e">✨</span>لا توجد عناصر مسجلة في مساحة «${sm.label}» حالياً.</div></div>
+    ` : ''}
+
+    <div style="text-align:center;margin:16px 0">
+      <button class="btn ghost" data-act="clearSpaceDrilldown">➜ العودة للمساحات</button>
+    </div>
+  </div>`;
 }
 /* ---------- المزيد ---------- */
 function renderMore(){
@@ -3146,10 +3812,233 @@ function visOptions(sel,circle){
     <span style="flex:1"><span class="vt">${t}</span><br><span class="vd">${d}</span></span>${sel===v?'<span style="color:var(--accent)">✓</span>':''}</button>`).join('');
 }
 window._visSel='PRIVATE'; window._visMembers=[];
-function visWrap(id,sel,circle){ return `<div id="${id}">${visOptions(sel,circle)}${sel==='SELECTED_MEMBERS'&&circle?memberPick(circle):''}</div>`; }
 function memberPick(circle){ return `<div style="border:1px solid var(--divider);border-radius:14px;padding:4px 12px;margin-bottom:12px">
   ${circle.members.filter(x=>x.m.user_id!==meId()).map(x=>`<label style="display:flex;align-items:center;gap:8px;min-height:42px">
     <input type="checkbox" class="memcb" value="${x.m.user_id}"> ${esc(x.p.display_name||'عضو')}</label>`).join('')}</div>`; }
+
+function openItemSpaceMenu(type, itemId){
+  let rawItem = null, title = '', curSpace = 'shared';
+  const me = meId();
+  const comps = allCompanions();
+  const compName = comps.length ? (comps[0].display_name || 'رفيقي') : 'رفيقي';
+
+  if(type === 'task'){
+    rawItem = (data.tasks||[]).find(t => t.id === itemId);
+    if(rawItem){ title = rawItem.title; curSpace = getItemSpace('task', rawItem); }
+  } else if(type === 'habit' || type === 'item'){
+    rawItem = (data.items||[]).find(i => i.id === itemId);
+    if(rawItem){ title = rawItem.title; curSpace = getItemSpace('habit', rawItem); }
+  } else if(type === 'med'){
+    const m = (medsOf()||[]).find(x => x.item.id === itemId);
+    if(m){ rawItem = m.item; title = m.item.title; curSpace = getItemSpace('med', m); }
+  } else {
+    rawItem = (data.shopping||[]).find(s => s.id === itemId);
+    if(rawItem){ title = rawItem.title; curSpace = getItemSpace(type, rawItem); }
+  }
+
+  if(!rawItem){ toast('تعذر العثور على العنصر'); return; }
+
+  const curMeta = spaceMeta(curSpace);
+  const typeIcons = { task:'✅', habit:'🌱', med:'💊', shopping:'🛒', food:'🍽️', dish:'🍲', place:'📍', media:'🎬' };
+  const typeLabels = { task:'مهمة', habit:'عادة / هدف', med:'دواء', shopping:'سلعة تسوق', food:'وجبة طعام', dish:'طبق مفضل', place:'مكان محفوظ', media:'مقطع / رابط' };
+  const icon = typeIcons[type] || '📌';
+  const typeLbl = typeLabels[type] || 'عنصر';
+
+  openSheet(sheetHead('⋯ تخصيص المساحة والملكية') + `
+    <div class="card" style="margin-bottom:12px;background:var(--surface-2);border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:700;color:var(--text-1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(title)}</div>
+          <div style="font-size:11.5px;color:var(--text-2);margin-top:2px">${typeLbl} • المساحة الحالية: <span class="${curMeta.badgeCls}">${curMeta.emoji} ${curMeta.label}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:8px">حدد أين يظهر هذا العنصر ومن يشاركه معك:</div>
+
+    <!-- الخيار 1: خاص بي (أنا 🟢) -->
+    <button class="space-choice-btn space-choice-me ${curSpace==='me'?'selected':''}" data-act="setItemSpace" data-type="${type}" data-id="${itemId}" data-space="me">
+      <span class="space-choice-icon">🟢</span>
+      <div class="space-choice-text">
+        <div class="space-choice-title">خاص بي (أنا) ${curSpace==='me'?'<span style="color:var(--space-me);font-weight:800"> ✓ الحالي</span>':''}</div>
+        <div class="space-choice-desc">في مساحتك الشخصية فقط، لا يراه رفيقك ولا يظهر في القوائم المشتركة</div>
+      </div>
+    </button>
+
+    <!-- الخيار 2: مشترك بيننا (كلانا 🔵) -->
+    <button class="space-choice-btn space-choice-shared ${curSpace==='shared'?'selected':''}" data-act="setItemSpace" data-type="${type}" data-id="${itemId}" data-space="shared">
+      <span class="space-choice-icon">🔵</span>
+      <div class="space-choice-text">
+        <div class="space-choice-title">مشترك بيننا (كلانا) ${curSpace==='shared'?'<span style="color:var(--space-shared);font-weight:800"> ✓ الحالي</span>':''}</div>
+        <div class="space-choice-desc">متاح لكليكما في الدائرة المشتركة للمتابعة والتعاون معاً</div>
+      </div>
+    </button>
+
+    <!-- الخيار 3: خاص برفيقي (رفيقي 🟠) -->
+    ${comps.length > 1 ? `
+      <button class="space-choice-btn space-choice-comp ${curSpace==='companion'?'selected':''}" data-act="openCompPicker" data-type="${type}" data-id="${itemId}">
+        <span class="space-choice-icon">🟠</span>
+        <div class="space-choice-text">
+          <div class="space-choice-title">خاص برفيقي (اختر الرفيق) ${curSpace==='companion'?'<span style="color:var(--space-comp);font-weight:800"> ✓ الحالي</span>':''}</div>
+          <div class="space-choice-desc">تحديد رفيق مخصص من دائرتك لإسناد هذا الموضوع إليه</div>
+        </div>
+      </button>
+    ` : `
+      <button class="space-choice-btn space-choice-comp ${curSpace==='companion'?'selected':''}" data-act="setItemSpace" data-type="${type}" data-id="${itemId}" data-space="companion" data-compid="${comps[0]?comps[0].id:''}">
+        <span class="space-choice-icon">🟠</span>
+        <div class="space-choice-text">
+          <div class="space-choice-title">خاص برفيقي (${esc(compName)}) ${curSpace==='companion'?'<span style="color:var(--space-comp);font-weight:800"> ✓ الحالي</span>':''}</div>
+          <div class="space-choice-desc">مُسند ومخصص لرفيقك ليتابعه وينجزه في مساحته</div>
+        </div>
+      </button>
+    `}
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 10px"></div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn ghost" style="flex:1" data-act="editItemFromSpace" data-type="${type}" data-id="${itemId}">✏️ تعديل</button>
+      <button class="btn danger" style="flex:1" data-act="delItemFromSpace" data-type="${type}" data-id="${itemId}">🗑️ حذف</button>
+    </div>
+  `);
+}
+
+function openCompanionPickerSheet(type, itemId){
+  const comps = allCompanions();
+  openSheet(sheetHead('🟠 اختر الرفيق') + `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">اختر الرفيق الذي تريد تخصيص هذا العنصر له:</p>
+    ${comps.map(c => `
+      <button class="space-choice-btn space-choice-comp" data-act="setItemSpace" data-type="${type}" data-id="${itemId}" data-space="companion" data-compid="${c.id}">
+        <div class="avatar sm comp">${esc((c.display_name||'؟')[0])}</div>
+        <div class="space-choice-text">
+          <div class="space-choice-title">${esc(c.display_name||'رفيق')}</div>
+          <div class="space-choice-desc">إسناد وتخصيص في مساحة هذا الرفيق</div>
+        </div>
+      </button>
+    `).join('')}
+    <button class="btn ghost" style="margin-top:8px" data-act="openSpaceMenu" data-type="${type}" data-id="${itemId}">رجوع</button>
+  `);
+}
+
+async function setItemSpaceAction(type, id, space, chosenCompId){
+  try{
+    const me = meId();
+    const comps = allCompanions();
+    const targetCompId = chosenCompId || (comps[0] ? comps[0].id : null);
+    const sh = sharedFirst();
+    const pers = circlesOf().find(c => c.circle.type === 'PERSONAL');
+
+    if(type === 'task'){
+      if(space === 'me'){
+        const pCid = pers ? pers.circle.id : (data.tasks.find(t=>t.id===id)||{}).circle_id;
+        await rest('PATCH', 'tasks', { visibility: 'PRIVATE', assigned_to: me, circle_id: pCid || undefined, updated_at: nowIso() }, 'id=eq.' + id);
+      } else if(space === 'shared'){
+        const sCid = sh ? sh.circle.id : (data.tasks.find(t=>t.id===id)||{}).circle_id;
+        await rest('PATCH', 'tasks', { visibility: 'CIRCLE', assigned_to: null, circle_id: sCid || undefined, updated_at: nowIso() }, 'id=eq.' + id);
+      } else if(space === 'companion'){
+        const sCid = sh ? sh.circle.id : (data.tasks.find(t=>t.id===id)||{}).circle_id;
+        await rest('PATCH', 'tasks', { visibility: 'CIRCLE', assigned_to: targetCompId, circle_id: sCid || undefined, updated_at: nowIso() }, 'id=eq.' + id);
+      }
+    } else if(type === 'habit' || type === 'item'){
+      if(space === 'me'){
+        const pCid = pers ? pers.circle.id : (data.items.find(i=>i.id===id)||{}).circle_id;
+        await rest('PATCH', 'items', { visibility: 'PRIVATE', circle_id: pCid || undefined }, 'id=eq.' + id);
+      } else if(space === 'shared'){
+        const sCid = sh ? sh.circle.id : (data.items.find(i=>i.id===id)||{}).circle_id;
+        await rest('PATCH', 'items', { visibility: 'CIRCLE', circle_id: sCid || undefined }, 'id=eq.' + id);
+      } else if(space === 'companion'){
+        const sCid = sh ? sh.circle.id : (data.items.find(i=>i.id===id)||{}).circle_id;
+        await rest('PATCH', 'items', { visibility: 'SELECTED_MEMBERS', circle_id: sCid || undefined }, 'id=eq.' + id);
+        if(targetCompId){
+          try{ await rest('POST', 'item_recipients', { id: uuid(), item_id: id, user_id: targetCompId }, 'return=minimal'); }catch(e){}
+        }
+      }
+    } else if(type === 'med'){
+      const m = (medsOf()||[]).find(x => x.item.id === id);
+      const raw = m ? m.item : (data.items||[]).find(i=>i.id===id);
+      if(raw){
+        let desc = raw.description || '';
+        const patVal = space === 'companion' ? 'companion' : (space === 'shared' ? 'both' : 'me');
+        if(desc.includes('patient=')){
+          desc = desc.replace(/patient=[a-zA-Z0-9_]+/g, 'patient=' + patVal);
+        } else {
+          desc = desc ? (desc + '|patient=' + patVal) : ('patient=' + patVal);
+        }
+        const visVal = space === 'me' ? 'PRIVATE' : 'CIRCLE';
+        await rest('PATCH', 'items', { description: desc, visibility: visVal }, 'id=eq.' + id);
+      }
+    } else {
+      // shopping, food, dish, place, media, shared_list_item
+      const raw = (data.shopping||[]).find(s => s.id === id);
+      let note = (raw && raw.note) || '';
+      note = note.replace(/\|?SPACE:(me|shared|companion(:[a-zA-Z0-9_-]+)?)/g, '').trim();
+
+      if(space === 'me'){
+        const newNote = note ? (note + '|SPACE:me') : 'SPACE:me';
+        await rest('PATCH', 'shared_list_items', { assigned_to: me, note: newNote }, 'id=eq.' + id);
+      } else if(space === 'shared'){
+        const newNote = note ? (note + '|SPACE:shared') : 'SPACE:shared';
+        await rest('PATCH', 'shared_list_items', { assigned_to: null, note: newNote }, 'id=eq.' + id);
+      } else if(space === 'companion'){
+        const newNote = note ? (note + '|SPACE:companion' + (targetCompId ? (':' + targetCompId) : '')) : ('SPACE:companion' + (targetCompId ? (':' + targetCompId) : ''));
+        await rest('PATCH', 'shared_list_items', { assigned_to: targetCompId, note: newNote }, 'id=eq.' + id);
+      }
+    }
+
+    closeSheet();
+    await refreshAll();
+    renderApp();
+    const lbl = space === 'me' ? 'خاص بي 🟢' : (space === 'shared' ? 'مشترك بيننا 🔵' : 'خاص برفيقي 🟠');
+    toast('تم تعيين العنصر: ' + lbl);
+  } catch(e) {
+    toast('تعذر تحديث المساحة: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+function toggleCompIntegration(){
+  const cur = localStorage.getItem('rafiq_comp_integrated') !== 'false';
+  localStorage.setItem('rafiq_comp_integrated', cur ? 'false' : 'true');
+  renderSpaces();
+  toast(cur ? 'تم فصل عناصر الرفيق عن المتابعة العامة 🔒' : 'تم إدماج عناصر الرفيق في المتابعة المشتركة 👥');
+}
+
+async function quickAddTask(){
+  const inp = $('#quickTaskIn');
+  const title = ((inp && inp.value) || '').trim();
+  if(!title){ toast('اكتب عنوان المهمة'); return; }
+  try {
+    const me = meId();
+    const pers = circlesOf().find(c => c.circle.type === 'PERSONAL');
+    const sh = sharedFirst();
+    const cid = pers ? pers.circle.id : (sh ? sh.circle.id : null);
+    if(!cid){ toast('تحتاج دائرة أولاً'); return; }
+    const spF = window._homeSpaceFilter || 'all';
+    let vis = 'PRIVATE', assigned = me;
+    if(spF === 'shared'){ vis = 'CIRCLE'; assigned = null; }
+    else if(spF === 'companion'){
+      vis = 'CIRCLE';
+      const comps = allCompanions();
+      assigned = comps.length ? comps[0].id : null;
+    }
+    await rest('POST', 'tasks', {
+      id: uuid(),
+      owner_id: me,
+      circle_id: (vis === 'CIRCLE' && sh) ? sh.circle.id : cid,
+      title: title,
+      visibility: vis,
+      assigned_to: assigned,
+      status: 'TODO',
+      created_at: nowIso(),
+      updated_at: nowIso()
+    }, 'return=minimal');
+    inp.value = '';
+    await refreshAll();
+    renderApp();
+    toast('أُضيفت المهمة بنجاح ✓');
+  } catch(e) {
+    toast('تعذر الإضافة: ' + (e && e.message ? e.message : ''));
+  }
+}
 
 function openAddTask(){
   const s=sharedFirst();
@@ -3867,6 +4756,52 @@ document.addEventListener('click', async e=>{
   try{
     switch(act){
       case 'tab': view=v; renderApp(); break;
+      case 'homeSpaceFilter': window._homeSpaceFilter=el.dataset.f; renderHome(); break;
+      case 'activitySubTab': window._activitySubTab=el.dataset.tab; renderActivity(); break;
+      case 'openSpaceMenu': openItemSpaceMenu(el.dataset.type, el.dataset.id); break;
+      case 'setItemSpace': await setItemSpaceAction(el.dataset.type, el.dataset.id, el.dataset.space, el.dataset.compid); break;
+      case 'openCompPicker': openCompanionPickerSheet(el.dataset.type, el.dataset.id); break;
+      case 'setSpaceDrilldown': window._activeSpaceDrilldown=el.dataset.space; renderSpaces(); break;
+      case 'clearSpaceDrilldown': window._activeSpaceDrilldown=null; renderSpaces(); break;
+      case 'toggleCompIntegration': toggleCompIntegration(); break;
+      case 'quickAddTask': await quickAddTask(); break;
+      case 'editItemFromSpace': {
+        closeSheet();
+        const t=el.dataset.type, id=el.dataset.id;
+        if(t==='med') openEditMedSheet(id);
+        else if(t==='shopping'||t==='food'||t==='dish'||t==='place'||t==='media'){
+          const raw=(data.shopping||[]).find(x=>x.id===id);
+          if(raw) openRename(id, raw.title);
+        } else if(t==='task'){
+          const raw=(data.tasks||[]).find(x=>x.id===id);
+          if(raw){
+            const nt=prompt('تعديل عنوان المهمة:', raw.title);
+            if(nt && nt.trim() && nt.trim()!==raw.title){
+              await rest('PATCH','tasks',{title:nt.trim(),updated_at:nowIso()},'id=eq.'+id);
+              await refreshAll(); renderApp(); toast('تم تعديل المهمة ✓');
+            }
+          }
+        } else if(t==='habit'){
+          const raw=(data.items||[]).find(x=>x.id===id);
+          if(raw){
+            const nt=prompt('تعديل عنوان العادة:', raw.title);
+            if(nt && nt.trim() && nt.trim()!==raw.title){
+              await rest('PATCH','items',{title:nt.trim()},'id=eq.'+id);
+              await refreshAll(); renderApp(); toast('تم تعديل العادة ✓');
+            }
+          }
+        }
+        break;
+      }
+      case 'delItemFromSpace': {
+        if(!confirm('هل أنت متأكد من حذف هذا العنصر نهائياً؟')) break;
+        const t=el.dataset.type, id=el.dataset.id;
+        if(t==='task') await rest('DELETE','tasks','id=eq.'+id);
+        else if(t==='habit'||t==='med') await rest('DELETE','items','id=eq.'+id);
+        else await rest('DELETE','shared_list_items','id=eq.'+id);
+        await refreshAll(); closeSheet(); renderApp(); toast('تم الحذف ✓');
+        break;
+      }
       case 'authMode': window._authMode=parseInt(v,10); window._authErr=''; renderAuthForms(); break;
       case 'acc': window._acc=v; renderAuthForms(); break;
       case 'openAddTask': openAddTask(); break;
