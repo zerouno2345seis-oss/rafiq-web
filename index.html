@@ -217,12 +217,50 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
   .rmp-vol{width:60px}
 }
 /* 50% = متغيّر للتعديل السريع */
+/* ===== نوافذ منبثقة مستقلة فوق الـ Sheets ===== */
+.popup-backdrop{position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s ease}
+.popup-box{background:var(--surface);border:1px solid var(--border);border-radius:22px;max-width:440px;width:100%;max-height:82vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.4);padding:18px;display:flex;flex-direction:column;gap:12px;animation:scaleIn .2s cubic-bezier(.16,1,.3,1)}
+@keyframes scaleIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.popup-head{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--divider);padding-bottom:10px}
+.popup-head h3{font-size:16px;font-weight:700}
+.popup-x{width:32px;height:32px;border-radius:10px;background:var(--surface-2);font-size:14px;color:var(--text-2);cursor:pointer}
+
+/* ===== متتبع الحياة (Life Tracker) ===== */
+.trk-cats-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;padding-top:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.trk-cats-bar::-webkit-scrollbar{display:none}
+.trk-cat-pill{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:var(--surface);border:1.5px solid var(--border);flex:0 0 auto;font-weight:600;font-size:13px;cursor:pointer;transition:transform .12s}
+.trk-cat-pill:active{transform:scale(.95)}
+.trk-cat-pill .cnt{font-size:11px;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.08)}
+.trk-mode-switch{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:4px;margin-bottom:12px}
+.trk-mode-btn{flex:1;padding:8px;border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer}
+.trk-mode-btn.on{background:var(--surface);color:var(--accent-dark);box-shadow:var(--shadow)}
+.trk-entry-card{border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;color:#fff;margin-bottom:10px;box-shadow:0 3px 10px rgba(0,0,0,.1);cursor:pointer;transition:transform .12s}
+.trk-entry-card:active{transform:scale(.98)}
+.trk-entry-card .ico{font-size:24px;width:44px;height:44px;border-radius:12px;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.trk-entry-card .meta{flex:1;min-width:0}
+.trk-entry-card .tit{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.trk-entry-card .sub{font-size:12px;opacity:.9}
+.trk-entry-card .tim{font-size:11.5px;opacity:.95;margin-top:2px}
+.trk-entry-card .qty-tag{font-size:11px;font-weight:700;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:6px}
+.trk-color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:6px 0}
+.trk-color-dot{width:42px;height:42px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px}
+.trk-color-dot.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.trk-icon-cat{margin-bottom:12px}
+.trk-icon-cat-title{font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px}
+.trk-icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.trk-icon-btn{height:42px;border-radius:10px;background:var(--surface-2);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.trk-icon-btn:hover,.trk-icon-btn:active{background:var(--accent-soft)}
+.trk-range-box{background:var(--surface-2);border-radius:14px;padding:12px;margin:10px 0;border:1px solid var(--border)}
+.trk-range-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.trk-range-row:last-child{margin-bottom:0}
+.fab-pdf{position:fixed;bottom:calc(var(--nav-h) + 16px);inset-inline-end:16px;z-index:50;display:flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
 </style>
 </head>
 <body>
 <div id="shell"><div id="view"></div></div>
 <div id="nav"></div>
 <div id="sheet-root"></div>
+<div id="popup-root"></div>
 <div id="toast"></div>
 <script>
 'use strict';
@@ -697,7 +735,7 @@ function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null;
 <script>
 'use strict';
 /* ================= الواجهة الرئيسية ================= */
-const TABS=[['home','الرئيسية','🏠'],['habits','العادات','🎯'],['stats','الإحصائيات','📊'],['tasks','المهام','✅'],['more','المزيد','⋯']];
+const TABS=[['home','الرئيسية','🏠'],['lifetracker','المتتبع','📈'],['habits','العادات','🎯'],['stats','الإحصائيات','📊'],['tasks','المهام','✅'],['more','المزيد','⋯']];
 function renderNav(){
   $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>
     `<button data-act="tab" data-v="${id}" class="${view===id?'on':''}"><span class="ic">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
@@ -707,7 +745,7 @@ function renderApp(){
   document.documentElement.dataset.accent=(p&&p.accent_theme==='rose')?'rose':'green';
   document.documentElement.dataset.theme=(localStorage.getItem('rafiq_web_dark')==='on')?'dark':'light';
   renderNav();
-  ({home:renderHome,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore,schedule:renderSchedule,food:renderFood})[view]();
+  ({home:renderHome,lifetracker:renderLifeTracker,habits:renderHabits,stats:renderStats,tasks:renderTasks,more:renderMore,schedule:renderSchedule,food:renderFood})[view]();
 }
 function ringSVG(pct,cls){
   const r=34,c=(2*Math.PI*r).toFixed(1),off=(c*(1-Math.min(100,Math.max(0,pct))/100)).toFixed(1);
@@ -747,6 +785,39 @@ function renderHome(){
     <div id="secStrip" class="sec-strip">
       <div class="sec-pills" id="secPills"></div>
       <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
+    </div>
+    <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
+      <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">📈</span>
+      <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">متتبع الحياة</div>
+      <div class="shop-meta">${(()=>{
+        const trk=getTrackerData();
+        const todayIso=new Date().toISOString().slice(0,10);
+        const todayEntries=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(todayIso));
+        return todayEntries.length? ('سُجّل اليوم: '+todayEntries.length+' نشاط') : 'سجل عاداتك، مشيك، أدويتك وأعراضك بدقة';
+      })()}</div></div>
+      <span class="badge">المتتبع ➜</span></div>
+      ${(()=>{
+        const trk=getTrackerData();
+        const todayIso=new Date().toISOString().slice(0,10);
+        const todayEntries=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(todayIso));
+        const catMap={}; (trk.categories||[]).forEach(c=>{catMap[c.id]=c;});
+        if(todayEntries.length){
+          return '<div style="display:flex;gap:6px;overflow-x:auto;padding-top:8px;scrollbar-width:none">'+
+            todayEntries.slice(-6).reverse().map(e=>{
+              const cat=catMap[e.categoryId]||{name:'نشاط',icon:'📌',colorHex:'#3B82F6'};
+              const tim=(e.startedAt&&e.endedAt)?('⏱️ '+formatArabicTime(e.startedAt)+' - '+formatArabicTime(e.endedAt)):formatArabicTime(e.loggedAt);
+              return `<div style="background:${cat.colorHex}18;border:1px solid ${cat.colorHex}50;border-radius:10px;padding:4px 8px;font-size:11.5px;color:var(--text-1);flex:0 0 auto;display:flex;align-items:center;gap:4px">
+                <span>${cat.icon}</span><b>${esc(cat.name)}</b>${e.quantity?`<span style="opacity:.8">(${esc(e.quantity)})</span>`:''}<span style="font-size:10px;color:var(--text-2)">• ${tim}</span>
+              </div>`;
+            }).join('')+'</div>';
+        }
+        return '<div style="display:flex;gap:6px;overflow-x:auto;padding-top:8px;scrollbar-width:none">'+
+          (trk.categories||[]).slice(0,6).map(c=>`
+            <button class="mini" data-act="openSmartLog" data-id="${c.id}" style="background:${c.colorHex}20;color:${c.colorHex};border:1px solid ${c.colorHex}40">
+              ${c.icon} ${esc(c.name)}
+            </button>
+          `).join('')+'</div>';
+      })()}
     </div>
     <div class="card" data-sec="food" data-act="openFood" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🍽</span>
@@ -983,6 +1054,31 @@ function renderSchedule(){
 /* ---------- سجل الوجبات ---------- */
 function foodEntries(){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي');
   return l? (data.shopping||[]).filter(i=>i.list_id===l.id) : []; }
+async function ensureDishesList(){
+  const sh=sharedFirst(); if(!sh) return null;
+  return ensureList('أطباق نحبها', sh.circle.id);
+}
+function openAddDish(){
+  openSheet(sheetHead('➕ إضافة طبق نحبه')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">احفظ أطباقكم المفضلة لتستلهموا منها وجباتكم في أي وقت، وتظهر لرفيقك فورًا.</p>
+    <div class="field"><label>اسم الطبق</label><input id="dishTitle" placeholder="مثال: ملوخية بالأرز"></div>
+    <button class="btn" data-act="saveDish">حفظ في أطباقنا</button>`);
+  setTimeout(()=>{ const i=$('#dishTitle'); if(i) i.focus(); }, 100);
+}
+async function saveDish(){
+  const inp=$('#dishTitle');
+  const title=((inp&&inp.value)||'').trim();
+  if(!title){ toast('اكتب اسم الطبق'); return; }
+  try{
+    const l=await ensureDishesList();
+    if(!l){ toast('أنشئ دائرة مشتركة أولًا'); return; }
+    await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:title,completed:false,position:0},'return=minimal');
+    closeSheet();
+    await refreshAll();
+    renderFood();
+    toast('أُضيف الطبق ✓');
+  }catch(e){ toast('تعذر إضافة الطبق: '+(e&&e.message?e.message:'')); }
+}
 function renderFood(){
   const meals=[['فطور','🍳'],['غداء','🍲'],['عشاء','🥗'],['سناك','🍎']];
   const entries=foodEntries();
@@ -1003,10 +1099,861 @@ function renderFood(){
           <button class="mini" data-act="relogMeal" data-meal="${meal}" data-title="${esc(i.title)}">سجّله اليوم ↩︎</button></div>`).join('')
         :'<div class="shop-meta" style="padding:6px 0">لا تسجيلات بعد</div>'}
       </div>`; }).join('')}
-    ${dishes.length?`<div class="card"><b style="font-size:15px">🍽 أطباق نحبها (${dishes.length})</b>
-      ${dishes.map(d=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(d.title)}</span>
-      <button class="link" style="color:var(--error)" data-act="delDish" data-id="${d.id}">حذف</button></div>`).join('')}</div>`:''}
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:15px">🍽 أطباق نحبها (${dishes.length})</b>
+        <button class="mini" data-act="openAddDish">➕ إضافة طبق</button>
+      </div>
+      ${dishes.length? dishes.map(d=>`<div class="row" style="min-height:40px"><span class="htitle" style="flex:1">${esc(d.title)}</span>
+        <button class="link" style="color:var(--error)" data-act="delDish" data-id="${d.id}">حذف</button></div>`).join('')
+      : '<div class="shop-meta" style="padding:6px 0">لا توجد أطباق محفوظة بعد. اضغط «إضافة طبق» لحفظ أطباقكم المفضلة!</div>'}
+    </div>
     <div class="foot">كله مشترك مع رفيقك لحظيًا 🍽</div></div>`;
+}
+
+/* ---------- متتبع الحياة (Life Tracker) ---------- */
+const DEFAULT_TRACKER_CATEGORIES = [
+  { id:'cat_meds', name:'دواء', icon:'💊', colorHex:'#3B82F6', sortOrder:1, subcategories:['بنادول','فيتامين د','مضاد حيوي','مكمل غذائي'], dailyGoal:2, reminderEnabled:true, reminderHour:8, reminderMinute:30, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
+  { id:'cat_walk', name:'مشي', icon:'🚶', colorHex:'#22C55E', sortOrder:2, subcategories:['مشي صباحي','نزهة مسائية','سير سريع'], dailyGoal:1, reminderEnabled:false, reminderHour:9, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
+  { id:'cat_food', name:'طعام', icon:'🍽️', colorHex:'#F97316', sortOrder:3, subcategories:['فطور','غداء','عشاء','سناك صحي'], dailyGoal:3, reminderEnabled:false },
+  { id:'cat_sleep', name:'نوم', icon:'😴', colorHex:'#8B5CF6', sortOrder:4, subcategories:['نوم ليلي','قيلولة'], dailyGoal:1, reminderEnabled:false },
+  { id:'cat_water', name:'ماء', icon:'💧', colorHex:'#06B6D4', sortOrder:5, subcategories:['كوب ماء (250 مل)','قارورة (500 مل)'], dailyGoal:8, reminderEnabled:true, reminderHour:10, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
+  { id:'cat_read', name:'قراءة', icon:'📖', colorHex:'#F59E0B', sortOrder:6, subcategories:['قرآن كريم','كتاب علمي','مقالة'], dailyGoal:1, reminderEnabled:false },
+  { id:'cat_sport', name:'رياضة', icon:'🏋️', colorHex:'#EF4444', sortOrder:7, subcategories:['تمارين كارديو','حديد ومقاومة','إطالات وتمارين سويدية'], dailyGoal:1, reminderEnabled:false },
+  { id:'cat_illness', name:'مرض', icon:'🤒', colorHex:'#EC4899', sortOrder:8, subcategories:['صداع','حرارة','ألم ظهر/مفاصل','إرهاق'], dailyGoal:null, reminderEnabled:false }
+];
+
+function getTrackerData(){
+  try{
+    const raw = localStorage.getItem('rafiq_life_tracker');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && Array.isArray(parsed.categories) && parsed.categories.length > 0){
+        if(!Array.isArray(parsed.entries)) parsed.entries = [];
+        return parsed;
+      }
+    }
+  }catch(e){}
+  const seeded = { categories: DEFAULT_TRACKER_CATEGORIES, entries: [] };
+  saveTrackerData(seeded);
+  return seeded;
+}
+
+function saveTrackerData(d){
+  try{
+    localStorage.setItem('rafiq_life_tracker', JSON.stringify(d));
+  }catch(e){}
+}
+
+function formatMinutesToArabic(minutes){
+  if(!minutes || minutes <= 0) return '';
+  const hours = Math.floor(minutes / 60);
+  const remM = minutes % 60;
+  if(hours === 0) return `${remM} دقيقة`;
+  if(hours === 1 && remM === 0) return 'ساعة واحدة';
+  if(hours === 2 && remM === 0) return 'ساعتان';
+  if(remM === 0) return `${hours} ساعات`;
+  if(hours === 1) return `ساعة و${remM} دقيقة`;
+  if(hours === 2) return `ساعتان و${remM} دقيقة`;
+  return `${hours} ساعات و${remM} دقيقة`;
+}
+
+function formatArabicTime(isoStr){
+  if(!isoStr) return '';
+  try{
+    let d;
+    if(isoStr.includes('T') || isoStr.includes('-')) d = new Date(isoStr);
+    else {
+      const parts = isoStr.split(':');
+      d = new Date();
+      d.setHours(parseInt(parts[0],10), parseInt(parts[1],10), 0);
+    }
+    if(isNaN(d.getTime())) return isoStr;
+    let h = d.getHours();
+    const m = d.getMinutes();
+    const ampm = h >= 12 ? 'م' : 'ص';
+    h = h % 12;
+    if(h === 0) h = 12;
+    const mStr = m < 10 ? '0' + m : m;
+    return `${h}:${mStr} ${ampm}`;
+  }catch(e){ return isoStr; }
+}
+
+function formatArabicDate(dStr){
+  try{
+    const d = new Date(dStr + 'T12:00:00');
+    return d.toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long' });
+  }catch(e){ return dStr; }
+}
+
+window._trackerDate = new Date().toISOString().slice(0,10);
+window._trackerMode = 'daily';
+
+function renderLifeTracker(){
+  const trk = getTrackerData();
+  const cats = trk.categories.slice().sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+  const selDate = window._trackerDate || new Date().toISOString().slice(0,10);
+  const mode = window._trackerMode || 'daily';
+  const todayIso = new Date().toISOString().slice(0,10);
+
+  const dayEntries = trk.entries.filter(e => (e.loggedAt||'').startsWith(selDate))
+    .sort((a,b) => (a.loggedAt||'').localeCompare(b.loggedAt||''));
+
+  const catMap = {};
+  cats.forEach(c => { catMap[c.id] = c; });
+
+  const countsByCat = {};
+  dayEntries.forEach(e => {
+    countsByCat[e.categoryId] = (countsByCat[e.categoryId] || 0) + 1;
+  });
+
+  $('#view').innerHTML = `
+    <div class="screen" style="position:relative">
+      <div class="row" style="min-height:44px;border-top:none;margin-bottom:8px">
+        <button class="link" data-act="goHome">➜ رجوع</button>
+        <b style="flex:1;text-align:center;font-size:18px">📈 متتبع الحياة</b>
+        <button class="hicon-btn" data-act="openCategorySettings" aria-label="إعدادات الفئات" style="font-size:17px">⚙️</button>
+      </div>
+
+      <div class="trk-cats-bar">
+        ${cats.map(cat => {
+          const cnt = countsByCat[cat.id] || 0;
+          return `
+            <button class="trk-cat-pill" data-act="openSmartLog" data-id="${cat.id}" style="border-color:${cat.colorHex}50;background:${cat.colorHex}0C">
+              <span>${cat.icon}</span>
+              <span style="color:${cat.colorHex}">${esc(cat.name)}</span>
+              ${cnt > 0 ? `<span class="cnt" style="background:${cat.colorHex}25;color:${cat.colorHex}">${cnt}</span>` : ''}
+            </button>
+          `;
+        }).join('')}
+        <button class="trk-cat-pill" data-act="openCategoryEditor" data-id="" style="border-style:dashed;color:var(--accent)">
+          <span>➕</span>
+          <span>فئة جديدة</span>
+        </button>
+      </div>
+
+      <div class="trk-mode-switch">
+        <div class="trk-mode-btn ${mode==='daily'?'on':''}" data-act="setTrackerMode" data-m="daily">📅 يومي</div>
+        <div class="trk-mode-btn ${mode==='weekly'?'on':''}" data-act="setTrackerMode" data-m="weekly">📊 أسبوعي</div>
+        <div class="trk-mode-btn ${mode==='monthly'?'on':''}" data-act="setTrackerMode" data-m="monthly">🗓️ شهري</div>
+      </div>
+
+      ${mode === 'daily' ? `
+        <div class="card" style="padding:10px 14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <button class="hicon-btn" data-act="trackerNextDay" aria-label="اليوم التالي">◀</button>
+            <div style="display:flex;align-items:center;gap:6px;cursor:pointer" data-act="openTrackerDatePicker">
+              <b style="font-size:15px">${formatArabicDate(selDate)}</b>
+              <span style="font-size:14px">🗓️</span>
+              <input type="date" id="trkDirectDate" value="${selDate}" style="display:none">
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              ${selDate !== todayIso ? `<button class="mini" data-act="trackerSetToday" style="padding:4px 8px;font-size:11px">اليوم</button>` : ''}
+              <button class="hicon-btn" data-act="trackerPrevDay" aria-label="اليوم السابق">▶</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="min-height:220px;padding:14px">
+          ${dayEntries.length ? dayEntries.map(entry => {
+            const cat = catMap[entry.categoryId] || { name:'نشاط', icon:'📌', colorHex:'#3B82F6' };
+            const hasRange = !!(entry.startedAt && entry.endedAt);
+            const timeLabel = hasRange
+              ? `⏱️ من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+              : formatArabicTime(entry.loggedAt);
+
+            return `
+              <div class="trk-entry-card" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}">
+                <div class="ico">${cat.icon}</div>
+                <div class="meta">
+                  <div class="tit">
+                    <span>${esc(cat.name)}</span>
+                    ${entry.subcategory ? `<span class="sub">(${esc(entry.subcategory)})</span>` : ''}
+                    ${entry.quantity ? `<span class="qty-tag">${esc(entry.quantity)}</span>` : ''}
+                  </div>
+                  <div class="tim">${timeLabel}</div>
+                  ${entry.note ? `<div style="font-size:11px;opacity:.9;margin-top:2px">📝 ${esc(entry.note)}</div>` : ''}
+                </div>
+                <span style="font-size:16px;opacity:.7">➜</span>
+              </div>
+            `;
+          }).join('') : `
+            <div class="empty">
+              <span class="e">🎯</span>
+              <b>لا توجد تسجيلات لهذا اليوم</b><br>
+              <span style="font-size:12px;color:var(--text-3)">اضغط على أي فئة في الأعلى للتسجيل بلمسة واحدة</span>
+            </div>
+          `}
+        </div>
+      ` : mode === 'weekly' ? `
+        <div class="card">
+          <b style="font-size:15px;display:block;margin-bottom:10px">📊 ملخص الأيام السبعة الماضية</b>
+          ${(()=>{
+            const past7 = [];
+            for(let i=6; i>=0; i--){
+              const d = new Date(selDate + 'T12:00:00');
+              d.setDate(d.getDate() - i);
+              const iso = d.toISOString().slice(0,10);
+              const count = trk.entries.filter(e => (e.loggedAt||'').startsWith(iso)).length;
+              past7.push({ iso, count, label: d.toLocaleDateString('ar-EG', { weekday:'short', day:'numeric' }) });
+            }
+            return `
+              <div style="display:flex;flex-direction:column;gap:8px">
+                ${past7.map(day => `
+                  <div class="row" style="cursor:pointer;padding:4px 0" data-act="setTrackerDayAndSwitch" data-d="${day.iso}">
+                    <span style="width:90px;font-size:13px;font-weight:600">${day.label}</span>
+                    <div class="bar"><i style="width:${Math.min(100, day.count * 16)}%"></i></div>
+                    <span class="badge" style="min-width:40px;text-align:center">${day.count} نشاط</span>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          })()}
+        </div>
+      ` : `
+        <div class="card">
+          <b style="font-size:15px;display:block;margin-bottom:10px">🗓️ إحصائيات الشهر (${selDate.slice(0,7)})</b>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${cats.map(cat => {
+              const count = trk.entries.filter(e => (e.loggedAt||'').startsWith(selDate.slice(0,7)) && e.categoryId === cat.id).length;
+              return `
+                <div class="mini-stat" style="border-right:3px solid ${cat.colorHex}">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:18px">${cat.icon}</span>
+                    <span style="font-size:12px;font-weight:600;flex:1">${esc(cat.name)}</span>
+                  </div>
+                  <b style="font-size:18px;margin-top:4px;color:${cat.colorHex}">${count} مرة</b>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `}
+
+      <button class="fab-pdf" data-act="openPdfExport">
+        <span>📄</span>
+        <span>تصدير PDF</span>
+      </button>
+    </div>
+  `;
+
+  const dateInp = document.getElementById('trkDirectDate');
+  if(dateInp){
+    dateInp.onchange = () => {
+      if(dateInp.value){
+        window._trackerDate = dateInp.value;
+        renderLifeTracker();
+      }
+    };
+  }
+}
+
+function openSmartLog(catId){
+  const trk = getTrackerData();
+  const cat = (catId && trk.categories.find(c => c.id === catId)) || trk.categories[0];
+  if(!cat) return;
+
+  const todayIso = window._trackerDate || new Date().toISOString().slice(0,10);
+  const now = new Date();
+  const curHours = String(now.getHours()).padStart(2, '0');
+  const curMins = String(now.getMinutes()).padStart(2, '0');
+  const past30 = new Date(now.getTime() - 30 * 60000);
+  const startHours = String(past30.getHours()).padStart(2, '0');
+  const startMins = String(past30.getMinutes()).padStart(2, '0');
+
+  const presetsMap = {
+    cat_walk: ['15 دقيقة', '30 دقيقة', '45 دقيقة', '60 دقيقة', '2 كم', '5 كم'],
+    cat_read: ['5 صفحات', '10 صفحات', '20 صفحة', '30 صفحة', '15 دقيقة', '30 دقيقة'],
+    cat_sport: ['15 دقيقة', '30 دقيقة', '45 دقيقة', '60 دقيقة', '90 دقيقة'],
+    cat_water: ['1 كوب (250 مل)', '2 كوب (500 مل)', '3 أكواب', 'قارورة (1 لتر)'],
+    cat_sleep: ['قيلولة (30 د)', 'ساعة', 'ساعتان', '6 ساعات', '7 ساعات', '8 ساعات'],
+    cat_food: ['وجبة كاملة', 'وجبة خفيفة', 'سناك صحي', 'مشروب'],
+    cat_meds: ['جرعة واحدة', 'حبة واحدة', 'حبتان', '500 ملغ', '1000 ملغ'],
+    cat_illness: ['ألم خفيف', 'ألم متوسط', 'شديد', 'حرارة مرتفعة']
+  };
+  const presets = presetsMap[cat.id] || ['15 دقيقة', '30 دقيقة', '45 دقيقة', '1 مرة', '2 مرة'];
+
+  window._smartLogMode = 'range';
+  window._smartLogCatId = cat.id;
+
+  openSheet(sheetHead(`تسجيل: ${cat.name} ${cat.icon}`)+`
+    <div style="display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:4px;margin-bottom:12px">
+      <button class="chip on" id="btnSlRange" data-act="switchSlMode" data-m="range" style="flex:1;justify-content:center">⏱️ بداية ونهاية النشاط</button>
+      <button class="chip" id="btnSlQuick" data-act="switchSlMode" data-m="quick" style="flex:1;justify-content:center">⚡ مدة سريعة أو كمية</button>
+    </div>
+
+    <div id="slRangeContainer" class="trk-range-box">
+      <div class="trk-range-row">
+        <label style="font-size:12.5px;font-weight:600">🟢 وقت البداية:</label>
+        <div style="display:flex;gap:6px">
+          <input type="date" id="slStartDate" value="${todayIso}" style="width:130px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+          <input type="time" id="slStartTime" value="${startHours}:${startMins}" style="width:86px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+        </div>
+      </div>
+      <div class="trk-range-row">
+        <label style="font-size:12.5px;font-weight:600">🔴 وقت النهاية:</label>
+        <div style="display:flex;gap:6px">
+          <input type="date" id="slEndDate" value="${todayIso}" style="width:130px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+          <input type="time" id="slEndTime" value="${curHours}:${curMins}" style="width:86px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+        </div>
+      </div>
+      <div id="slDurationPreview" style="background:var(--accent-soft);color:var(--accent-dark);padding:8px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;margin-top:6px">
+        ⏳ المدة المحسوبة: 30 دقيقة
+      </div>
+    </div>
+
+    <div id="slQuickContainer" style="display:none;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="font-size:13px;font-weight:600">وقت التسجيل:</label>
+        <input type="time" id="slActivityTime" value="${curHours}:${curMins}" style="width:90px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+      </div>
+      <label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">اختر كمية أو مدة سريعة:</label>
+      <div class="chips" style="margin-bottom:10px">
+        ${presets.map(p => `
+          <button class="chip" data-act="pickSlPreset" data-p="${esc(p)}">${esc(p)}</button>
+        `).join('')}
+      </div>
+      <div class="field"><label>أو حدد كمية/مدة يدويًا</label><input id="slCustomQty" placeholder="مثال: 45 دقيقة، 15 صفحة، 500 مل..."></div>
+    </div>
+
+    ${(cat.subcategories && cat.subcategories.length) ? `
+      <div style="margin-bottom:12px">
+        <label style="font-size:12.5px;font-weight:600;display:block;margin-bottom:6px">التصنيف الفرعي:</label>
+        <div class="chips" id="slSubcatChips">
+          ${cat.subcategories.map((sub, idx) => `
+            <button class="chip ${idx===0?'on':''}" data-act="pickSlSubcat" data-s="${esc(sub)}">${esc(sub)}</button>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="field"><label>ملاحظة إضافية (اختياري)</label><textarea id="slNote" rows="2" placeholder="أي تفاصيل أو ملاحظات حول هذا النشاط..."></textarea></div>
+
+    <button class="btn" data-act="saveSmartLog">حفظ النشاط ✓</button>
+  `);
+
+  window._slSelectedSubcat = (cat.subcategories && cat.subcategories.length) ? cat.subcategories[0] : '';
+  
+  const recalc = () => {
+    const sDate = $('#slStartDate') ? $('#slStartDate').value : todayIso;
+    const sTime = $('#slStartTime') ? $('#slStartTime').value : '08:00';
+    const eDate = $('#slEndDate') ? $('#slEndDate').value : todayIso;
+    const eTime = $('#slEndTime') ? $('#slEndTime').value : '08:30';
+    const s = new Date(`${sDate}T${sTime}:00`);
+    const e = new Date(`${eDate}T${eTime}:00`);
+    const diffMin = Math.round((e - s) / 60000);
+    const prev = $('#slDurationPreview');
+    if(!prev) return;
+    if(diffMin > 0){
+      prev.style.color = 'var(--accent-dark)';
+      prev.textContent = '⏳ المدة المحسوبة: ' + formatMinutesToArabic(diffMin);
+    } else if(diffMin === 0){
+      prev.style.color = 'var(--text-2)';
+      prev.textContent = '⏳ نفس وقت البداية والنهاية';
+    } else {
+      prev.style.color = 'var(--error)';
+      prev.textContent = '⚠️ وقت النهاية يسبق وقت البداية';
+    }
+  };
+
+  ['slStartDate','slStartTime','slEndDate','slEndTime'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.oninput = recalc; el.onchange = recalc; }
+  });
+  recalc();
+}
+
+async function saveSmartLog(){
+  const trk = getTrackerData();
+  const cat = trk.categories.find(c => c.id === window._smartLogCatId);
+  if(!cat){ toast('تعذر العثور على الفئة'); return; }
+
+  const isRange = window._smartLogMode === 'range';
+  let startedAt = null;
+  let endedAt = null;
+  let quantity = null;
+  let loggedAt = new Date().toISOString();
+
+  if(isRange){
+    const sDate = ($('#slStartDate')||{}).value || window._trackerDate;
+    const sTime = ($('#slStartTime')||{}).value || '08:00';
+    const eDate = ($('#slEndDate')||{}).value || window._trackerDate;
+    const eTime = ($('#slEndTime')||{}).value || '08:30';
+    startedAt = `${sDate}T${sTime}:00`;
+    endedAt = `${eDate}T${eTime}:00`;
+    loggedAt = startedAt;
+    const s = new Date(startedAt);
+    const e = new Date(endedAt);
+    const diffMin = Math.round((e - s) / 60000);
+    if(diffMin > 0) quantity = formatMinutesToArabic(diffMin);
+  } else {
+    const actTime = ($('#slActivityTime')||{}).value || '12:00';
+    loggedAt = `${window._trackerDate}T${actTime}:00`;
+    quantity = ($('#slCustomQty')||{}).value || null;
+  }
+
+  const note = ($('#slNote')||{}).value || null;
+  const subcat = window._slSelectedSubcat || null;
+
+  const entry = {
+    id: 'ent_' + (crypto.randomUUID ? crypto.randomUUID().slice(0,10) : String(Date.now())),
+    categoryId: cat.id,
+    subcategory: subcat && subcat.trim() ? subcat.trim() : null,
+    quantity: quantity && quantity.trim() ? quantity.trim() : null,
+    startedAt: startedAt,
+    endedAt: endedAt,
+    loggedAt: loggedAt,
+    note: note && note.trim() ? note.trim() : null,
+    syncIntent: 'local_only'
+  };
+
+  trk.entries.push(entry);
+  saveTrackerData(trk);
+  closeSheet();
+  renderLifeTracker();
+  toast(`تم تسجيل ${cat.name} ${cat.icon} ✓`);
+}
+
+function openCategoryEditor(catId){
+  const trk = getTrackerData();
+  const cat = (catId && trk.categories.find(c => c.id === catId)) || {
+    id: '',
+    name: '',
+    icon: '💊',
+    colorHex: '#3B82F6',
+    sortOrder: trk.categories.length + 1,
+    subcategories: [],
+    dailyGoal: null,
+    reminderEnabled: false,
+    reminderHour: 8,
+    reminderMinute: 0,
+    reminderFrequency: 'DAILY',
+    reminderDaysOfWeek: [6],
+    reminderDayOfMonth: 1
+  };
+
+  window._catEditId = cat.id;
+  window._catIcon = cat.icon;
+  window._catColor = cat.colorHex;
+  window._catReminderEnabled = !!cat.reminderEnabled;
+  window._catReminderFreq = cat.reminderFrequency || 'DAILY';
+
+  const remTime = `${String(cat.reminderHour||8).padStart(2,'0')}:${String(cat.reminderMinute||0).padStart(2,'0')}`;
+
+  openSheet(sheetHead(cat.id ? `تعديل فئة: ${cat.name}` : 'إضافة فئة جديدة')+`
+    <div class="field"><label>اسم الفئة</label><input id="ceName" value="${esc(cat.name)}" placeholder="مثال: صداع شقيقة، دورة شهرية، قراءة..."></div>
+
+    <label style="display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:8px">الأيقونة واللون المميز:</label>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;cursor:pointer" data-act="openIconPickerPopup">
+        <span style="font-size:11px;color:var(--text-2)">الأيقونة</span>
+        <div id="ceIconPreview" style="width:48px;height:48px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:26px;margin:6px 0">${cat.icon}</div>
+        <span style="font-size:11.5px;font-weight:700;color:var(--accent)">تغيير الأيقونة 🔍</span>
+      </div>
+      <div style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;cursor:pointer" data-act="openColorPickerPopup">
+        <span style="font-size:11px;color:var(--text-2)">اللون المميز</span>
+        <div id="ceColorPreview" style="width:48px;height:48px;border-radius:50%;background:${cat.colorHex};border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin:6px 0">✓</div>
+        <span style="font-size:11.5px;font-weight:700;color:var(--accent)">تغيير اللون 🎨</span>
+      </div>
+    </div>
+
+    <div class="field"><label>الفئات الفرعية (مفصولة بفواصل)</label><input id="ceSubcats" value="${esc((cat.subcategories||[]).join('، '))}" placeholder="مثال: فطور، غداء، عشاء / صداع نصفي، خفيف"></div>
+    <div class="field"><label>الهدف اليومي (اختياري - عدد المرات)</label><input type="number" id="ceGoal" value="${cat.dailyGoal||''}" placeholder="مثال: 8 (أكواب ماء)، 1 (رياضة)"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div>
+        <b style="font-size:13.5px;display:block">🔔 تفعيل تذكير ذكي</b>
+        <span style="font-size:11.5px;color:var(--text-2)">ينبهك إذا لم تسجل النشاط حتى وقت محدد</span>
+      </div>
+      <button class="switch ${cat.reminderEnabled?'on':''}" id="ceReminderSwitch" data-act="toggleCeReminder"><i></i></button>
+    </div>
+
+    <div id="ceReminderSection" style="display:${cat.reminderEnabled?'block':'none'};padding-top:8px">
+      <div class="field"><label>وقت التذكير المحدد</label><input type="time" id="ceReminderTime" value="${remTime}"></div>
+      <label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">نوع وتكرار التذكير:</label>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="chip ${cat.reminderFrequency==='DAILY'?'on':''}" data-act="pickCeFreq" data-f="DAILY" style="flex:1;justify-content:center">📅 يومي</button>
+        <button class="chip ${cat.reminderFrequency==='WEEKLY'?'on':''}" data-act="pickCeFreq" data-f="WEEKLY" style="flex:1;justify-content:center">📊 أسبوعي</button>
+        <button class="chip ${cat.reminderFrequency==='MONTHLY'?'on':''}" data-act="pickCeFreq" data-f="MONTHLY" style="flex:1;justify-content:center">🗓️ شهري</button>
+      </div>
+    </div>
+
+    <button class="btn" data-act="saveTrackerCategory">حفظ الفئة</button>
+  `);
+}
+
+function openIconPickerPopup(){
+  const iconCategories = [
+    ["صحة وأعراض 🤕", ["🤕","🧠","⚡","🩸","💊","🤒","🤢","🩹","🩺","💉","🌡️","🦷","🫀","🫁","🦴","💤","🥱","🤧","👁️"]],
+    ["صحة المرأة 🌸", ["🌸","🌺","🌷","🌙","🗓️","💖","🧖‍♀️","🛁","🧴","💅","💆‍♀️","🕊️"]],
+    ["تغذية وروتين ☕", ["💧","☕","🍵","🥛","🍎","🥗","🍽️","🍳","🍕","🍔","🍫","🥑","🥐","🚭","🚬"]],
+    ["رياضة وحركة 🏃", ["🚶","🏃","🏋️","🧘","🚴","🏊","⚽","🎾","🧗","🤸","🏸","🎯"]],
+    ["عمل ودراسة 📖", ["📖","📚","💻","✍️","💼","🎨","🎵","🧹","🛒","🚗","✈️","📦"]],
+    ["روحانيات ونفسية 🕌", ["🕌","🤲","📿","🕯️","☀️","⭐","✨","❤️","🌿","🐾","😊","😔"]]
+  ];
+
+  openPopup(`
+    <div class="popup-head">
+      <h3>اختر أيقونة الفئة 🏷️</h3>
+      <button class="popup-x" data-act="closePopup">✕</button>
+    </div>
+    <div class="field" style="margin-bottom:8px">
+      <label style="font-size:12px">إيموجي مخصص (اكتب أو الصق أي إيموجي):</label>
+      <input id="popCustomIcon" placeholder="مثال: 🧘" style="text-align:center;font-size:20px" maxlength="4">
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:4px">أو اختر من التصنيفات:</div>
+    <div style="max-height:50vh;overflow-y:auto;padding-inline-end:4px">
+      ${iconCategories.map(([catTitle, icons]) => `
+        <div class="trk-icon-cat">
+          <div class="trk-icon-cat-title">${catTitle}</div>
+          <div class="trk-icon-grid">
+            ${icons.map(ic => `<button class="trk-icon-btn" data-act="pickTrackerIcon" data-ic="${ic}">${ic}</button>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `);
+
+  const inp = document.getElementById('popCustomIcon');
+  if(inp){
+    inp.oninput = () => {
+      const val = inp.value.trim();
+      if(val){
+        window._catIcon = val;
+        const prev = document.getElementById('ceIconPreview');
+        if(prev) prev.textContent = val;
+        closePopup();
+      }
+    };
+  }
+}
+
+function openColorPickerPopup(){
+  const colorOptions = [
+    "#3B82F6", "#2563EB", "#1D4ED8", "#06B6D4", "#0EA5E9", "#14B8A6",
+    "#22C55E", "#16A34A", "#10B981", "#84CC16", "#059669",
+    "#EF4444", "#DC2626", "#F43F5E", "#E11D48", "#EC4899", "#DB2777",
+    "#F97316", "#EA580C", "#F59E0B", "#D97706", "#EAB308",
+    "#8B5CF6", "#7C3AED", "#6366F1", "#4F46E5", "#A855F7", "#9333EA",
+    "#64748B", "#475569", "#78716C", "#9A3412"
+  ];
+
+  openPopup(`
+    <div class="popup-head">
+      <h3>اختر لون الفئة 🎨</h3>
+      <button class="popup-x" data-act="closePopup">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:8px">اختر لوناً مميزاً لبطاقات وتقارير الفئة:</p>
+    <div class="trk-color-grid">
+      ${colorOptions.map(c => `
+        <button class="trk-color-dot ${window._catColor===c?'on':''}" style="background:${c}" data-act="pickTrackerColor" data-col="${c}">
+          ${window._catColor===c?'✓':''}
+        </button>
+      `).join('')}
+    </div>
+  `);
+}
+
+function saveTrackerCategory(){
+  const nameInp = $('#ceName');
+  const name = ((nameInp && nameInp.value) || '').trim();
+  if(!name){ toast('يرجى كتابة اسم الفئة'); return; }
+
+  const trk = getTrackerData();
+  const subcatsText = ($('#ceSubcats')||{}).value || '';
+  const subcats = subcatsText.split(/[,،]/).map(s => s.trim()).filter(Boolean);
+  const goal = parseInt(($('#ceGoal')||{}).value, 10) || null;
+  const remTime = ($('#ceReminderTime')||{}).value || '08:00';
+  const parts = remTime.split(':');
+  const rHour = parseInt(parts[0], 10) || 8;
+  const rMin = parseInt(parts[1], 10) || 0;
+
+  if(window._catEditId){
+    const idx = trk.categories.findIndex(c => c.id === window._catEditId);
+    if(idx >= 0){
+      trk.categories[idx] = Object.assign({}, trk.categories[idx], {
+        name,
+        icon: window._catIcon || '💊',
+        colorHex: window._catColor || '#3B82F6',
+        subcategories: subcats,
+        dailyGoal: goal,
+        reminderEnabled: window._catReminderEnabled,
+        reminderHour: rHour,
+        reminderMinute: rMin,
+        reminderFrequency: window._catReminderFreq || 'DAILY'
+      });
+    }
+  } else {
+    trk.categories.push({
+      id: 'cat_' + (crypto.randomUUID ? crypto.randomUUID().slice(0,8) : String(Date.now())),
+      name,
+      icon: window._catIcon || '💊',
+      colorHex: window._catColor || '#3B82F6',
+      sortOrder: trk.categories.length + 1,
+      subcategories: subcats,
+      dailyGoal: goal,
+      reminderEnabled: window._catReminderEnabled,
+      reminderHour: rHour,
+      reminderMinute: rMin,
+      reminderFrequency: window._catReminderFreq || 'DAILY'
+    });
+  }
+
+  saveTrackerData(trk);
+  closeSheet();
+  renderLifeTracker();
+  toast('حُفظت الفئة ✓');
+}
+
+function openCategorySettings(){
+  const trk = getTrackerData();
+  const cats = trk.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+
+  openSheet(sheetHead('⚙️ تخصيص وإعداد الفئات')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">يمكنك إعادة ترتيب الفئات أو تعديلها أو إضافة فئات جديدة:</p>
+    <button class="btn ghost" data-act="openCategoryEditor" data-id="" style="margin-bottom:12px">➕ إضافة فئة جديدة</button>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${cats.map((cat, idx) => `
+        <div class="card" style="padding:10px;margin:0;display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:${cat.colorHex}25;border:1px solid ${cat.colorHex};display:flex;align-items:center;justify-content:center;font-size:18px">
+            ${cat.icon}
+          </div>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:14px;color:var(--text-1)">${esc(cat.name)}</b>
+            <div style="font-size:11px;color:var(--text-3)">${cat.subcategories&&cat.subcategories.length ? cat.subcategories.join(' • ') : 'بدون فئات فرعية'}</div>
+          </div>
+          <div style="display:flex;gap:4px">
+            ${idx > 0 ? `<button class="hicon-btn" data-act="moveCatUp" data-id="${cat.id}" style="width:32px;height:32px;font-size:13px">▲</button>` : ''}
+            ${idx < cats.length - 1 ? `<button class="hicon-btn" data-act="moveCatDown" data-id="${cat.id}" style="width:32px;height:32px;font-size:13px">▼</button>` : ''}
+            <button class="link" data-act="openCategoryEditor" data-id="${cat.id}">تعديل</button>
+            <button class="link" style="color:var(--error)" data-act="delTrackerCategory" data-id="${cat.id}">حذف</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+function openEntryDetails(entryId){
+  const trk = getTrackerData();
+  const entry = trk.entries.find(e => e.id === entryId);
+  if(!entry) return;
+  const cat = trk.categories.find(c => c.id === entry.categoryId) || { name:'نشاط', icon:'📌', colorHex:'#3B82F6' };
+  const hasRange = !!(entry.startedAt && entry.endedAt);
+  const timeLabel = hasRange
+    ? `⏱️ من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+    : formatArabicTime(entry.loggedAt);
+
+  openSheet(sheetHead(`${cat.icon} ${cat.name}`)+`
+    <div style="background:${cat.colorHex}18;border:1.5px solid ${cat.colorHex}60;border-radius:14px;padding:14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:24px">${cat.icon}</span>
+        <div>
+          <b style="font-size:16px;color:var(--text-1)">${esc(cat.name)}</b>
+          ${entry.subcategory ? `<span style="font-size:13px;color:var(--text-2)"> (${esc(entry.subcategory)})</span>` : ''}
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--accent-dark);margin-bottom:4px">${timeLabel}</div>
+      ${entry.quantity ? `<div style="font-size:12px;font-weight:bold;margin-bottom:6px">المدة أو الكمية: ${esc(entry.quantity)}</div>` : ''}
+      <div style="font-size:12px;color:var(--text-2)">تاريخ التسجيل: ${(entry.loggedAt||'').slice(0,10)}</div>
+    </div>
+
+    <div class="field"><label>تعديل الملاحظة</label><textarea id="edNote" rows="2">${esc(entry.note||'')}</textarea></div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn" data-act="saveEntryNote" data-id="${entry.id}" style="flex:1">حفظ الملاحظة</button>
+      <button class="btn danger" data-act="delTrackerEntry" data-id="${entry.id}" style="flex:1">حذف السجل</button>
+    </div>
+  `);
+}
+
+function openPdfExport(){
+  const trk = getTrackerData();
+  const selDate = window._trackerDate || new Date().toISOString().slice(0,10);
+  window._pdfPreset = 'DAY';
+  window._pdfCats = trk.categories.map(c => c.id);
+  window._pdfNotes = true;
+
+  openSheet(sheetHead('📄 تصدير تقرير متتبع الحياة')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">اختر الفترة الزمنية والفئات لتوليد تقرير مفصل جاهز للطباعة أو الحفظ كـ PDF.</p>
+    
+    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">الفترة الزمنية:</label>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+      ${[
+        ['DAY', `اليوم الحالي (${selDate})`],
+        ['WEEK', 'آخر 7 أيام'],
+        ['MONTH', `هذا الشهر (${selDate.slice(0,7)})`],
+        ['ALL', 'كل السجلات المسجلة'],
+        ['CUSTOM', '🗓️ فترة مخصصة (من تاريخ إلى تاريخ)']
+      ].map(([k, lbl]) => `
+        <div class="vis-opt ${k==='DAY'?'on':''}" data-act="pickPdfPreset" data-k="${k}">
+          <span style="flex:1;font-weight:600;font-size:13px">${lbl}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div id="pdfCustomDates" style="display:none;background:var(--surface-2);border:1px solid var(--accent);border-radius:12px;padding:10px;margin-bottom:12px">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+        <div>
+          <label style="font-size:11.5px;color:var(--text-2);display:block">من تاريخ:</label>
+          <input type="date" id="pdfStartDate" value="${selDate}" style="min-height:38px;padding:4px 8px;border-radius:8px">
+        </div>
+        <span>⬅️</span>
+        <div>
+          <label style="font-size:11.5px;color:var(--text-2);display:block">إلى تاريخ:</label>
+          <input type="date" id="pdfEndDate" value="${selDate}" style="min-height:38px;padding:4px 8px;border-radius:8px">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <label style="font-size:13px;font-weight:600">تخصيص الفئات المشمولة:</label>
+      <div style="display:flex;gap:8px">
+        <button class="link" data-act="pdfSelectAllCats">الكل</button>
+        <button class="link" data-act="pdfDeselectAllCats" style="color:var(--text-2)">إلغاء</button>
+      </div>
+    </div>
+    
+    <div class="chips" id="pdfCatChips" style="margin-bottom:14px">
+      ${trk.categories.map(c => `
+        <button class="chip on" data-act="togglePdfCat" data-id="${c.id}">
+          <span>${c.icon} ${esc(c.name)}</span>
+        </button>
+      `).join('')}
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;margin-bottom:16px">
+      <span style="font-size:13px;font-weight:500">تضمين الملاحظات التفصيلية</span>
+      <button class="switch on" id="pdfNotesSwitch" data-act="togglePdfNotes"><i></i></button>
+    </div>
+
+    <button class="btn" data-act="doExportTrackerPdf">🖨 توليد التقرير وحفظ PDF</button>
+  `);
+}
+
+function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, includeNotes, periodTitle){
+  const trk = getTrackerData();
+  const catMap = {};
+  trk.categories.forEach(c => { catMap[c.id] = c; });
+  
+  const entries = trk.entries.filter(e => {
+    const catOk = !selectedCategoryIds.length || selectedCategoryIds.includes(e.categoryId);
+    const dateStr = (e.loggedAt || '').slice(0,10);
+    const dateOk = dateStr >= startDate && dateStr <= endDate;
+    return catOk && dateOk;
+  }).sort((a,b) => (b.loggedAt||'').localeCompare(a.loggedAt||''));
+
+  const counts = {};
+  entries.forEach(e => {
+    counts[e.categoryId] = (counts[e.categoryId] || 0) + 1;
+  });
+
+  const periodText = startDate === endDate ? formatArabicDate(startDate) : (startDate + ' إلى ' + endDate);
+
+  let statsHtml = '';
+  trk.categories.forEach(cat => {
+    if(!selectedCategoryIds.length || selectedCategoryIds.includes(cat.id)){
+      const count = counts[cat.id] || 0;
+      statsHtml += `
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;border-right:4px solid ${cat.colorHex}">
+          <div style="font-size:20px">${cat.icon}</div>
+          <div style="display:flex;flex-direction:column">
+            <span style="font-size:12px;color:#6B7280;font-weight:500">${esc(cat.name)}</span>
+            <span style="font-size:14px;font-weight:700;color:#111827">${count} مرة</span>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  let rowsHtml = '';
+  for(const entry of entries){
+    const cat = catMap[entry.categoryId] || { name:'أخرى', icon:'📌', colorHex:'#3B82F6' };
+    const subcat = entry.subcategory ? `<span style="font-size:11px;color:#6B7280;margin-right:4px">(${esc(entry.subcategory)})</span>` : '';
+    const qty = entry.quantity ? `<span style="background:#E0E7FF;color:#3730A3;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:4px">⏱️ ${esc(entry.quantity)}</span>` : '';
+    const note = (includeNotes && entry.note) ? `<div style="font-size:11px;color:#4B5563;margin-top:4px">📝 ${esc(entry.note)}</div>` : '';
+    const timeStr = (entry.startedAt && entry.endedAt) 
+      ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+      : formatArabicTime(entry.loggedAt);
+
+    rowsHtml += `
+      <tr style="border-bottom:1px solid #E5E7EB">
+        <td style="padding:10px 12px;width:45%">
+          <span style="background-color:${cat.colorHex}20;color:${cat.colorHex};border:1px solid ${cat.colorHex}60;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold;display:inline-block">
+            ${cat.icon} ${esc(cat.name)}
+          </span>
+          ${subcat} ${qty} ${note}
+        </td>
+        <td style="padding:10px 12px;width:25%;direction:ltr;text-align:right;color:#4B5563">${(entry.loggedAt||'').slice(0,10)}</td>
+        <td style="padding:10px 12px;width:30%;font-weight:bold;color:#374151">${timeStr}</td>
+      </tr>
+    `;
+  }
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="utf-8">
+      <title>تقرير متتبع الحياة - ${esc(periodTitle)}</title>
+      <style>
+        body{font-family:'Noto Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;margin:24px;color:#1F2937;background:#FFFFFF;direction:rtl}
+        .header{border-bottom:2px solid #E5E7EB;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+        .header h1{font-size:24px;color:#111827;margin:0 0 6px 0}
+        .period-badge{background:#F3F4F6;color:#4B5563;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th{background:#F9FAFB;padding:10px 12px;text-align:right;font-size:12px;color:#4B5563;border-bottom:2px solid #E5E7EB}
+        @media print{body{margin:0} .no-print{display:none}}
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <h1>📈 تقرير متتبع الحياة</h1>
+          <div style="font-size:13px;color:#6B7280">تطبيق رفيق • سجل الأنشطة واليوميات</div>
+        </div>
+        <div class="period-badge">${esc(periodText)}</div>
+      </div>
+      <div class="stats-grid">${statsHtml}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>النشاط / الفئة</th>
+            <th>التاريخ</th>
+            <th>الوقت / المدة</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="3" style="text-align:center;padding:30px;color:#9CA3AF">لا توجد سجلات في هذه الفترة</td></tr>'}
+        </tbody>
+      </table>
+      <div style="margin-top:30px;font-size:11px;color:#9CA3AF;text-align:center;border-top:1px solid #E5E7EB;padding-top:12px">
+        تم تصدير هذا التقرير تلقائيًا من تطبيق رفيق • ${new Date().toLocaleString('ar-EG')}
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function printTrackerPdf(html){
+  const f = document.createElement('iframe');
+  f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:999;background:#fff';
+  document.body.appendChild(f);
+  const close = document.createElement('button');
+  close.textContent = '✕ إغلاق التقرير';
+  close.style.cssText = 'position:fixed;top:14px;inset-inline-end:14px;z-index:1000;background:#1D1D1F;color:#fff;border:0;border-radius:999px;padding:8px 16px;font-size:13px;cursor:pointer';
+  close.onclick = () => { f.remove(); close.remove(); };
+  document.body.appendChild(close);
+  f.srcdoc = html;
+  setTimeout(() => {
+    try {
+      f.contentWindow.focus();
+      f.contentWindow.print();
+    } catch(e) {
+      toast('تعذر فتح نافذة الطباعة');
+    }
+  }, 500);
 }
 
 /* ---------- الأدوية ---------- */
@@ -1354,6 +2301,12 @@ function setDisplay(id,val){ const el=document.getElementById(id); if(el&&el.sty
 function openSheet(html){ $('#sheet-root').innerHTML=`<div class="overlay" data-ov="1"><div class="sheet">${html}</div></div>`;
   $('#sheet-root .overlay').addEventListener('click',e=>{ if(e.target.dataset.ov) closeSheet(); }); }
 function closeSheet(){ $('#sheet-root').innerHTML=''; }
+function openPopup(html){
+  $('#popup-root').innerHTML=`<div class="popup-backdrop" data-pclose="1"><div class="popup-box">${html}</div></div>`;
+  const bd=$('#popup-root .popup-backdrop');
+  if(bd) bd.addEventListener('click',e=>{ if(e.target.dataset.pclose) closePopup(); });
+}
+function closePopup(){ $('#popup-root').innerHTML=''; }
 function sheetHead(t){ return `<div class="sheet-head"><h3>${esc(t)}</h3><button class="sheet-x" data-act="closeSheet">✕</button></div>`; }
 function visOptions(sel,circle){
   const opts=[['PRIVATE','🔒 خاص بي','يراه صاحبه فقط'],['CIRCLE','👥 كل الدائرة',circle?'يراه جميع أعضاء «'+circle.circle.name+'»':'يراه الجميع في دائرتك'],['SELECTED_MEMBERS','@ أشخاص محددون','يراه من تختاره فقط']];
@@ -2206,6 +3159,44 @@ document.addEventListener('click', async e=>{
         if(!u.startsWith('https://')||!k){ toast('تحقق من القيم'); return; }
         CFG.url=u; CFG.key=k; saveCfg(); session=null; saveSession(); location.reload(); break; }
       case 'signOut': await signOut(); break;
+      /* ===== Life Tracker ===== */
+      case 'openLifeTracker': view='lifetracker'; renderApp(); break;
+      case 'setTrackerMode': window._trackerMode=el.dataset.m; renderLifeTracker(); break;
+      case 'trackerPrevDay': { const d=new Date((window._trackerDate||new Date().toISOString().slice(0,10))+'T12:00:00'); d.setDate(d.getDate()-1); window._trackerDate=d.toISOString().slice(0,10); renderLifeTracker(); break; }
+      case 'trackerNextDay': { const d=new Date((window._trackerDate||new Date().toISOString().slice(0,10))+'T12:00:00'); d.setDate(d.getDate()+1); window._trackerDate=d.toISOString().slice(0,10); renderLifeTracker(); break; }
+      case 'trackerSetToday': window._trackerDate=new Date().toISOString().slice(0,10); renderLifeTracker(); break;
+      case 'openTrackerDatePicker': { const inp=document.getElementById('trkDirectDate'); if(inp){ try{ inp.showPicker(); }catch(e){ inp.click(); } } break; }
+      case 'setTrackerDayAndSwitch': window._trackerDate=el.dataset.d; window._trackerMode='daily'; renderLifeTracker(); break;
+      case 'openSmartLog': openSmartLog(el.dataset.id); break;
+      case 'switchSlMode': { window._smartLogMode=el.dataset.m; const rng=document.getElementById('slRangeContainer'); const qck=document.getElementById('slQuickContainer'); if(rng) rng.style.display=el.dataset.m==='range'?'block':'none'; if(qck) qck.style.display=el.dataset.m==='range'?'none':'block'; document.querySelectorAll('[data-act="switchSlMode"]').forEach(b=>b.classList.toggle('on',b.dataset.m===el.dataset.m)); break; }
+      case 'pickSlPreset': { const inp=document.getElementById('slCustomQty'); if(inp) inp.value=el.dataset.p; document.querySelectorAll('[data-act="pickSlPreset"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
+      case 'pickSlSubcat': { window._slSelectedSubcat=el.dataset.s; document.querySelectorAll('[data-act="pickSlSubcat"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
+      case 'saveSmartLog': await saveSmartLog(); break;
+      case 'openCategoryEditor': openCategoryEditor(el.dataset.id); break;
+      case 'openCategorySettings': openCategorySettings(); break;
+      case 'openIconPickerPopup': openIconPickerPopup(); break;
+      case 'openColorPickerPopup': openColorPickerPopup(); break;
+      case 'pickTrackerIcon': { window._catIcon=el.dataset.ic; const prev=document.getElementById('ceIconPreview'); if(prev) prev.textContent=el.dataset.ic; closePopup(); break; }
+      case 'pickTrackerColor': { window._catColor=el.dataset.col; const prev=document.getElementById('ceColorPreview'); if(prev){ prev.style.background=el.dataset.col; prev.textContent=''; } closePopup(); break; }
+      case 'toggleCeReminder': { window._catReminderEnabled=!window._catReminderEnabled; el.classList.toggle('on',window._catReminderEnabled); const sec=document.getElementById('ceReminderSection'); if(sec) sec.style.display=window._catReminderEnabled?'block':'none'; break; }
+      case 'pickCeFreq': { window._catReminderFreq=el.dataset.f; document.querySelectorAll('[data-act="pickCeFreq"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
+      case 'saveTrackerCategory': saveTrackerCategory(); break;
+      case 'moveCatUp': { const trk2=getTrackerData(); const cats2=trk2.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx2=cats2.findIndex(c=>c.id===el.dataset.id); if(idx2>0){ const tmp2=cats2[idx2].sortOrder||idx2; const prev2=cats2[idx2-1].sortOrder||idx2-1; cats2[idx2]=Object.assign({},cats2[idx2],{sortOrder:prev2}); cats2[idx2-1]=Object.assign({},cats2[idx2-1],{sortOrder:tmp2}); trk2.categories=cats2; saveTrackerData(trk2); } openCategorySettings(); break; }
+      case 'moveCatDown': { const trk3=getTrackerData(); const cats3=trk3.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx3=cats3.findIndex(c=>c.id===el.dataset.id); if(idx3>=0&&idx3<cats3.length-1){ const tmp3=cats3[idx3].sortOrder||idx3; const nxt3=cats3[idx3+1].sortOrder||idx3+1; cats3[idx3]=Object.assign({},cats3[idx3],{sortOrder:nxt3}); cats3[idx3+1]=Object.assign({},cats3[idx3+1],{sortOrder:tmp3}); trk3.categories=cats3; saveTrackerData(trk3); } openCategorySettings(); break; }
+      case 'delTrackerCategory': { if(!confirm('حذف هذه الفئة؟')) break; const trkD=getTrackerData(); trkD.categories=trkD.categories.filter(c=>c.id!==el.dataset.id); saveTrackerData(trkD); openCategorySettings(); toast('حُذفت الفئة ✓'); break; }
+      case 'openEntryDetails': openEntryDetails(el.dataset.id); break;
+      case 'saveEntryNote': { const trkN=getTrackerData(); const idxN=trkN.entries.findIndex(e=>e.id===el.dataset.id); if(idxN>=0){ const noteEl=document.getElementById('edNote'); trkN.entries[idxN]=Object.assign({},trkN.entries[idxN],{note:noteEl?noteEl.value||null:null}); saveTrackerData(trkN); } closeSheet(); renderLifeTracker(); toast('حُفظت الملاحظة ✓'); break; }
+      case 'delTrackerEntry': { if(!confirm('حذف هذا السجل؟')) break; const trkE=getTrackerData(); trkE.entries=trkE.entries.filter(e=>e.id!==el.dataset.id); saveTrackerData(trkE); closeSheet(); renderLifeTracker(); toast('حُذف السجل ✓'); break; }
+      case 'openPdfExport': openPdfExport(); break;
+      case 'pickPdfPreset': { window._pdfPreset=el.dataset.k; document.querySelectorAll('[data-act="pickPdfPreset"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); const cd=document.getElementById('pdfCustomDates'); if(cd) cd.style.display=(el.dataset.k==='CUSTOM')?'block':'none'; break; }
+      case 'pdfSelectAllCats': { const trkAll=getTrackerData(); window._pdfCats=trkAll.categories.map(c=>c.id); document.querySelectorAll('[data-act="togglePdfCat"]').forEach(b=>b.classList.add('on')); break; }
+      case 'pdfDeselectAllCats': { window._pdfCats=[]; document.querySelectorAll('[data-act="togglePdfCat"]').forEach(b=>b.classList.remove('on')); break; }
+      case 'togglePdfCat': { const cid=el.dataset.id; if(!window._pdfCats) window._pdfCats=[]; if(window._pdfCats.includes(cid)){ window._pdfCats=window._pdfCats.filter(x=>x!==cid); el.classList.remove('on'); } else { window._pdfCats.push(cid); el.classList.add('on'); } break; }
+      case 'togglePdfNotes': { window._pdfNotes=!window._pdfNotes; el.classList.toggle('on',window._pdfNotes); break; }
+      case 'doExportTrackerPdf': { const trkPdf=getTrackerData(); const selDate=window._trackerDate||new Date().toISOString().slice(0,10); let pdfS=selDate, pdfE=selDate, pdfTitle='تقرير'; switch(window._pdfPreset){ case 'WEEK': { const d2=new Date(selDate+'T12:00:00'); d2.setDate(d2.getDate()-6); pdfS=d2.toISOString().slice(0,10); pdfTitle='تقرير أسبوعي'; break; } case 'MONTH': pdfS=selDate.slice(0,7)+'-01'; pdfE=selDate.slice(0,7)+'-31'; pdfTitle='تقرير شهري'; break; case 'ALL': pdfS='2020-01-01'; pdfE='2099-12-31'; pdfTitle='تقرير شامل'; break; case 'CUSTOM': pdfS=(document.getElementById('pdfStartDate')||{}).value||selDate; pdfE=(document.getElementById('pdfEndDate')||{}).value||selDate; pdfTitle='تقرير مخصص'; break; } closeSheet(); const pdfHtml=generateTrackerReportHtml(pdfS,pdfE,(window._pdfCats||[]),window._pdfNotes!==false,pdfTitle); printTrackerPdf(pdfHtml); break; }
+      case 'openAddDish': openAddDish(); break;
+      case 'saveDish': await saveDish(); break;
+      case 'closePopup': closePopup(); break;
       case 'closeSheet': closeSheet(); break;
     }
   }catch(err){ toast(friendly(err)); }
@@ -2250,13 +3241,14 @@ function bootFailed(msg, src){
 function collapsedSet(){ try{ return new Set((localStorage.getItem('rafiq_collapsed')||'').split(',').filter(Boolean)); }catch(e){ return new Set(); } }
 function saveCollapsed(set){ try{ localStorage.setItem('rafiq_collapsed',[...set].join(',')); }catch(e){} }
 function toggleSec(k){ const set=collapsedSet(); if(set.has(k)) set.delete(k); else set.add(k); saveCollapsed(set); applyCollapse(); }
-function collapseAllSec(){ const keys=['food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
+function collapseAllSec(){ const keys=['lifetracker','food','schedule','remind','habits','reminders','shopping','review','mood','meds','places','media']; saveCollapsed(new Set(keys)); applyCollapse(); }
 function expandAllSec(){ saveCollapsed(new Set()); applyCollapse(); }
-const SEC_META=[['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
+const SEC_META=[['lifetracker','📈','المتتبع'],['food','🍽','طعامنا'],['schedule','📅','جدولي'],['remind','🔔','ذكّرني'],['habits','🌱','عادات اليوم'],['overdue','⏰','المتأخرة'],['reminders','📨','التذكيرات'],['shopping','🛒','التسوق'],['review','🗓','المراجعة'],['mood','🌤','شعورنا'],['meds','💊','أدويتنا'],['places','📍','أماكننا'],['media','🎬','المقاطع'],['urgent','🚨','مستجلة']];
 function secSummary(k){
   try{
     const today=new Date().toISOString().slice(0,10), me=meId();
     const lc=t=>{ const l=(data&&data.sharedLists||[]).find(x=>x.title===t); return l? (data.shopping||[]).filter(i=>i.list_id===l.id).length : 0; };
+    if(k==='lifetracker'){ const trk=getTrackerData(); const n=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(today)).length; return n? n+' نشاط اليوم':'سجل الأنشطة'; }
     if(k==='food'){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي'); const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id&&(i.note||'').startsWith(today)).length:0; return n? n+' وجبة اليوم':'لا وجبات اليوم'; }
     if(k==='schedule'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=today).length; return n? n+' موعد قادم':'لا مواعيد'; }
     if(k==='remind') return 'أرسل تذكيرًا';
@@ -2275,6 +3267,7 @@ function secSummary(k){
 }
 let activeSec=null;
 function pickSec(k){
+  if(k==='lifetracker'){ view='lifetracker'; renderApp(); return; }
   const wasOn=activeSec===k; activeSec = wasOn? null : k;
   const set=new Set();
   if(activeSec){ SEC_META.forEach(m=>{ if(m[0]!==activeSec) set.add(m[0]); }); }
