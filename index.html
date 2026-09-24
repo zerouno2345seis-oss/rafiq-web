@@ -2668,15 +2668,17 @@ function renderLifeTracker(){
               if(lane === 0) lastLane0End = Math.max(lastLane0End, endInRow);
               else lastLane1End = Math.max(lastLane1End, endInRow);
 
+              const zoom = window._trackerTimelineZoom || 1;
               const leftPct = (segStartInRow / totalSpanMin) * 100;
               const widthPct = Math.max(isInstant ? 2.5 : 2, (segDurInRow / totalSpanMin) * 100);
               const timeDesc = hasRange
-                ? `${formatArabicTime(entry.startedAt)} - ${formatArabicTime(entry.endedAt)}`
+                ? `${formatArabicTime(entry.startedAt)} - ${formatArabicTime(entry.endedAt)} (${Math.round(segDurInRow)}د)`
                 : `${formatArabicTime(entry.loggedAt)} (تسجيل فوري)`;
 
               const pastelBg = hexToPastelRgba(cat.colorHex, isInstant ? 0.85 : 0.65);
               const laneClass = lane === 0 ? 'lane-top' : 'lane-bottom';
-              const showTitle = widthPct >= 9;
+              const showTitle = (widthPct * zoom) >= 8;
+              const showTime = (widthPct * zoom) >= 16;
 
               return `
                 <div class="trk-timeline-slice ${laneClass}" 
@@ -2684,14 +2686,21 @@ function renderLifeTracker(){
                      style="left:${leftPct}%;width:${widthPct}%;background:${pastelBg};border:1px solid ${cat.colorHex}55;min-width:${isInstant ? '26px' : '22px'}" 
                      title="${esc(cat.name)}: ${timeDesc}">
                   <span class="trk-timeline-slice-icon">${cat.icon}</span>
-                  ${showTitle ? `<span class="trk-timeline-slice-title">${esc(entry.note || cat.name).slice(0, 7)}</span>` : ''}
+                  ${showTitle ? `<span class="trk-timeline-slice-title" style="max-width:${showTime?'80px':'50px'};overflow:hidden;text-overflow:ellipsis">${esc(entry.note || cat.name).slice(0, 10)}</span>` : ''}
+                  ${showTime ? `<span style="font-size:7.5px;color:var(--text-2);margin-inline-start:3px;white-space:nowrap">${hasRange ? `${Math.round(segDurInRow)}د` : ''}</span>` : ''}
                 </div>
               `;
             }
             return '';
           }).join('');
 
-          const ticksHtml = labelHours.map(h => {
+          const zoom = window._trackerTimelineZoom || 1;
+          const barWidthPct = zoom * 100;
+          const activeTicksHours = (zoom >= 1.6 && spanHours <= 24)
+            ? Array.from({length: spanHours + 1}, (_, i) => startHour + i)
+            : labelHours;
+
+          const ticksHtml = activeTicksHours.map(h => {
             const pct = ((h - startHour) / spanHours) * 100;
             return `
               <div class="trk-timeline-tick" style="left:${pct}%"></div>
@@ -2702,16 +2711,23 @@ function renderLifeTracker(){
           return `
             <!-- عرض الخط الزمني المخصص لليوم بالمحور المركزي والتداخل الباستيلي -->
             <div class="card" style="margin-bottom:12px;padding:14px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
                 <div>
                   <b style="font-size:13.5px;color:var(--text-1)">📊 الخط الزمني لليوم (${String(startHour).padStart(2,'0')}:00 - ${String(endHour).padStart(2,'0')}:00)</b>
                   <div style="font-size:11px;color:var(--text-3);margin-top:2px">${spanHours} ساعة • اضغط على أي شريحة للتعديل ✍️</div>
                 </div>
-                <button class="mini" data-act="openTimelineSettings" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);padding:4px 8px;font-size:11.5px">⚙️ ضبط الساعات</button>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="display:inline-flex;align-items:center;background:var(--surface-2);border-radius:8px;padding:2px;border:1px solid var(--border)">
+                    <button type="button" class="mini" data-act="setTimelineZoom" data-z="1" style="border:none;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;${zoom === 1 ? 'background:var(--surface);color:var(--accent-dark);font-weight:700' : 'background:transparent;color:var(--text-2)'}">1x</button>
+                    <button type="button" class="mini" data-act="setTimelineZoom" data-z="1.8" style="border:none;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;${zoom === 1.8 ? 'background:var(--surface);color:var(--accent-dark);font-weight:700' : 'background:transparent;color:var(--text-2)'}">1.8x</button>
+                    <button type="button" class="mini" data-act="setTimelineZoom" data-z="2.8" style="border:none;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;${zoom === 2.8 ? 'background:var(--surface);color:var(--accent-dark);font-weight:700' : 'background:transparent;color:var(--text-2)'}">2.8x</button>
+                  </div>
+                  <button type="button" class="mini" data-act="openTimelineSettings" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);padding:4px 8px;font-size:11.5px">⚙️ ضبط</button>
+                </div>
               </div>
 
-              <div class="trk-timeline-wrap">
-                <div class="trk-timeline-bar-24">
+              <div class="trk-timeline-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                <div class="trk-timeline-bar-24" style="width:${barWidthPct}%;min-width:100%">
                   <div class="trk-timeline-spine"></div>
                   <!-- شرائح الأنشطة والكبسولات الباستيلية -->
                   ${slicesHtml}
@@ -7099,6 +7115,11 @@ document.addEventListener('click', async e=>{
       case 'pickCeTrackingType': { window._catTrackingType=el.dataset.t; document.querySelectorAll('[data-act="pickCeTrackingType"]').forEach(b=>b.classList.toggle('on',b.dataset.t===el.dataset.t)); break; }
       case 'openCategorySettings': openCategorySettings(); break;
       case 'openTimelineSettings': openTimelineSettings(); break;
+      case 'setTimelineZoom': {
+        window._trackerTimelineZoom = parseFloat(el.dataset.z) || 1;
+        renderLifeTracker();
+        break;
+      }
       case 'applyTlPreset': {
         const s = parseInt(el.dataset.s, 10) || 0;
         const e = parseInt(el.dataset.e, 10) || 24;
