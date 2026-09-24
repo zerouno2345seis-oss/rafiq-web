@@ -320,6 +320,31 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .trk-range-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .trk-range-row:last-child{margin-bottom:0}
 .fab-pdf{position:fixed;bottom:calc(var(--nav-h) + 16px);inset-inline-end:16px;z-index:50;display:flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
+.trk-layout-switch{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--border)}
+.trk-layout-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text-2);transition:all .15s;border:none;background:transparent}
+.trk-layout-btn.on{background:var(--surface);color:var(--accent-dark);box-shadow:var(--shadow-sm)}
+.trk-timeline-wrap{width:100%;direction:ltr;text-align:left}
+.trk-timeline-bar-24{position:relative;width:100%;height:52px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);overflow:hidden;box-sizing:border-box}
+.trk-timeline-ticks{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none;padding:0 2px}
+.trk-timeline-tick{width:1px;height:100%;background:var(--border);opacity:0.6}
+.trk-timeline-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);direction:ltr;margin-top:4px;padding:0 2px;user-select:none}
+.trk-timeline-slice{position:absolute;top:4px;bottom:4px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;transition:transform .12s, filter .12s;box-shadow:0 2px 6px rgba(0,0,0,.15);z-index:2;min-width:24px;box-sizing:border-box}
+.trk-timeline-slice:hover{filter:brightness(1.1);transform:scaleY(1.05);z-index:10}
+.trk-timeline-slice.instant{border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.trk-timeline-slice-icon{font-size:13px;line-height:1;pointer-events:none}
+.trk-week-timeline-rows{display:flex;flex-direction:column;gap:8px;width:100%}
+.trk-week-timeline-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 12px;cursor:pointer;transition:background .12s}
+.trk-week-timeline-row:hover{background:var(--surface-2)}
+.trk-week-timeline-row.selected{border-color:var(--accent);background:var(--accent-soft)}
+.trk-week-timeline-meta{width:80px;flex:0 0 80px;display:flex;flex-direction:column}
+.trk-week-timeline-dayname{font-size:12.5px;font-weight:700;color:var(--text-1)}
+.trk-week-timeline-daydate{font-size:10.5px;color:var(--text-3)}
+.trk-week-timeline-bar{flex:1;position:relative;height:28px;background:var(--surface-2);border-radius:7px;overflow:hidden;border:1px solid var(--border);direction:ltr}
+.trk-week-timeline-slice{position:absolute;top:2px;bottom:2px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;min-width:16px}
+.fab-voice-tracker{position:fixed;bottom:calc(var(--nav-h) + 16px);inset-inline-start:16px;z-index:50;display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:var(--accent);color:#fff;border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;font-size:20px;border:none;transition:transform .15s}
+.fab-voice-tracker:active{transform:scale(.92)}
+.fab-voice-tracker.listening{background:#EF4444;animation:pulseMic 1.2s infinite}
+@keyframes pulseMic{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,0.7)}70%{transform:scale(1.08);box-shadow:0 0 0 14px rgba(239,68,68,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 /* --- Food, Shopping, Meds Twinning Styles --- */
 .meal-cols-row{display:flex;gap:8px;margin:10px 0}
 .meal-col-btn{flex:1;border-radius:16px;padding:11px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;user-select:none;border:1px solid transparent}
@@ -1891,14 +1916,14 @@ function renderFood(){
 
 /* ---------- متتبع الحياة (Life Tracker) ---------- */
 const DEFAULT_TRACKER_CATEGORIES = [
-  { id:'cat_meds', name:'دواء', icon:'💊', colorHex:'#3B82F6', sortOrder:1, subcategories:['بنادول','فيتامين د','مضاد حيوي','مكمل غذائي'], dailyGoal:2, reminderEnabled:true, reminderHour:8, reminderMinute:30, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
-  { id:'cat_walk', name:'مشي', icon:'🚶', colorHex:'#22C55E', sortOrder:2, subcategories:['مشي صباحي','نزهة مسائية','سير سريع'], dailyGoal:1, reminderEnabled:false, reminderHour:9, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
-  { id:'cat_food', name:'طعام', icon:'🍽️', colorHex:'#F97316', sortOrder:3, subcategories:['فطور','غداء','عشاء','سناك صحي'], dailyGoal:3, reminderEnabled:false },
-  { id:'cat_sleep', name:'نوم', icon:'😴', colorHex:'#8B5CF6', sortOrder:4, subcategories:['نوم ليلي','قيلولة'], dailyGoal:1, reminderEnabled:false },
-  { id:'cat_water', name:'ماء', icon:'💧', colorHex:'#06B6D4', sortOrder:5, subcategories:['كوب ماء (250 مل)','قارورة (500 مل)'], dailyGoal:8, reminderEnabled:true, reminderHour:10, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1 },
-  { id:'cat_read', name:'قراءة', icon:'📖', colorHex:'#F59E0B', sortOrder:6, subcategories:['قرآن كريم','كتاب علمي','مقالة'], dailyGoal:1, reminderEnabled:false },
-  { id:'cat_sport', name:'رياضة', icon:'🏋️', colorHex:'#EF4444', sortOrder:7, subcategories:['تمارين كارديو','حديد ومقاومة','إطالات وتمارين سويدية'], dailyGoal:1, reminderEnabled:false },
-  { id:'cat_illness', name:'مرض', icon:'🤒', colorHex:'#EC4899', sortOrder:8, subcategories:['صداع','حرارة','ألم ظهر/مفاصل','إرهاق'], dailyGoal:null, reminderEnabled:false }
+  { id:'cat_meds', name:'دواء', icon:'💊', colorHex:'#3B82F6', sortOrder:1, subcategories:['بنادول','فيتامين د','مضاد حيوي','مكمل غذائي'], dailyGoal:2, reminderEnabled:true, reminderHour:8, reminderMinute:30, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1, trackingType:'POINT_IN_TIME' },
+  { id:'cat_walk', name:'مشي', icon:'🚶', colorHex:'#22C55E', sortOrder:2, subcategories:['مشي صباحي','نزهة مسائية','سير سريع'], dailyGoal:1, reminderEnabled:false, reminderHour:9, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1, trackingType:'TIME_RANGE' },
+  { id:'cat_food', name:'طعام', icon:'🍽️', colorHex:'#F97316', sortOrder:3, subcategories:['فطور','غداء','عشاء','سناك صحي'], dailyGoal:3, reminderEnabled:false, trackingType:'POINT_IN_TIME' },
+  { id:'cat_sleep', name:'نوم', icon:'😴', colorHex:'#8B5CF6', sortOrder:4, subcategories:['نوم ليلي','قيلولة'], dailyGoal:1, reminderEnabled:false, trackingType:'TIME_RANGE' },
+  { id:'cat_water', name:'ماء', icon:'💧', colorHex:'#06B6D4', sortOrder:5, subcategories:['كوب ماء (250 مل)','قارورة (500 مل)'], dailyGoal:8, reminderEnabled:true, reminderHour:10, reminderMinute:0, reminderFrequency:'DAILY', reminderDaysOfWeek:[6], reminderDayOfMonth:1, trackingType:'POINT_IN_TIME' },
+  { id:'cat_read', name:'قراءة', icon:'📖', colorHex:'#F59E0B', sortOrder:6, subcategories:['قرآن كريم','كتاب علمي','مقالة'], dailyGoal:1, reminderEnabled:false, trackingType:'TIME_RANGE' },
+  { id:'cat_sport', name:'رياضة', icon:'🏋️', colorHex:'#EF4444', sortOrder:7, subcategories:['تمارين كارديو','حديد ومقاومة','إطالات وتمارين سويدية'], dailyGoal:1, reminderEnabled:false, trackingType:'TIME_RANGE' },
+  { id:'cat_illness', name:'مرض', icon:'🤒', colorHex:'#EC4899', sortOrder:8, subcategories:['صداع','حرارة','ألم ظهر/مفاصل','إرهاق'], dailyGoal:null, reminderEnabled:false, trackingType:'POINT_IN_TIME' }
 ];
 
 function getTrackerData(){
@@ -1908,6 +1933,25 @@ function getTrackerData(){
       const parsed = JSON.parse(raw);
       if(parsed && Array.isArray(parsed.categories) && parsed.categories.length > 0){
         if(!Array.isArray(parsed.entries)) parsed.entries = [];
+        // ضمان عدم ضياع أي فئة افتراضية
+        const existingMap = new Map(parsed.categories.map(c => [c.id, c]));
+        let modified = false;
+        DEFAULT_TRACKER_CATEGORIES.forEach(defCat => {
+          if(!existingMap.has(defCat.id)){
+            parsed.categories.push(defCat);
+            modified = true;
+          } else {
+            const cur = existingMap.get(defCat.id);
+            if(!cur.trackingType){
+              cur.trackingType = defCat.trackingType;
+              modified = true;
+            }
+          }
+        });
+        if(modified){
+          parsed.categories.sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+          saveTrackerData(parsed);
+        }
         return parsed;
       }
     }
@@ -1943,6 +1987,7 @@ function _catToRow(cat){
     reminder_days_of_week: cat.reminderDaysOfWeek || [],
     reminder_day_of_month: cat.reminderDayOfMonth || 1,
     visibility: cat.visibility || 'PRIVATE',
+    tracking_type: cat.trackingType || 'TIME_RANGE',
     updated_at: new Date().toISOString()
   };
 }
@@ -1964,7 +2009,8 @@ function _rowToCat(row){
     reminderFrequency: row.reminder_frequency || 'DAILY',
     reminderDaysOfWeek: row.reminder_days_of_week || [],
     reminderDayOfMonth: row.reminder_day_of_month || 1,
-    visibility: row.visibility || 'PRIVATE'
+    visibility: row.visibility || 'PRIVATE',
+    trackingType: row.tracking_type || 'TIME_RANGE'
   };
 }
 
@@ -2046,13 +2092,33 @@ async function syncTrackerFromCloud(){
       rest('GET','tracker_categories','order=sort_order.asc&select=*'),
       rest('GET','tracker_entries','order=logged_at.desc&select=*')
     ]);
-    if(cloudCats && cloudCats.length > 0){
-      const localData = getTrackerData();
-      const mergedCats = cloudCats.map(_rowToCat);
-      const mergedEntries = cloudEntries ? cloudEntries.map(_rowToEntry) : localData.entries;
-      saveTrackerData({ categories: mergedCats, entries: mergedEntries });
-      if(view === 'lifetracker') renderLifeTracker();
+
+    const localData = getTrackerData();
+    const defMap = new Map(DEFAULT_TRACKER_CATEGORIES.map(c => [c.id, c]));
+    const localMap = new Map((localData.categories || []).map(c => [c.id, c]));
+    const cloudMap = new Map((cloudCats || []).map(_rowToCat).map(c => [c.id, c]));
+
+    // دمج ثلاثي آمن لضمان بقاء كافة الفئات الافتراضية
+    const allCatIds = Array.from(new Set([...localMap.keys(), ...cloudMap.keys(), ...defMap.keys()]));
+    const mergedCats = allCatIds.map(id => cloudMap.get(id) || localMap.get(id) || defMap.get(id))
+      .sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+
+    const localEntMap = new Map((localData.entries || []).map(e => [e.id, e]));
+    const cloudEntMap = new Map((cloudEntries || []).map(_rowToEntry).map(e => [e.id, e]));
+    const allEntIds = Array.from(new Set([...localEntMap.keys(), ...cloudEntMap.keys()]));
+    const mergedEntries = allEntIds.map(id => cloudEntMap.get(id) || localEntMap.get(id))
+      .sort((a,b) => (b.loggedAt||'').localeCompare(a.loggedAt||''));
+
+    saveTrackerData({ categories: mergedCats, entries: mergedEntries });
+
+    // رفع الفئات الأساسية أو المفقودة للسحابة
+    for(const cat of mergedCats){
+      if(!cloudMap.has(cat.id)){
+        upsertTrackerCategoryCloud(cat);
+      }
     }
+
+    if(view === 'lifetracker') renderLifeTracker();
   }catch(e){ console.warn('tracker cloud sync err:', e.message); }
 }
 
@@ -2124,6 +2190,22 @@ function formatArabicDate(dStr){
   }catch(e){ return dStr; }
 }
 
+function parseIsoToMinutes(isoStr){
+  if(!isoStr) return 0;
+  try{
+    if(isoStr.includes('T')){
+      const timePart = isoStr.split('T')[1];
+      const parts = timePart.split(':');
+      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+    if(isoStr.includes(':')){
+      const parts = isoStr.split(':');
+      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+  }catch(e){}
+  return 0;
+}
+
 function renderTrackerMonthCalendar(selDate, entries){
   const cur = new Date(selDate + 'T12:00:00');
   const year = cur.getFullYear();
@@ -2181,6 +2263,92 @@ function renderTrackerMonthCalendar(selDate, entries){
   `;
 }
 
+function renderTrackerWeekTimeline(selDate, entries, catMap){
+  const cur = new Date(selDate + 'T12:00:00');
+  const diffToSat = (cur.getDay() + 1) % 7;
+  const startOfWeek = new Date(cur);
+  startOfWeek.setDate(cur.getDate() - diffToSat);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const weekDays = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    const count = (entries || []).filter(e => (e.loggedAt || '').startsWith(iso)).length;
+    weekDays.push({
+      iso,
+      count,
+      dayName: d.toLocaleDateString('ar-EG', { weekday: 'short' }),
+      dayNum: d.getDate(),
+      isToday: iso === todayIso,
+      isSelected: iso === selDate
+    });
+  }
+  const weekRangeLabel = `${startOfWeek.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} — ${endOfWeek.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}`;
+
+  return `
+    <div class="card" style="margin-bottom:12px;padding:12px">
+      <div class="trk-cal-nav" style="margin-bottom:12px">
+        <button class="hicon-btn sm" data-act="trackerNextWeek" aria-label="الأسبوع التالي">◀</button>
+        <div style="font-size:14.5px;font-weight:700">📊 خط زمني أسبوعي (${weekRangeLabel})</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="mini" data-act="trackerSetToday" style="padding:3px 8px;font-size:11px">اليوم</button>
+          <button class="hicon-btn sm" data-act="trackerPrevWeek" aria-label="الأسبوع السابق">▶</button>
+        </div>
+      </div>
+      <div class="trk-week-timeline-rows">
+        ${weekDays.map(w => {
+          const dEntries = (entries || []).filter(e => (e.loggedAt || '').startsWith(w.iso));
+          return `
+            <div class="trk-week-timeline-row ${w.isToday ? 'today' : ''} ${w.isSelected ? 'selected' : ''}" data-act="setTrackerDayAndSwitch" data-d="${w.iso}">
+              <div class="trk-week-timeline-meta">
+                <span class="trk-week-timeline-dayname">${w.dayName}</span>
+                <span class="trk-week-timeline-daydate">${w.dayNum} (${dEntries.length})</span>
+              </div>
+              <div class="trk-week-timeline-bar">
+                ${dEntries.map(e => {
+                  const cat = catMap[e.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+                  const hasRange = !!(e.startedAt && e.endedAt);
+                  let sMin, dur, isInstant;
+                  if(hasRange){
+                    sMin = parseIsoToMinutes(e.startedAt);
+                    const eMin = parseIsoToMinutes(e.endedAt);
+                    dur = eMin > sMin ? eMin - sMin : 30;
+                    isInstant = false;
+                  } else {
+                    const lMin = parseIsoToMinutes(e.loggedAt);
+                    sMin = Math.max(0, lMin - 7);
+                    dur = 15;
+                    isInstant = true;
+                  }
+                  const leftPct = (sMin / 1440) * 100;
+                  const widthPct = Math.max(1.8, (dur / 1440) * 100);
+                  return `
+                    <div class="trk-week-timeline-slice ${isInstant ? 'instant' : ''}" 
+                         style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex}" 
+                         title="${esc(cat.name)}">
+                      ${cat.icon}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="trk-timeline-labels" style="margin-top:8px">
+        <span>00:00</span>
+        <span>06:00</span>
+        <span>12:00</span>
+        <span>18:00</span>
+        <span>24:00</span>
+      </div>
+    </div>
+  `;
+}
+
 function renderTrackerWeekHorizontal(selDate, entries){
   const cur = new Date(selDate + 'T12:00:00');
   const diffToSat = (cur.getDay() + 1) % 7;
@@ -2230,12 +2398,14 @@ function renderTrackerWeekHorizontal(selDate, entries){
 
 window._trackerDate = new Date().toISOString().slice(0,10);
 window._trackerMode = 'daily';
+window._trackerLayoutStyle = localStorage.getItem('rafiq_tracker_layout_style') || 'blocks';
 
 function renderLifeTracker(){
   const trk = getTrackerData();
   const cats = trk.categories.slice().sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
   const selDate = window._trackerDate || new Date().toISOString().slice(0,10);
   const mode = window._trackerMode || 'daily';
+  const layoutStyle = window._trackerLayoutStyle || 'blocks';
   const todayIso = new Date().toISOString().slice(0,10);
 
   const dayEntries = trk.entries.filter(e => (e.loggedAt||'').startsWith(selDate))
@@ -2312,6 +2482,14 @@ function renderLifeTracker(){
         <div class="trk-mode-btn ${mode==='monthly'?'on':''}" data-act="setTrackerMode" data-m="monthly">🗓️ شهري</div>
       </div>
 
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="trk-layout-switch">
+          <button type="button" class="trk-layout-btn ${layoutStyle==='blocks'?'on':''}" data-act="setTrackerLayoutStyle" data-s="blocks">🔲 بلوكات</button>
+          <button type="button" class="trk-layout-btn ${layoutStyle==='timeline'?'on':''}" data-act="setTrackerLayoutStyle" data-s="timeline">📊 خط زمني 24 ساعة</button>
+        </div>
+        <span style="font-size:11.5px;color:var(--text-3)">${layoutStyle==='timeline' ? 'تمثيل نسبي لـ 24 ساعة ⏱️' : 'عرض البطاقات المنفصلة 🗂️'}</span>
+      </div>
+
       ${mode === 'daily' ? `
         <div class="card" style="padding:10px 14px;margin-bottom:12px">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -2328,98 +2506,204 @@ function renderLifeTracker(){
           </div>
         </div>
 
-        <div class="card" style="min-height:180px;padding:12px">
-          ${dayEntries.length ? `
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px">
-              <b style="font-size:13.5px;color:var(--text-1)">سجلات اليوم (${dayEntries.length})</b>
-              <span style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:4px">اضغط على أي نشاط للتعديل أو الحذف ✍️🗑️</span>
+        ${layoutStyle === 'timeline' ? `
+          <!-- عرض الخط الزمني الكامل لـ 24 ساعة -->
+          <div class="card" style="margin-bottom:12px;padding:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <b style="font-size:13.5px;color:var(--text-1)">📊 الخط الزمني لليوم (00:00 - 24:00)</b>
+              <span style="font-size:11px;color:var(--text-3)">اضغط على أي شريحة للتعديل ✍️</span>
             </div>
-            <div class="trk-act-rows-wrap">
-              ${catGroups.map(group => {
-                const chunks = [];
-                for(let i = 0; i < group.entries.length; i += 5){
-                  chunks.push(group.entries.slice(i, i + 5));
-                }
-                const cat = group.cat;
 
-                return chunks.map(chunk => {
-                  const colCount = chunk.length;
-                  const isWide = colCount <= 2;
-                  const isMedium = colCount === 3;
-                  const isDense = colCount >= 4;
-                  const densityClass = isDense ? 'dense' : (isMedium ? 'medium' : 'wide');
+            <div class="trk-timeline-wrap">
+              <div class="trk-timeline-bar-24">
+                <!-- خطوط الساعات -->
+                <div class="trk-timeline-ticks">
+                  ${Array.from({length: 25}, (_, i) => `<div class="trk-timeline-tick" style="opacity:${i%3===0?'0.8':'0.25'}"></div>`).join('')}
+                </div>
+
+                <!-- شرائح الأنشطة والكبسولات -->
+                ${dayEntries.map(entry => {
+                  const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+                  const hasRange = !!(entry.startedAt && entry.endedAt);
+                  let sMin, durMin, isInstant;
+                  if(hasRange){
+                    sMin = parseIsoToMinutes(entry.startedAt);
+                    const eMin = parseIsoToMinutes(entry.endedAt);
+                    durMin = eMin > sMin ? eMin - sMin : 30;
+                    isInstant = false;
+                  } else {
+                    const lMin = parseIsoToMinutes(entry.loggedAt);
+                    sMin = Math.max(0, lMin - 7);
+                    durMin = 15;
+                    isInstant = true;
+                  }
+                  const leftPct = (sMin / 1440) * 100;
+                  const widthPct = Math.max(isInstant ? 2.5 : 2, (durMin / 1440) * 100);
+                  const timeDesc = hasRange
+                    ? `${formatArabicTime(entry.startedAt)} - ${formatArabicTime(entry.endedAt)}`
+                    : `${formatArabicTime(entry.loggedAt)} (تسجيل فوري)`;
 
                   return `
-                    <div class="trk-act-row">
-                      <div class="trk-entries-grid" style="--trk-cols: ${colCount}">
-                        ${chunk.map(entry => {
-                          const hasRange = !!(entry.startedAt && entry.endedAt);
-                          const timeLabel = isDense
-                            ? formatArabicTime(entry.startedAt || entry.loggedAt)
-                            : (hasRange
-                                ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-                                : formatArabicTime(entry.loggedAt));
-
-                          const subLabel = formatSub(entry.subcategory, isDense, cat.name);
-
-                          return `
-                            <div class="trk-entry-card ${densityClass}" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
-                              <div class="ico">${cat.icon}</div>
-                              <div class="trk-card-content">
-                                <div class="trk-line-top">
-                                  <span class="trk-tit">${esc(cat.name)}</span>
-                                  ${subLabel ? `<span class="trk-sub">(${esc(subLabel)})</span>` : ''}
-                                  ${entry.quantity ? `<span class="trk-qty-tag">${esc(entry.quantity)}</span>` : ''}
-                                </div>
-                                <div class="trk-line-bot">
-                                  <span class="trk-tim">⏱️ ${timeLabel}</span>
-                                  ${(!isDense && entry.note) ? `<span class="trk-note-tag" title="${esc(entry.note)}">📝 ${esc(entry.note)}</span>` : ''}
-                                </div>
-                              </div>
-                              <div class="trk-btn-edit" title="تعديل أو حذف">✏️</div>
-                            </div>
-                          `;
-                        }).join('')}
-                      </div>
+                    <div class="trk-timeline-slice ${isInstant ? 'instant' : ''}" 
+                         data-act="openEntryDetails" data-id="${entry.id}" 
+                         style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex};min-width:${isInstant ? '28px' : '22px'}" 
+                         title="${esc(cat.name)}: ${timeDesc}">
+                      <span class="trk-timeline-slice-icon">${cat.icon}</span>
                     </div>
                   `;
-                }).join('');
-              }).join('')}
-            </div>
-          ` : `
-            <div class="empty">
-              <span class="e">🎯</span>
-              <b>لا توجد تسجيلات لهذا اليوم</b><br>
-              <span style="font-size:12px;color:var(--text-3)">اضغط على أي فئة في الأعلى للتسجيل بلمسة واحدة</span>
-            </div>
-          `}
-        </div>
-      ` : mode === 'weekly' ? `
-        ${renderTrackerWeekHorizontal(selDate, trk.entries)}
-        <div class="card">
-          <b style="font-size:15px;display:block;margin-bottom:10px">📊 ملخص الأيام السبعة الماضية</b>
-          ${(()=>{
-            const past7 = [];
-            for(let i=6; i>=0; i--){
-              const d = new Date(selDate + 'T12:00:00');
-              d.setDate(d.getDate() - i);
-              const iso = d.toISOString().slice(0,10);
-              const count = trk.entries.filter(e => (e.loggedAt||'').startsWith(iso)).length;
-              past7.push({ iso, count, label: d.toLocaleDateString('ar-EG', { weekday:'short', day:'numeric' }) });
-            }
-            return `
-              <div style="display:flex;flex-direction:column;gap:8px">
-                ${past7.map(day => `
-                  <div class="row" style="cursor:pointer;padding:4px 0" data-act="setTrackerDayAndSwitch" data-d="${day.iso}">
-                    <span style="width:90px;font-size:13px;font-weight:600">${day.label}</span>
-                    <div class="bar"><i style="width:${Math.min(100, day.count * 16)}%"></i></div>
-                    <span class="badge" style="min-width:40px;text-align:center">${day.count} نشاط</span>
-                  </div>
-                `).join('')}
+                }).join('')}
               </div>
-            `;
-          })()}
-        </div>
+
+              <!-- أرقام وتسميات الساعات أسفل الخط -->
+              <div class="trk-timeline-labels">
+                <span>00:00</span>
+                <span>03:00</span>
+                <span>06:00</span>
+                <span>09:00</span>
+                <span>12:00</span>
+                <span>15:00</span>
+                <span>18:00</span>
+                <span>21:00</span>
+                <span>24:00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- قائمة تفاصيل سجلات اليوم أسفل الخط الزمني -->
+          <div class="card" style="min-height:140px;padding:12px">
+            <b style="font-size:13.5px;color:var(--text-1);display:block;margin-bottom:10px">سجلات اليوم (${dayEntries.length})</b>
+            ${dayEntries.length ? `
+              <div style="display:flex;flex-direction:column;gap:8px">
+                ${dayEntries.map(entry => {
+                  const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+                  const hasRange = !!(entry.startedAt && entry.endedAt);
+                  const timeLabel = hasRange
+                    ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+                    : `${formatArabicTime(entry.loggedAt)}`;
+                  return `
+                    <div class="row" style="cursor:pointer;padding:8px 10px;background:var(--surface-2);border-radius:10px;border-inline-start:4px solid ${cat.colorHex}" data-act="openEntryDetails" data-id="${entry.id}">
+                      <span style="font-size:20px">${cat.icon}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="display:flex;align-items:center;gap:6px">
+                          <b style="font-size:13px;color:var(--text-1)">${esc(cat.name)}</b>
+                          ${entry.subcategory ? `<span style="font-size:11.5px;color:var(--text-2)">(${esc(entry.subcategory)})</span>` : ''}
+                          ${hasRange ? '<span class="badge mini" style="font-size:9.5px">⏱️ فترة</span>' : '<span class="badge mini" style="font-size:9.5px;background:var(--accent-soft);color:var(--accent-dark)">📍 فوري</span>'}
+                        </div>
+                        <div style="font-size:11px;color:var(--text-3);margin-top:2px">
+                          <span>${timeLabel}</span>
+                          ${entry.quantity ? ` • <b>${esc(entry.quantity)}</b>` : ''}
+                          ${entry.note ? ` • <i>${esc(entry.note)}</i>` : ''}
+                        </div>
+                      </div>
+                      <span style="font-size:13px;color:var(--text-3)">✏️</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : `
+              <div class="empty" style="padding:20px 0">
+                <span class="e">🎯</span>
+                <b>لا توجد تسجيلات على الخط الزمني لهذا اليوم</b>
+              </div>
+            `}
+          </div>
+        ` : `
+          <!-- عرض البلوكات الكلاسيكي -->
+          <div class="card" style="min-height:180px;padding:12px">
+            ${dayEntries.length ? `
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px">
+                <b style="font-size:13.5px;color:var(--text-1)">سجلات اليوم (${dayEntries.length})</b>
+                <span style="font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:4px">اضغط على أي نشاط للتعديل أو الحذف ✍️🗑️</span>
+              </div>
+              <div class="trk-act-rows-wrap">
+                ${catGroups.map(group => {
+                  const chunks = [];
+                  for(let i = 0; i < group.entries.length; i += 5){
+                    chunks.push(group.entries.slice(i, i + 5));
+                  }
+                  const cat = group.cat;
+
+                  return chunks.map(chunk => {
+                    const colCount = chunk.length;
+                    const isWide = colCount <= 2;
+                    const isMedium = colCount === 3;
+                    const isDense = colCount >= 4;
+                    const densityClass = isDense ? 'dense' : (isMedium ? 'medium' : 'wide');
+
+                    return `
+                      <div class="trk-act-row">
+                        <div class="trk-entries-grid" style="--trk-cols: ${colCount}">
+                          ${chunk.map(entry => {
+                            const hasRange = !!(entry.startedAt && entry.endedAt);
+                            const timeLabel = isDense
+                              ? formatArabicTime(entry.startedAt || entry.loggedAt)
+                              : (hasRange
+                                  ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+                                  : formatArabicTime(entry.loggedAt));
+
+                            const subLabel = formatSub(entry.subcategory, isDense, cat.name);
+
+                            return `
+                              <div class="trk-entry-card ${densityClass}" data-act="openEntryDetails" data-id="${entry.id}" style="background:${cat.colorHex}" title="اضغط للتعديل أو الحذف ✍️">
+                                <div class="ico">${cat.icon}</div>
+                                <div class="trk-card-content">
+                                  <div class="trk-line-top">
+                                    <span class="trk-tit">${esc(cat.name)}</span>
+                                    ${subLabel ? `<span class="trk-sub">(${esc(subLabel)})</span>` : ''}
+                                    ${entry.quantity ? `<span class="trk-qty-tag">${esc(entry.quantity)}</span>` : ''}
+                                  </div>
+                                  <div class="trk-line-bot">
+                                    <span class="trk-tim">⏱️ ${timeLabel}</span>
+                                    ${(!isDense && entry.note) ? `<span class="trk-note-tag" title="${esc(entry.note)}">📝 ${esc(entry.note)}</span>` : ''}
+                                  </div>
+                                </div>
+                                <div class="trk-btn-edit" title="تعديل أو حذف">✏️</div>
+                              </div>
+                            `;
+                          }).join('')}
+                        </div>
+                      </div>
+                    `;
+                  }).join('');
+                }).join('')}
+              </div>
+            ` : `
+              <div class="empty">
+                <span class="e">🎯</span>
+                <b>لا توجد تسجيلات لهذا اليوم</b><br>
+                <span style="font-size:12px;color:var(--text-3)">اضغط على أي فئة في الأعلى للتسجيل بلمسة واحدة</span>
+              </div>
+            `}
+          </div>
+        `}
+      ` : mode === 'weekly' ? `
+        ${layoutStyle === 'timeline' ? renderTrackerWeekTimeline(selDate, trk.entries, catMap) : `
+          ${renderTrackerWeekHorizontal(selDate, trk.entries)}
+          <div class="card">
+            <b style="font-size:15px;display:block;margin-bottom:10px">📊 ملخص الأيام السبعة الماضية</b>
+            ${(()=>{
+              const past7 = [];
+              for(let i=6; i>=0; i--){
+                const d = new Date(selDate + 'T12:00:00');
+                d.setDate(d.getDate() - i);
+                const iso = d.toISOString().slice(0,10);
+                const count = trk.entries.filter(e => (e.loggedAt||'').startsWith(iso)).length;
+                past7.push({ iso, count, label: d.toLocaleDateString('ar-EG', { weekday:'short', day:'numeric' }) });
+              }
+              return `
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  ${past7.map(day => `
+                    <div class="row" style="cursor:pointer;padding:4px 0" data-act="setTrackerDayAndSwitch" data-d="${day.iso}">
+                      <span style="width:90px;font-size:13px;font-weight:600">${day.label}</span>
+                      <div class="bar"><i style="width:${Math.min(100, day.count * 16)}%"></i></div>
+                      <span class="badge" style="min-width:40px;text-align:center">${day.count} نشاط</span>
+                    </div>
+                  `).join('')}
+                </div>
+              `;
+            })()}
+          </div>
+        `}
       ` : `
         ${renderTrackerMonthCalendar(selDate, trk.entries)}
         <div class="card">
@@ -2440,6 +2724,10 @@ function renderLifeTracker(){
           </div>
         </div>
       `}
+
+      <button class="fab-voice-tracker" id="trkVoiceMicBtn" data-act="startTrackerVoiceInput" title="تسجيل صوتي ذكي 🎙️" aria-label="تسجيل صوتي">
+        🎙️
+      </button>
 
       <button class="fab-pdf" data-act="openPdfExport">
         <span>📄</span>
@@ -2484,16 +2772,19 @@ function openSmartLog(catId){
   };
   const presets = presetsMap[cat.id] || ['15 دقيقة', '30 دقيقة', '45 دقيقة', '1 مرة', '2 مرة'];
 
-  window._smartLogMode = 'range';
+  const isPointInTime = cat.trackingType === 'POINT_IN_TIME';
+  const initMode = isPointInTime ? 'instant' : 'range';
+  window._smartLogMode = initMode;
   window._smartLogCatId = cat.id;
 
   openSheet(sheetHead(`تسجيل: ${cat.name} ${cat.icon}`)+`
     <div style="display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:4px;margin-bottom:12px">
-      <button class="chip on" id="btnSlRange" data-act="switchSlMode" data-m="range" style="flex:1;justify-content:center">⏱️ بداية ونهاية النشاط</button>
-      <button class="chip" id="btnSlQuick" data-act="switchSlMode" data-m="quick" style="flex:1;justify-content:center">⚡ مدة سريعة أو كمية</button>
+      <button class="chip ${initMode==='range'?'on':''}" id="btnSlRange" data-act="switchSlMode" data-m="range" style="flex:1;justify-content:center">⏱️ بداية ونهاية</button>
+      <button class="chip ${initMode==='quick'?'on':''}" id="btnSlQuick" data-act="switchSlMode" data-m="quick" style="flex:1;justify-content:center">⚡ مدة سريعة</button>
+      <button class="chip ${initMode==='instant'?'on':''}" id="btnSlInstant" data-act="switchSlMode" data-m="instant" style="flex:1;justify-content:center">📍 فوري لحظي</button>
     </div>
 
-    <div id="slRangeContainer" class="trk-range-box">
+    <div id="slRangeContainer" class="trk-range-box" style="display:${initMode==='range'?'block':'none'}">
       <div class="trk-range-row">
         <label style="font-size:12.5px;font-weight:600">🟢 وقت البداية:</label>
         <div style="display:flex;gap:6px">
@@ -2513,7 +2804,7 @@ function openSmartLog(catId){
       </div>
     </div>
 
-    <div id="slQuickContainer" style="display:none;margin-bottom:12px">
+    <div id="slQuickContainer" style="display:${initMode==='quick'?'block':'none'};margin-bottom:12px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <label style="font-size:13px;font-weight:600">وقت التسجيل:</label>
         <input type="time" id="slActivityTime" value="${curHours}:${curMins}" style="width:90px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
@@ -2525,6 +2816,23 @@ function openSmartLog(catId){
         `).join('')}
       </div>
       <div class="field"><label>أو حدد كمية/مدة يدويًا</label><input id="slCustomQty" placeholder="مثال: 45 دقيقة، 15 صفحة، 500 مل..."></div>
+    </div>
+
+    <div id="slInstantContainer" style="display:${initMode==='instant'?'block':'none'};margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <label style="font-size:13px;font-weight:600">وقت التسجيل اللحظي:</label>
+        <div style="display:flex;gap:6px">
+          <input type="date" id="slInstantDate" value="${todayIso}" style="width:130px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+          <input type="time" id="slInstantTime" value="${curHours}:${curMins}" style="width:86px;min-height:36px;padding:2px 6px;font-size:12px;border-radius:8px">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>الكمية أو الجرعة (اختياري)</label>
+        <input id="slInstantQty" placeholder="مثال: حبة واحدة، 1 كوب، خفيف...">
+      </div>
+      <div style="background:var(--accent-soft);color:var(--accent-dark);padding:8px 10px;border-radius:8px;font-size:11.5px;text-align:center">
+        📍 تسجيل لحظي فوري بدون مدة زمنية — يُمثّل ككبسولة 15 دقيقة على الخط الزمني
+      </div>
     </div>
 
     ${(cat.subcategories && cat.subcategories.length) ? `
@@ -2580,6 +2888,7 @@ async function saveSmartLog(){
   if(!cat){ toast('تعذر العثور على الفئة'); return; }
 
   const isRange = window._smartLogMode === 'range';
+  const isQuick = window._smartLogMode === 'quick';
   let startedAt = null;
   let endedAt = null;
   let quantity = null;
@@ -2597,10 +2906,16 @@ async function saveSmartLog(){
     const e = new Date(endedAt);
     const diffMin = Math.round((e - s) / 60000);
     if(diffMin > 0) quantity = formatMinutesToArabic(diffMin);
-  } else {
+  } else if(isQuick){
     const actTime = ($('#slActivityTime')||{}).value || '12:00';
     loggedAt = `${window._trackerDate}T${actTime}:00`;
     quantity = ($('#slCustomQty')||{}).value || null;
+  } else {
+    // Instant
+    const iDate = ($('#slInstantDate')||{}).value || window._trackerDate;
+    const iTime = ($('#slInstantTime')||{}).value || '12:00';
+    loggedAt = `${iDate}T${iTime}:00`;
+    quantity = ($('#slInstantQty')||{}).value || null;
   }
 
   const note = ($('#slNote')||{}).value || null;
@@ -2650,11 +2965,22 @@ function openCategoryEditor(catId){
   window._catReminderEnabled = !!cat.reminderEnabled;
   window._catReminderFreq = cat.reminderFrequency || 'DAILY';
   window._catVisibility = cat.visibility || 'PRIVATE';
+  window._catTrackingType = cat.trackingType || 'TIME_RANGE';
 
   const remTime = `${String(cat.reminderHour||8).padStart(2,'0')}:${String(cat.reminderMinute||0).padStart(2,'0')}`;
 
   openSheet(sheetHead(cat.id ? `تعديل فئة: ${cat.name}` : 'إضافة فئة جديدة')+`
     <div class="field"><label>اسم الفئة</label><input id="ceName" value="${esc(cat.name)}" placeholder="مثال: صداع شقيقة، دورة شهرية، قراءة..."></div>
+
+    <label style="display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:8px">طبيعة تتبع الفئة (بداية ونهاية أو لحظي):</label>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button type="button" class="chip ${(!cat.trackingType||cat.trackingType==='TIME_RANGE')?'on':''}" id="btnCeTypeRange" data-act="pickCeTrackingType" data-t="TIME_RANGE" style="flex:1;justify-content:center;min-height:42px;font-size:12.5px">
+        ⏱️ فترة زمنية (مدة)
+      </button>
+      <button type="button" class="chip ${cat.trackingType==='POINT_IN_TIME'?'on':''}" id="btnCeTypeInstant" data-act="pickCeTrackingType" data-t="POINT_IN_TIME" style="flex:1;justify-content:center;min-height:42px;font-size:12.5px">
+        📍 فوري لحظي (نقطة)
+      </button>
+    </div>
 
     <label style="display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:8px">الأيقونة واللون المميز:</label>
     <div style="display:flex;gap:10px;margin-bottom:14px">
@@ -2810,7 +3136,8 @@ function saveTrackerCategory(){
         reminderHour: rHour,
         reminderMinute: rMin,
         reminderFrequency: window._catReminderFreq || 'DAILY',
-        visibility: window._catVisibility || 'PRIVATE'
+        visibility: window._catVisibility || 'PRIVATE',
+        trackingType: window._catTrackingType || 'TIME_RANGE'
       });
       trk.categories[idx] = savedCat;
     }
@@ -2827,7 +3154,8 @@ function saveTrackerCategory(){
       reminderHour: rHour,
       reminderMinute: rMin,
       reminderFrequency: window._catReminderFreq || 'DAILY',
-      visibility: window._catVisibility || 'PRIVATE'
+      visibility: window._catVisibility || 'PRIVATE',
+      trackingType: window._catTrackingType || 'TIME_RANGE'
     };
     trk.categories.push(savedCat);
   }
@@ -2925,22 +3253,31 @@ function openEntryDetails(entryId){
       <input type="date" id="edDate" value="${entryDate}">
     </div>
 
-    <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
-      <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">⏱️ توقيت البداية والنهاية:</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <div style="flex:1">
-          <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت البداية:</label>
-          <input type="time" id="edStartTime" value="${sTime}" style="width:100%">
+    ${hasRange ? `
+      <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">⏱️ توقيت البداية والنهاية:</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div style="flex:1">
+            <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت البداية:</label>
+            <input type="time" id="edStartTime" value="${sTime}" style="width:100%">
+          </div>
+          <div style="flex:1">
+            <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت النهاية:</label>
+            <input type="time" id="edEndTime" value="${eTime}" style="width:100%">
+          </div>
         </div>
-        <div style="flex:1">
-          <label style="font-size:11.5px;color:var(--text-2);display:block;margin-bottom:4px">وقت النهاية:</label>
-          <input type="time" id="edEndTime" value="${eTime}" style="width:100%">
+        <div id="edDurationPreview" style="background:var(--accent-soft);color:var(--accent-dark);padding:7px 10px;border-radius:8px;font-size:11.5px;font-weight:700;text-align:center">
+          ⏳ المدة: ${esc(entry.quantity || '30 دقيقة')}
         </div>
+        <button type="button" class="mini" data-act="toggleEntryInstant" data-id="${entry.id}" style="width:100%;margin-top:8px;padding:6px 10px;font-size:11.5px;border-radius:8px">📍 تحويل لتسجيل فوري (إزالة البداية والنهاية)</button>
       </div>
-      <div id="edDurationPreview" style="background:var(--accent-soft);color:var(--accent-dark);padding:7px 10px;border-radius:8px;font-size:11.5px;font-weight:700;text-align:center">
-        ⏳ المدة: ${esc(entry.quantity || '30 دقيقة')}
+    ` : `
+      <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:4px">📍 تسجيل فوري لحظي (بدون مدة)</div>
+        <div style="font-size:11.5px;color:var(--text-3);margin-bottom:8px">وقت التسجيل: ${formatArabicTime(entry.loggedAt)}</div>
+        <button type="button" class="mini" data-act="toggleEntryInstant" data-id="${entry.id}" style="width:100%;padding:6px 10px;font-size:11.5px;border-radius:8px">⏱️ تحويل إلى فترة زمنية (تحديد بداية ونهاية)</button>
       </div>
-    </div>
+    `}
 
     ${(cat.subcategories && cat.subcategories.length) ? `
       <div style="margin-bottom:12px">
@@ -3013,17 +3350,28 @@ async function saveFullEntryEdit(entryId){
   const idx = trk.entries.findIndex(e => e.id === entryId);
   if(idx < 0){ toast('لم يتم العثور على السجل'); return; }
 
+  const entry = trk.entries[idx];
+  const hasRange = !!(entry.startedAt && entry.endedAt);
   const edDate = ($('#edDate')||{}).value || window._trackerDate || new Date().toISOString().slice(0, 10);
-  const sTime = ($('#edStartTime')||{}).value || '08:00';
-  const eTime = ($('#edEndTime')||{}).value || '08:30';
   const qty = ($('#edQuantity')||{}).value || null;
   const note = ($('#edNote')||{}).value || null;
   const subcatInp = ($('#edSubcatInput')||{}).value;
   const subcat = (subcatInp !== undefined && subcatInp !== null) ? subcatInp : (window._editEntrySubcat || null);
 
-  const startedAt = `${edDate}T${sTime}:00`;
-  const endedAt = `${edDate}T${eTime}:00`;
-  const loggedAt = startedAt;
+  let startedAt = null;
+  let endedAt = null;
+  let loggedAt = `${edDate}T12:00:00`;
+
+  if(hasRange){
+    const sTime = ($('#edStartTime')||{}).value || '08:00';
+    const eTime = ($('#edEndTime')||{}).value || '08:30';
+    startedAt = `${edDate}T${sTime}:00`;
+    endedAt = `${edDate}T${eTime}:00`;
+    loggedAt = startedAt;
+  } else {
+    const prevTime = (entry.loggedAt && entry.loggedAt.length >= 16) ? entry.loggedAt.slice(11, 16) : '12:00';
+    loggedAt = `${edDate}T${prevTime}:00`;
+  }
 
   trk.entries[idx] = Object.assign({}, trk.entries[idx], {
     subcategory: subcat && subcat.trim() ? subcat.trim() : null,
@@ -3056,6 +3404,394 @@ function openSwitchCategoryPopup(entryId){
       `).join('')}
     </div>
   `);
+}
+
+/* ---------- التعرف الصوتي الذكي داخل متتبع العادات والأنشطة ---------- */
+
+const ARABIC_WORD_HOURS_JS = {
+  "واحدة": 1, "الواحدة": 1, "واحد": 1, "الواحد": 1,
+  "ثانية": 2, "الثانية": 2, "اثنين": 2, "اثنتين": 2,
+  "ثالثة": 3, "الثالثة": 3, "ثلاثة": 3, "ثلاث": 3,
+  "رابعة": 4, "الرابعة": 4, "أربعة": 4, "اربعة": 4, "أربع": 4,
+  "خامسة": 5, "الخامسة": 5, "خمسة": 5, "خمس": 5,
+  "سادسة": 6, "السادسة": 6, "ستة": 6, "ست": 6,
+  "سابعة": 7, "السابعة": 7, "سبعة": 7, "سبع": 7,
+  "ثامنة": 8, "الثامنة": 8, "ثمانية": 8, "ثماني": 8, "ثمان": 8,
+  "تاسعة": 9, "التاسعة": 9, "تسعة": 9, "تسع": 9,
+  "عاشرة": 10, "العاشرة": 10, "عشرة": 10, "عشر": 10,
+  "الحادية عشرة": 11, "حادية عشرة": 11, "الحادية عشر": 11, "إحدى عشر": 11, "احدى عشر": 11,
+  "الثانية عشرة": 12, "ثانية عشرة": 12, "الثانية عشر": 12, "اثنا عشر": 12, "اثنتي عشرة": 12
+};
+
+const CATEGORY_SYNONYMS_JS = {
+  "رياضة": ["رياضة", "تمرين", "تمارين", "جيم", "كارديو", "حديد", "لياقة", "سويدي", "إطالات"],
+  "مشي": ["مشي", "تمشية", "هرولة", "ركض", "جري", "خطوات"],
+  "دواء": ["دواء", "علاج", "حبوب", "حبة", "مسكن", "بنادول", "فيتامين", "مضاد", "إبرة", "جرعة"],
+  "ماء": ["ماء", "شربت ماء", "شرب ماء", "كوب ماء", "موية", "مية"],
+  "طعام": ["طعام", "أكل", "اكل", "وجبة", "فطور", "غداء", "عشاء", "سناك", "فواكه", "سلطة"],
+  "نوم": ["نوم", "نمت", "قيلولة", "نوم ليلي", "استيقظت"],
+  "قراءة": ["قراءة", "قرأت", "كتاب", "قرآن", "صفحات", "مقالة"],
+  "مرض": ["صداع", "شقيقة", "مرض", "ألم", "وجع", "حرارة", "سخونة", "تعب", "إرهاق", "مغص", "غثيان"]
+};
+
+function normalizeArabicDigitsJs(str){
+  const map = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+  return String(str||'').replace(/[٠-٩]/g, d => map[d] || d);
+}
+
+function parseTimeTokenJs(token){
+  let clean = token.replace(/الساعة/g, '').replace(/[،,.]/g, '').replace(/:/g, ' ').trim();
+  const hasHalf = clean.includes('ونصف') || clean.includes('ونص');
+  const hasQuarter = clean.includes('وربع');
+  const hasThird = clean.includes('وثلث');
+  clean = clean.replace(/ونصف|ونص|وربع|وثلث|صباحاً|صباحا|مساءً|مساء/g, '').trim();
+
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if(parts.length >= 2){
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) || 0;
+    if(!isNaN(h) && h >= 0 && h <= 23 && m >= 0 && m <= 59){
+      return { hour: h, minute: m };
+    }
+  }
+
+  const directNum = parseInt(clean, 10);
+  let hour = !isNaN(directNum) ? directNum : (ARABIC_WORD_HOURS_JS[clean] || null);
+  if(hour === null || hour > 24) return null;
+  if(hour === 24) hour = 0;
+
+  let minute = 0;
+  if(hasHalf) minute = 30;
+  else if(hasQuarter) minute = 15;
+  else if(hasThird) minute = 20;
+
+  return { hour, minute };
+}
+
+function parseVoiceActivityText(rawText, categories){
+  const normalized = normalizeArabicDigitsJs(rawText.trim());
+  let remaining = normalized;
+
+  // 1. فحص الفترات الزمنية: من [X] إلى [Y]
+  let startedAt = null;
+  let endedAt = null;
+  let isTimeRange = false;
+
+  const rangeRegex = /من\s+(?:الساعة\s+)?(.+?)\s+(?:إلى|ل)\s+(?:الساعة\s+)?([^\s،,]+(?:\s+(?:عشرة|عشر|ونصف|وربع|وثلث|صباحا|مساءً|مساء|صباحاً))?)/i;
+  const match = remaining.match(rangeRegex);
+  if(match){
+    const tStart = parseTimeTokenJs(match[1].trim());
+    const tEnd = parseTimeTokenJs(match[2].trim());
+    if(tStart && tEnd){
+      const isPmContext = remaining.includes('مساء') || remaining.includes('عصر') || remaining.includes('ظهر') ||
+        (new Date().getHours() >= 12 && tStart.hour < 12 && tEnd.hour <= 12);
+      let sH = (isPmContext && tStart.hour < 12) ? tStart.hour + 12 : tStart.hour;
+      let eH = (isPmContext && tEnd.hour < 12) ? tEnd.hour + 12 : tEnd.hour;
+
+      const now = new Date();
+      const sDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, tStart.minute, 0);
+      let eDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, tEnd.minute, 0);
+      if(eDate <= sDate){
+        eDate.setDate(eDate.getDate() + 1);
+      }
+      startedAt = sDate;
+      endedAt = eDate;
+      isTimeRange = true;
+      remaining = remaining.replace(match[0], ' ').trim();
+    }
+  }
+
+  // 2. مطابقة الفئة
+  let matchedCat = null;
+  let matchedSubcat = null;
+
+  for(const cat of categories){
+    for(const sub of (cat.subcategories || [])){
+      if(remaining.includes(sub)){
+        matchedCat = cat;
+        matchedSubcat = sub;
+        remaining = remaining.replace(sub, ' ').trim();
+        break;
+      }
+    }
+    if(matchedCat) break;
+  }
+
+  if(!matchedCat){
+    for(const cat of categories){
+      if(remaining.includes(cat.name)){
+        matchedCat = cat;
+        remaining = remaining.replace(cat.name, ' ').trim();
+        break;
+      }
+    }
+  }
+
+  if(!matchedCat){
+    for(const [groupKey, synList] of Object.entries(CATEGORY_SYNONYMS_JS)){
+      const matchedSyn = synList.find(s => remaining.includes(s));
+      if(matchedSyn){
+        matchedCat = categories.find(c => c.name.includes(groupKey) || c.id.includes(groupKey));
+        if(matchedSyn !== groupKey && !matchedSubcat){
+          matchedSubcat = matchedSyn;
+        }
+        remaining = remaining.replace(matchedSyn, ' ').trim();
+        break;
+      }
+    }
+  }
+
+  if(!matchedCat && categories.length > 0){
+    matchedCat = categories[0];
+  }
+
+  // 3. استخراج الكميات أو الشدة
+  let extractedQty = null;
+  const phrases = [
+    ["ساعتان", "ساعتان"], ["ساعتين", "ساعتان"],
+    ["ساعة ونصف", "ساعة ونصف"], ["ساعة ونص", "ساعة ونصف"],
+    ["ساعة وربع", "ساعة وربع"], ["ساعة", "1 ساعة"],
+    ["نصف ساعة", "30 دقيقة"], ["نص ساعة", "30 دقيقة"],
+    ["ثلث ساعة", "20 دقيقة"], ["ربع ساعة", "15 دقيقة"],
+    ["كوبين", "2 كوب"], ["كأسين", "2 كأس"],
+    ["حبتين", "2 حبة"], ["حبة واحدة", "1 حبة"],
+    ["جرعة واحدة", "جرعة واحدة"], ["وجبة كاملة", "وجبة كاملة"],
+    ["خفيف", "خفيف"], ["متوسط", "متوسط"], ["شديد", "شديد"]
+  ];
+
+  for(const [phrase, std] of phrases){
+    if(remaining.includes(phrase)){
+      extractedQty = std;
+      remaining = remaining.replace(phrase, ' ').trim();
+      break;
+    }
+  }
+
+  if(!extractedQty){
+    const numUnitMatch = remaining.match(/(\d+)\s*(دقيقة|دقائق|ساعة|ساعات|كم|كيلو|صفحة|صفحات|كوب|أكواب|حبة|حبات|جرعة)/);
+    if(numUnitMatch){
+      extractedQty = numUnitMatch[0];
+      remaining = remaining.replace(numUnitMatch[0], ' ').trim();
+    }
+  }
+
+  // 4. استخراج الملاحظات والكلمات المتبقية
+  const stopWords = new Set([
+    "سجل", "تسجيل", "أضف", "اضف", "حط", "تم", "عملت", "سويت",
+    "أخذت", "اخذت", "شربت", "أكلت", "اكلت", "اليوم", "أمس",
+    "من", "إلى", "الساعة", "في", "على", "مع", "كان", "كانت"
+  ]);
+
+  const cleanWords = remaining.split(/[\s,،.]+/).filter(w => w && !stopWords.has(w));
+  const cleanNote = cleanWords.join(' ').trim();
+
+  let finalQty = extractedQty;
+  if(isTimeRange && startedAt && endedAt){
+    const diffMins = Math.round((endedAt - startedAt) / 60000);
+    if(diffMins > 0) finalQty = formatMinutesToArabic(diffMins);
+  }
+
+  const isSeverity = ['خفيف', 'متوسط', 'شديد'].includes(extractedQty);
+  let combinedNote = cleanNote;
+  if(isSeverity){
+    combinedNote = [extractedQty, cleanNote].filter(Boolean).join(' - ');
+    if(!isTimeRange) finalQty = null;
+  }
+
+  return {
+    rawText,
+    category: matchedCat,
+    subcategory: matchedSubcat,
+    quantityOrDuration: finalQty,
+    note: combinedNote,
+    startedAt,
+    endedAt,
+    isTimeRange
+  };
+}
+
+function startTrackerVoiceInput(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    toast('المتصفح لا يدعم التسجيل الصوتي المباشر. يمكنك استخدام متصفح Chrome أو الإدخال اليدوي.');
+    return;
+  }
+
+  const micBtn = document.getElementById('trkVoiceMicBtn');
+  if(micBtn) micBtn.classList.add('listening');
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'ar-SA';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  toast('🎙️ استمع الآن... تحدث بنشاطك والوقت');
+
+  recognition.onresult = (e) => {
+    if(micBtn) micBtn.classList.remove('listening');
+    if(e.results && e.results[0] && e.results[0][0]){
+      const text = e.results[0][0].transcript;
+      if(text && text.trim()){
+        const trk = getTrackerData();
+        const parsed = parseVoiceActivityText(text.trim(), trk.categories);
+        openVoiceReviewSheet(parsed);
+      }
+    }
+  };
+
+  recognition.onerror = (err) => {
+    if(micBtn) micBtn.classList.remove('listening');
+    toast('تعذر التقاط الصوت أو تم إلغاؤه');
+  };
+
+  recognition.onend = () => {
+    if(micBtn) micBtn.classList.remove('listening');
+  };
+
+  try{
+    recognition.start();
+  }catch(err){
+    if(micBtn) micBtn.classList.remove('listening');
+    toast('حدث خطأ في بدء التسجيل الصوتي');
+  }
+}
+
+function openVoiceReviewSheet(parsed){
+  const trk = getTrackerData();
+  const cats = trk.categories;
+  const selCat = parsed.category || cats[0];
+  const catId = selCat ? selCat.id : (cats[0] ? cats[0].id : '');
+  const isRange = !!parsed.isTimeRange;
+
+  window._vrCatId = catId;
+  window._vrIsRange = isRange;
+  window._vrSubcat = parsed.subcategory || '';
+
+  const now = new Date();
+  let sTime = '08:00';
+  let eTime = '09:00';
+  if(parsed.startedAt){
+    sTime = `${String(parsed.startedAt.getHours()).padStart(2,'0')}:${String(parsed.startedAt.getMinutes()).padStart(2,'0')}`;
+  }
+  if(parsed.endedAt){
+    eTime = `${String(parsed.endedAt.getHours()).padStart(2,'0')}:${String(parsed.endedAt.getMinutes()).padStart(2,'0')}`;
+  } else if(!isRange){
+    eTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    sTime = eTime;
+  }
+
+  openSheet(sheetHead('تسجيل صوتي ذكي 🎙️') + `
+    <div style="background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:14px;border:1px solid var(--accent-2)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:2px">النص الصوتي المُلتقط:</div>
+      <b style="font-size:13.5px;color:var(--accent-dark)">«${esc(parsed.rawText)}»</b>
+    </div>
+
+    <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px">الفئة المكتشفة:</label>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none">
+      ${cats.map(c => `
+        <button type="button" class="trk-cat-pill ${c.id===catId?'on':''}" data-act="pickVrCat" data-id="${c.id}" style="${c.id===catId?`background:${c.colorHex};color:#fff;border-color:${c.colorHex}`:''}">
+          <span>${c.icon}</span>
+          <span>${esc(c.name)}</span>
+        </button>
+      `).join('')}
+    </div>
+
+    <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px">طبيعة التوقيت:</label>
+    <div style="display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:4px;margin-bottom:12px">
+      <button type="button" class="chip ${isRange?'on':''}" id="btnVrRange" data-act="toggleVrMode" data-m="range" style="flex:1;justify-content:center">⏱️ فترة (بداية ونهاية)</button>
+      <button type="button" class="chip ${!isRange?'on':''}" id="btnVrInstant" data-act="toggleVrMode" data-m="instant" style="flex:1;justify-content:center">📍 فوري لحظي</button>
+    </div>
+
+    <div id="vrRangeFields" style="display:${isRange?'block':'none'};background:var(--surface-2);border-radius:12px;padding:10px;margin-bottom:12px;border:1px solid var(--border)">
+      <div style="display:flex;gap:8px">
+        <div style="flex:1">
+          <label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:3px">وقت البداية:</label>
+          <input type="time" id="vrStartTime" value="${sTime}" style="width:100%">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:3px">وقت النهاية:</label>
+          <input type="time" id="vrEndTime" value="${eTime}" style="width:100%">
+        </div>
+      </div>
+    </div>
+
+    <div id="vrInstantFields" style="display:${!isRange?'block':'none'};margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <label style="font-size:12.5px;font-weight:600">وقت التسجيل:</label>
+        <input type="time" id="vrInstantTime" value="${sTime}" style="width:100px">
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:10px">
+      <label>التصنيف الفرعي</label>
+      <input id="vrSubcat" value="${esc(parsed.subcategory||'')}" placeholder="مثال: فطور، مشي صباحي، صداع نصفي...">
+    </div>
+
+    <div class="field" style="margin-bottom:10px">
+      <label>الكمية أو المدة (اختياري)</label>
+      <input id="vrQuantity" value="${esc(parsed.quantityOrDuration||'')}" placeholder="مثال: 30 دقيقة، 1 كوب، خفيف...">
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>ملاحظة إضافية (اختياري)</label>
+      <textarea id="vrNote" rows="2" placeholder="ملاحظات حول النشاط...">${esc(parsed.note||'')}</textarea>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn" data-act="saveVoiceReview" style="flex:2">حفظ النشاط ✓</button>
+      <button class="btn secondary" data-act="closeSheet" style="flex:1">إلغاء</button>
+    </div>
+  `);
+}
+
+async function saveVoiceReview(){
+  const trk = getTrackerData();
+  const cat = trk.categories.find(c => c.id === window._vrCatId) || trk.categories[0];
+  if(!cat){ toast('تعذر العثور على الفئة'); return; }
+
+  const isRange = window._vrIsRange;
+  const todayIso = window._trackerDate || new Date().toISOString().slice(0, 10);
+  let startedAt = null;
+  let endedAt = null;
+  let loggedAt = `${todayIso}T12:00:00`;
+  let quantity = ($('#vrQuantity')||{}).value || null;
+
+  if(isRange){
+    const sTime = ($('#vrStartTime')||{}).value || '08:00';
+    const eTime = ($('#vrEndTime')||{}).value || '09:00';
+    startedAt = `${todayIso}T${sTime}:00`;
+    endedAt = `${todayIso}T${eTime}:00`;
+    loggedAt = startedAt;
+    const s = new Date(startedAt);
+    const e = new Date(endedAt);
+    const diffMin = Math.round((e - s) / 60000);
+    if(diffMin > 0 && !quantity) quantity = formatMinutesToArabic(diffMin);
+  } else {
+    const iTime = ($('#vrInstantTime')||{}).value || '12:00';
+    loggedAt = `${todayIso}T${iTime}:00`;
+  }
+
+  const subcat = ($('#vrSubcat')||{}).value || null;
+  const note = ($('#vrNote')||{}).value || null;
+
+  const entry = {
+    id: 'ent_' + (crypto.randomUUID ? crypto.randomUUID().slice(0,10) : String(Date.now())),
+    categoryId: cat.id,
+    subcategory: subcat && subcat.trim() ? subcat.trim() : null,
+    quantity: quantity && quantity.trim() ? quantity.trim() : null,
+    startedAt: startedAt,
+    endedAt: endedAt,
+    loggedAt: loggedAt,
+    note: note && note.trim() ? note.trim() : null,
+    syncIntent: 'local_only'
+  };
+
+  trk.entries.push(entry);
+  saveTrackerData(trk);
+  closeSheet();
+  renderLifeTracker();
+  toast(`تم حفظ النشاط الصوتي: ${cat.name} ${cat.icon} ✓`);
+  insertTrackerEntryCloud(entry);
 }
 
 function openPdfExport(){
@@ -5670,6 +6406,7 @@ document.addEventListener('click', async e=>{
       /* ===== Life Tracker ===== */
       case 'openLifeTracker': view='lifetracker'; renderApp(); try{ syncTrackerFromCloud(); }catch(e){} break;
       case 'setTrackerMode': window._trackerMode=el.dataset.m; renderLifeTracker(); break;
+      case 'setTrackerLayoutStyle': window._trackerLayoutStyle=el.dataset.s; try{ localStorage.setItem('rafiq_tracker_layout_style', el.dataset.s); }catch(e){} renderLifeTracker(); break;
       case 'trackerPrevDay': { const d=new Date((window._trackerDate||new Date().toISOString().slice(0,10))+'T12:00:00'); d.setDate(d.getDate()-1); window._trackerDate=d.toISOString().slice(0,10); renderLifeTracker(); break; }
       case 'trackerNextDay': { const d=new Date((window._trackerDate||new Date().toISOString().slice(0,10))+'T12:00:00'); d.setDate(d.getDate()+1); window._trackerDate=d.toISOString().slice(0,10); renderLifeTracker(); break; }
       case 'trackerPrevMonth': { const d=new Date((window._trackerDate||new Date().toISOString().slice(0,10))+'T12:00:00'); d.setMonth(d.getMonth()-1); window._trackerDate=d.toISOString().slice(0,10); renderLifeTracker(); break; }
@@ -5681,11 +6418,12 @@ document.addEventListener('click', async e=>{
       case 'setTrackerDayAndSwitch': window._trackerDate=el.dataset.d; window._trackerMode='daily'; renderLifeTracker(); break;
       case 'openSpaceAddMenu': openAddMenu(el, el.dataset.space); break;
       case 'openSmartLog': openSmartLog(el.dataset.id); break;
-      case 'switchSlMode': { window._smartLogMode=el.dataset.m; const rng=document.getElementById('slRangeContainer'); const qck=document.getElementById('slQuickContainer'); if(rng) rng.style.display=el.dataset.m==='range'?'block':'none'; if(qck) qck.style.display=el.dataset.m==='range'?'none':'block'; document.querySelectorAll('[data-act="switchSlMode"]').forEach(b=>b.classList.toggle('on',b.dataset.m===el.dataset.m)); break; }
+      case 'switchSlMode': { window._smartLogMode=el.dataset.m; const rng=document.getElementById('slRangeContainer'); const qck=document.getElementById('slQuickContainer'); const ins=document.getElementById('slInstantContainer'); if(rng) rng.style.display=el.dataset.m==='range'?'block':'none'; if(qck) qck.style.display=el.dataset.m==='quick'?'block':'none'; if(ins) ins.style.display=el.dataset.m==='instant'?'block':'none'; document.querySelectorAll('[data-act="switchSlMode"]').forEach(b=>b.classList.toggle('on',b.dataset.m===el.dataset.m)); break; }
       case 'pickSlPreset': { const inp=document.getElementById('slCustomQty'); if(inp) inp.value=el.dataset.p; document.querySelectorAll('[data-act="pickSlPreset"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
       case 'pickSlSubcat': { window._slSelectedSubcat=el.dataset.s; document.querySelectorAll('[data-act="pickSlSubcat"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
       case 'saveSmartLog': await saveSmartLog(); break;
       case 'openCategoryEditor': openCategoryEditor(el.dataset.id); break;
+      case 'pickCeTrackingType': { window._catTrackingType=el.dataset.t; document.querySelectorAll('[data-act="pickCeTrackingType"]').forEach(b=>b.classList.toggle('on',b.dataset.t===el.dataset.t)); break; }
       case 'openCategorySettings': openCategorySettings(); break;
       case 'openIconPickerPopup': openIconPickerPopup(); break;
       case 'openColorPickerPopup': openColorPickerPopup(); break;
@@ -5699,7 +6437,56 @@ document.addEventListener('click', async e=>{
       case 'moveCatDown': { const trk3=getTrackerData(); const cats3=trk3.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)); const idx3=cats3.findIndex(c=>c.id===el.dataset.id); if(idx3>=0&&idx3<cats3.length-1){ const tmp3=cats3[idx3].sortOrder||idx3; const nxt3=cats3[idx3+1].sortOrder||idx3+1; cats3[idx3]=Object.assign({},cats3[idx3],{sortOrder:nxt3}); cats3[idx3+1]=Object.assign({},cats3[idx3+1],{sortOrder:tmp3}); trk3.categories=cats3; saveTrackerData(trk3); upsertTrackerCategoryCloud(cats3[idx3]); upsertTrackerCategoryCloud(cats3[idx3+1]); } openCategorySettings(); break; }
       case 'delTrackerCategory': { if(!confirm('حذف هذه الفئة؟')) break; const trkD=getTrackerData(); trkD.categories=trkD.categories.filter(c=>c.id!==el.dataset.id); saveTrackerData(trkD); openCategorySettings(); toast('حُذفت الفئة ✓'); deleteTrackerCategoryCloud(el.dataset.id); break; }
       case 'openEntryDetails': openEntryDetails(el.dataset.id); break;
+      case 'toggleEntryInstant': {
+        const trk = getTrackerData();
+        const entry = trk.entries.find(e => e.id === el.dataset.id);
+        if(entry){
+          const hasRange = !!(entry.startedAt && entry.endedAt);
+          if(hasRange){
+            entry.startedAt = null;
+            entry.endedAt = null;
+            toast('تم تحويل النشاط إلى تسجيل لحظي 📍');
+          } else {
+            const base = entry.loggedAt || new Date().toISOString();
+            entry.startedAt = base;
+            const d = new Date(base);
+            d.setMinutes(d.getMinutes() + 30);
+            entry.endedAt = d.toISOString();
+            toast('تم تحويل النشاط إلى فترة زمنية ⏱️');
+          }
+          saveTrackerData(trk);
+          updateTrackerEntryCloud(entry);
+          openEntryDetails(entry.id);
+          renderLifeTracker();
+        }
+        break;
+      }
       case 'saveFullEntryEdit': await saveFullEntryEdit(el.dataset.id); break;
+      case 'startTrackerVoiceInput': startTrackerVoiceInput(); break;
+      case 'pickVrCat': {
+        window._vrCatId = el.dataset.id;
+        const trk = getTrackerData();
+        const cat = trk.categories.find(c => c.id === el.dataset.id);
+        document.querySelectorAll('[data-act="pickVrCat"]').forEach(b => {
+          const isThis = b.dataset.id === el.dataset.id;
+          b.classList.toggle('on', isThis);
+          b.style.background = isThis && cat ? cat.colorHex : '';
+          b.style.color = isThis ? '#fff' : '';
+          b.style.borderColor = isThis && cat ? cat.colorHex : '';
+        });
+        break;
+      }
+      case 'toggleVrMode': {
+        const isRng = el.dataset.m === 'range';
+        window._vrIsRange = isRng;
+        const rf = document.getElementById('vrRangeFields');
+        const inf = document.getElementById('vrInstantFields');
+        if(rf) rf.style.display = isRng ? 'block' : 'none';
+        if(inf) inf.style.display = !isRng ? 'block' : 'none';
+        document.querySelectorAll('[data-act="toggleVrMode"]').forEach(b => b.classList.toggle('on', b.dataset.m === el.dataset.m));
+        break;
+      }
+      case 'saveVoiceReview': await saveVoiceReview(); break;
       case 'openSwitchCategoryPopup': openSwitchCategoryPopup(el.dataset.id); break;
       case 'applySwitchCategory': {
         const trk = getTrackerData();
