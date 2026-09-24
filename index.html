@@ -2288,6 +2288,21 @@ function renderTrackerWeekTimeline(selDate, entries, catMap){
   }
   const weekRangeLabel = `${startOfWeek.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} — ${endOfWeek.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}`;
 
+  const startHour = getTimelineStartHour();
+  const endHour = getTimelineEndHour();
+  const spanHours = Math.max(1, endHour - startHour);
+  const totalSpanMin = spanHours * 60;
+  const rowStartMin = startHour * 60;
+  const rowEndMin = endHour * 60;
+
+  const step = spanHours <= 8 ? 2 : (spanHours <= 16 ? 3 : 4);
+  const labelHours = [];
+  for(let h = startHour; h <= endHour; h += step){
+    labelHours.push(h);
+  }
+  if(labelHours[labelHours.length - 1] !== endHour) labelHours.push(endHour);
+  const labelsHtml = labelHours.map(h => `<span>${String(h).padStart(2, '0')}:00</span>`).join('');
+
   return `
     <div class="card" style="margin-bottom:12px;padding:12px">
       <div class="trk-cal-nav" style="margin-bottom:12px">
@@ -2323,15 +2338,24 @@ function renderTrackerWeekTimeline(selDate, entries, catMap){
                     dur = 15;
                     isInstant = true;
                   }
-                  const leftPct = (sMin / 1440) * 100;
-                  const widthPct = Math.max(1.8, (dur / 1440) * 100);
-                  return `
-                    <div class="trk-week-timeline-slice ${isInstant ? 'instant' : ''}" 
-                         style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex}" 
-                         title="${esc(cat.name)}">
-                      ${cat.icon}
-                    </div>
-                  `;
+
+                  const segStart = Math.max(rowStartMin, Math.min(rowEndMin, sMin));
+                  const segEnd = Math.max(rowStartMin, Math.min(rowEndMin, sMin + dur));
+
+                  if(segEnd > segStart || (isInstant && sMin >= rowStartMin && sMin <= rowEndMin)){
+                    const segStartInRow = segStart - rowStartMin;
+                    const segDurInRow = isInstant ? 15 : Math.max(10, segEnd - segStart);
+                    const leftPct = (segStartInRow / totalSpanMin) * 100;
+                    const widthPct = Math.max(1.8, (segDurInRow / totalSpanMin) * 100);
+                    return `
+                      <div class="trk-week-timeline-slice ${isInstant ? 'instant' : ''}" 
+                           style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex}" 
+                           title="${esc(cat.name)}">
+                        ${cat.icon}
+                      </div>
+                    `;
+                  }
+                  return '';
                 }).join('')}
               </div>
             </div>
@@ -2339,11 +2363,7 @@ function renderTrackerWeekTimeline(selDate, entries, catMap){
         }).join('')}
       </div>
       <div class="trk-timeline-labels" style="margin-top:8px">
-        <span>00:00</span>
-        <span>06:00</span>
-        <span>12:00</span>
-        <span>18:00</span>
-        <span>24:00</span>
+        ${labelsHtml}
       </div>
     </div>
   `;
@@ -2399,6 +2419,38 @@ function renderTrackerWeekHorizontal(selDate, entries){
 window._trackerDate = new Date().toISOString().slice(0,10);
 window._trackerMode = 'daily';
 window._trackerLayoutStyle = localStorage.getItem('rafiq_tracker_layout_style') || 'blocks';
+
+function getTimelineStartHour() {
+  const trk = getTrackerData();
+  if (typeof trk.timelineStartHour === 'number' && trk.timelineStartHour >= 0 && trk.timelineStartHour <= 23) {
+    return trk.timelineStartHour;
+  }
+  const v = parseInt(localStorage.getItem('rafiq_timeline_start_hour'), 10);
+  return (!isNaN(v) && v >= 0 && v <= 23) ? v : 0;
+}
+
+function getTimelineEndHour() {
+  const trk = getTrackerData();
+  const s = getTimelineStartHour();
+  if (typeof trk.timelineEndHour === 'number' && trk.timelineEndHour > s && trk.timelineEndHour <= 24) {
+    return trk.timelineEndHour;
+  }
+  const v = parseInt(localStorage.getItem('rafiq_timeline_end_hour'), 10);
+  return (!isNaN(v) && v > s && v <= 24) ? v : 24;
+}
+
+function setTimelineHours(startH, endH) {
+  const s = Math.max(0, Math.min(23, parseInt(startH, 10) || 0));
+  const e = Math.max(s + 1, Math.min(24, parseInt(endH, 10) || 24));
+  try {
+    localStorage.setItem('rafiq_timeline_start_hour', s);
+    localStorage.setItem('rafiq_timeline_end_hour', e);
+  } catch(e){}
+  const trk = getTrackerData();
+  trk.timelineStartHour = s;
+  trk.timelineEndHour = e;
+  saveTrackerData(trk);
+}
 
 function renderLifeTracker(){
   const trk = getTrackerData();
@@ -2506,68 +2558,101 @@ function renderLifeTracker(){
           </div>
         </div>
 
-        ${layoutStyle === 'timeline' ? `
-          <!-- عرض الخط الزمني الكامل لـ 24 ساعة -->
-          <div class="card" style="margin-bottom:12px;padding:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <b style="font-size:13.5px;color:var(--text-1)">📊 الخط الزمني لليوم (00:00 - 24:00)</b>
-              <span style="font-size:11px;color:var(--text-3)">اضغط على أي شريحة للتعديل ✍️</span>
-            </div>
+        ${layoutStyle === 'timeline' ? (() => {
+          const startHour = getTimelineStartHour();
+          const endHour = getTimelineEndHour();
+          const spanHours = Math.max(1, endHour - startHour);
+          const totalSpanMin = spanHours * 60;
+          const rowStartMin = startHour * 60;
+          const rowEndMin = endHour * 60;
 
-            <div class="trk-timeline-wrap">
-              <div class="trk-timeline-bar-24">
-                <!-- خطوط الساعات -->
-                <div class="trk-timeline-ticks">
-                  ${Array.from({length: 25}, (_, i) => `<div class="trk-timeline-tick" style="opacity:${i%3===0?'0.8':'0.25'}"></div>`).join('')}
+          const tickCount = spanHours + 1;
+          const ticksHtml = Array.from({length: tickCount}, (_, i) => {
+            const h = startHour + i;
+            const isMain = spanHours <= 12 ? (i % 2 === 0) : (i % 3 === 0 || h === startHour || h === endHour);
+            return `<div class="trk-timeline-tick" style="opacity:${isMain ? '0.8' : '0.25'}"></div>`;
+          }).join('');
+
+          const step = spanHours <= 8 ? 1 : (spanHours <= 16 ? 2 : 3);
+          const labelHours = [];
+          for (let h = startHour; h <= endHour; h += step) {
+            labelHours.push(h);
+          }
+          if (labelHours[labelHours.length - 1] !== endHour) {
+            labelHours.push(endHour);
+          }
+          const labelsHtml = labelHours.map(h => `<span>${String(h).padStart(2, '0')}:00</span>`).join('');
+
+          const slicesHtml = dayEntries.map(entry => {
+            const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+            const hasRange = !!(entry.startedAt && entry.endedAt);
+            let sMin, durMin, isInstant;
+            if(hasRange){
+              sMin = parseIsoToMinutes(entry.startedAt);
+              const eMin = parseIsoToMinutes(entry.endedAt);
+              durMin = eMin > sMin ? eMin - sMin : 30;
+              isInstant = false;
+            } else {
+              const lMin = parseIsoToMinutes(entry.loggedAt);
+              sMin = Math.max(0, lMin - 7);
+              durMin = 15;
+              isInstant = true;
+            }
+
+            const segStart = Math.max(rowStartMin, Math.min(rowEndMin, sMin));
+            const segEnd = Math.max(rowStartMin, Math.min(rowEndMin, sMin + durMin));
+
+            if(segEnd > segStart || (isInstant && sMin >= rowStartMin && sMin <= rowEndMin)){
+              const segStartInRow = segStart - rowStartMin;
+              const segDurInRow = isInstant ? 15 : Math.max(10, segEnd - segStart);
+              const leftPct = (segStartInRow / totalSpanMin) * 100;
+              const widthPct = Math.max(isInstant ? 2.5 : 2, (segDurInRow / totalSpanMin) * 100);
+              const timeDesc = hasRange
+                ? `${formatArabicTime(entry.startedAt)} - ${formatArabicTime(entry.endedAt)}`
+                : `${formatArabicTime(entry.loggedAt)} (تسجيل فوري)`;
+
+              return `
+                <div class="trk-timeline-slice ${isInstant ? 'instant' : ''}" 
+                     data-act="openEntryDetails" data-id="${entry.id}" 
+                     style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex};min-width:${isInstant ? '28px' : '22px'}" 
+                     title="${esc(cat.name)}: ${timeDesc}">
+                  <span class="trk-timeline-slice-icon">${cat.icon}</span>
+                </div>
+              `;
+            }
+            return '';
+          }).join('');
+
+          return `
+            <!-- عرض الخط الزمني المخصص لليوم -->
+            <div class="card" style="margin-bottom:12px;padding:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div>
+                  <b style="font-size:13.5px;color:var(--text-1)">📊 الخط الزمني لليوم (${String(startHour).padStart(2,'0')}:00 - ${String(endHour).padStart(2,'0')}:00)</b>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px">${spanHours} ساعة • اضغط على أي شريحة للتعديل ✍️</div>
+                </div>
+                <button class="mini" data-act="openTimelineSettings" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);padding:4px 8px;font-size:11.5px">⚙️ ضبط الساعات</button>
+              </div>
+
+              <div class="trk-timeline-wrap">
+                <div class="trk-timeline-bar-24">
+                  <!-- خطوط الساعات -->
+                  <div class="trk-timeline-ticks">
+                    ${ticksHtml}
+                  </div>
+
+                  <!-- شرائح الأنشطة والكبسولات -->
+                  ${slicesHtml}
                 </div>
 
-                <!-- شرائح الأنشطة والكبسولات -->
-                ${dayEntries.map(entry => {
-                  const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
-                  const hasRange = !!(entry.startedAt && entry.endedAt);
-                  let sMin, durMin, isInstant;
-                  if(hasRange){
-                    sMin = parseIsoToMinutes(entry.startedAt);
-                    const eMin = parseIsoToMinutes(entry.endedAt);
-                    durMin = eMin > sMin ? eMin - sMin : 30;
-                    isInstant = false;
-                  } else {
-                    const lMin = parseIsoToMinutes(entry.loggedAt);
-                    sMin = Math.max(0, lMin - 7);
-                    durMin = 15;
-                    isInstant = true;
-                  }
-                  const leftPct = (sMin / 1440) * 100;
-                  const widthPct = Math.max(isInstant ? 2.5 : 2, (durMin / 1440) * 100);
-                  const timeDesc = hasRange
-                    ? `${formatArabicTime(entry.startedAt)} - ${formatArabicTime(entry.endedAt)}`
-                    : `${formatArabicTime(entry.loggedAt)} (تسجيل فوري)`;
-
-                  return `
-                    <div class="trk-timeline-slice ${isInstant ? 'instant' : ''}" 
-                         data-act="openEntryDetails" data-id="${entry.id}" 
-                         style="left:${leftPct}%;width:${widthPct}%;background:${cat.colorHex};min-width:${isInstant ? '28px' : '22px'}" 
-                         title="${esc(cat.name)}: ${timeDesc}">
-                      <span class="trk-timeline-slice-icon">${cat.icon}</span>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-
-              <!-- أرقام وتسميات الساعات أسفل الخط -->
-              <div class="trk-timeline-labels">
-                <span>00:00</span>
-                <span>03:00</span>
-                <span>06:00</span>
-                <span>09:00</span>
-                <span>12:00</span>
-                <span>15:00</span>
-                <span>18:00</span>
-                <span>21:00</span>
-                <span>24:00</span>
+                <!-- أرقام وتسميات الساعات أسفل الخط -->
+                <div class="trk-timeline-labels">
+                  ${labelsHtml}
+                </div>
               </div>
             </div>
-          </div>
+          `;
+        })() : `
 
           <!-- قائمة تفاصيل سجلات اليوم أسفل الخط الزمني -->
           <div class="card" style="min-height:140px;padding:12px">
@@ -3170,8 +3255,22 @@ function saveTrackerCategory(){
 function openCategorySettings(){
   const trk = getTrackerData();
   const cats = trk.categories.slice().sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const curStart = getTimelineStartHour();
+  const curEnd = getTimelineEndHour();
 
-  openSheet(sheetHead('⚙️ تخصيص وإعداد الفئات')+`
+  openSheet(sheetHead('⚙️ تخصيص وإعداد المتتبع والخط الزمني')+`
+    <!-- بطاقة إعدادات نطاق الساعات للخط الزمني -->
+    <div class="card" style="padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--accent)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">📊</span>
+        <div>
+          <b style="font-size:13.5px;color:var(--text-1)">نطاق ساعات الخط الزمني</b>
+          <div style="font-size:11.5px;color:var(--accent);font-weight:600">من ${String(curStart).padStart(2,'0')}:00 إلى ${String(curEnd).padStart(2,'0')}:00 (${curEnd - curStart} ساعة)</div>
+        </div>
+      </div>
+      <button type="button" class="mini" data-act="openTimelineSettings" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);padding:4px 8px;font-size:11.5px">تعديل ⚙️</button>
+    </div>
+
     <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">يمكنك إعادة ترتيب الفئات أو تعديلها أو إضافة فئات جديدة وتحديد مشاركتها مع رفيقك:</p>
     <button class="btn ghost" data-act="openCategoryEditor" data-id="" style="margin-bottom:12px">➕ إضافة فئة جديدة</button>
     <div style="display:flex;flex-direction:column;gap:8px">
@@ -3197,6 +3296,69 @@ function openCategorySettings(){
       `).join('')}
     </div>
   `);
+}
+
+function openTimelineSettings(){
+  const s = getTimelineStartHour();
+  const e = getTimelineEndHour();
+
+  openSheet(sheetHead('⚙️ ضبط نطاق ساعات الخط الزمني')+`
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">حدد فترة بداية اليوم ونهايته لتقسيم الخط الزمني وعرض الأنشطة بالمدى المناسب لك:</p>
+    
+    <div class="card" style="padding:10px 14px;margin-bottom:14px;background:var(--surface-2);border:1px solid var(--accent)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12.5px;color:var(--text-2)">النطاق المحدد:</span>
+        <b id="tlPreviewLabel" style="font-size:14px;color:var(--accent)">${String(s).padStart(2,'0')}:00 ⬅️ ${String(e).padStart(2,'0')}:00 (${e - s} ساعة)</b>
+      </div>
+    </div>
+
+    <b style="font-size:12.5px;color:var(--text-2);display:block;margin-bottom:6px">قوالب سريعة:</b>
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;margin-bottom:16px">
+      <button type="button" class="btn ghost mini" data-act="applyTlPreset" data-s="0" data-e="24" style="padding:6px 2px;font-size:11.5px">24 ساعة</button>
+      <button type="button" class="btn ghost mini" data-act="applyTlPreset" data-s="6" data-e="24" style="padding:6px 2px;font-size:11.5px">06-24</button>
+      <button type="button" class="btn ghost mini" data-act="applyTlPreset" data-s="7" data-e="23" style="padding:6px 2px;font-size:11.5px">07-23</button>
+      <button type="button" class="btn ghost mini" data-act="applyTlPreset" data-s="8" data-e="18" style="padding:6px 2px;font-size:11.5px">08-18</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600">ساعة بداية اليوم:</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button type="button" class="hicon-btn" data-act="stepTlStart" data-step="-1" style="width:34px;height:34px;font-size:16px">−</button>
+          <span id="tlStartVal" style="width:48px;text-align:center;font-weight:700;font-size:15px">${String(s).padStart(2,'0')}:00</span>
+          <button type="button" class="hicon-btn" data-act="stepTlStart" data-step="1" style="width:34px;height:34px;font-size:16px">＋</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600">ساعة نهاية اليوم:</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button type="button" class="hicon-btn" data-act="stepTlEnd" data-step="-1" style="width:34px;height:34px;font-size:16px">−</button>
+          <span id="tlEndVal" style="width:48px;text-align:center;font-weight:700;font-size:15px">${String(e).padStart(2,'0')}:00</span>
+          <button type="button" class="hicon-btn" data-act="stepTlEnd" data-step="1" style="width:34px;height:34px;font-size:16px">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button type="button" class="btn ghost" data-act="closeSheet" style="flex:1">إلغاء</button>
+      <button type="button" class="btn primary" data-act="saveTimelineSettings" style="flex:1.5">حفظ وتطبيق ✓</button>
+    </div>
+  `);
+
+  window._tempTlStart = s;
+  window._tempTlEnd = e;
+}
+
+function updateTimelineSettingsPreview(){
+  const s = window._tempTlStart;
+  const e = window._tempTlEnd;
+  const p = document.getElementById('tlPreviewLabel');
+  const sV = document.getElementById('tlStartVal');
+  const eV = document.getElementById('tlEndVal');
+  if(p) p.textContent = `${String(s).padStart(2,'0')}:00 ⬅️ ${String(e).padStart(2,'0')}:00 (${e - s} ساعة)`;
+  if(sV) sV.textContent = `${String(s).padStart(2,'0')}:00`;
+  if(eV) eV.textContent = `${String(e).padStart(2,'0')}:00`;
 }
 
 function openEntryDetails(entryId){
@@ -3423,20 +3585,35 @@ const ARABIC_WORD_HOURS_JS = {
   "الثانية عشرة": 12, "ثانية عشرة": 12, "الثانية عشر": 12, "اثنا عشر": 12, "اثنتي عشرة": 12
 };
 
-const CATEGORY_SYNONYMS_JS = {
-  "رياضة": ["رياضة", "تمرين", "تمارين", "جيم", "كارديو", "حديد", "لياقة", "سويدي", "إطالات"],
-  "مشي": ["مشي", "تمشية", "هرولة", "ركض", "جري", "خطوات"],
-  "دواء": ["دواء", "علاج", "حبوب", "حبة", "مسكن", "بنادول", "فيتامين", "مضاد", "إبرة", "جرعة"],
+const CONCEPT_SYNONYMS_JS = {
+  "تسوق": ["تسوق", "شراء", "شريت", "اشتريت", "أغراض", "اغراض", "مقاضي", "سوبرماركت", "بقالة", "مشتريات", "سوق", "مول"],
+  "رياضة": ["رياضة", "تمرين", "تمارين", "جيم", "كارديو", "حديد", "لياقة", "سويدي", "إطالات", "نادي", "سباحة", "دراجة", "كرة"],
+  "مشي": ["مشي", "تمشية", "هرولة", "ركض", "جري", "خطوات", "سير"],
+  "دواء": ["دواء", "علاج", "حبوب", "حبة", "مسكن", "بنادول", "فيتامين", "مضاد", "إبرة", "جرعة", "صيدلية"],
   "ماء": ["ماء", "شربت ماء", "شرب ماء", "كوب ماء", "موية", "مية"],
-  "طعام": ["طعام", "أكل", "اكل", "وجبة", "فطور", "غداء", "عشاء", "سناك", "فواكه", "سلطة"],
-  "نوم": ["نوم", "نمت", "قيلولة", "نوم ليلي", "استيقظت"],
-  "قراءة": ["قراءة", "قرأت", "كتاب", "قرآن", "صفحات", "مقالة"],
-  "مرض": ["صداع", "شقيقة", "مرض", "ألم", "وجع", "حرارة", "سخونة", "تعب", "إرهاق", "مغص", "غثيان"]
+  "طعام": ["طعام", "أكل", "اكل", "وجبة", "فطور", "غداء", "عشاء", "سناك", "فواكه", "سلطة", "مطعم", "طبخ"],
+  "نوم": ["نوم", "نمت", "قيلولة", "نوم ليلي", "استيقظت", "صحيت", "غفوة"],
+  "قراءة": ["قراءة", "قرأت", "كتاب", "قرآن", "صفحات", "مقالة", "رواية"],
+  "مرض": ["صداع", "شقيقة", "مرض", "ألم", "وجع", "حرارة", "سخونة", "تعب", "إرهاق", "ارهاق", "مغص", "غثيان", "دوار"],
+  "عمل": ["عمل", "شغل", "وظيفة", "دوام", "اجتماع", "مكتب", "برمجة", "كود", "مشروع"],
+  "دراسة": ["دراسة", "مذاكرة", "درس", "امتحان", "محاضرة", "بحث", "جامعة", "مدرسة"],
+  "صلاة": ["صلاة", "جامع", "مسجد", "ذكر", "دعاء", "تطوع", "خير", "تراويح", "قيام"],
+  "سيارة": ["مشوار", "طريق", "سفر", "سيارة", "سياقة", "قيادة", "صيانة", "بنزين"],
+  "تنظيف": ["تنظيف", "ترتيب", "غسيل", "بيت", "منزل"]
 };
 
 function normalizeArabicDigitsJs(str){
   const map = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
   return String(str||'').replace(/[٠-٩]/g, d => map[d] || d);
+}
+
+function normalizeArabicTextJs(input){
+  let text = normalizeArabicDigitsJs(String(input||''));
+  text = text.replace(/\bالساعه\b/g, 'الساعة')
+             .replace(/\bساعه\b/g, 'ساعة')
+             .replace(/\bالى\b/g, 'إلى')
+             .replace(/\bلمده\b/g, 'لمدة');
+  return text;
 }
 
 function suggestTrackerIconJs(text){
@@ -3468,7 +3645,7 @@ function suggestTrackerColorJs(text){
 }
 
 function parseTimeTokenJs(token){
-  let clean = String(token||'').replace(/الساعة/g, '').replace(/[،,]/g, '').trim();
+  let clean = String(token||'').replace(/(?:الساعة|الساعه)/g, '').replace(/[،,]/g, '').trim();
 
   const isAm = /صباح|فجر/.test(clean);
   const isPm = /مساء|عصر|ليل/.test(clean);
@@ -3530,7 +3707,7 @@ function parseTimeTokenJs(token){
 }
 
 function parseVoiceActivityText(rawText, categories){
-  const normalized = normalizeArabicDigitsJs(rawText.trim());
+  const normalized = normalizeArabicTextJs(rawText.trim());
   let remaining = normalized;
 
   // 1. فحص الفترات الزمنية: من [X] إلى [Y]
@@ -3540,7 +3717,7 @@ function parseVoiceActivityText(rawText, categories){
 
   const timeTokenRegex = /(?:\d{1,2}(?:[:.]\d{2})?(?:\s*و\s*\d{1,2}(?:\s*دقيقة)?)?|(?:ال)?(?:حادية\s+عشر(?:ة)?|ثانية\s+عشر(?:ة)?|إحدى\s+عشر(?:ة)?|احدى\s+عشر(?:ة)?|اثنا\s+عشر|واحدة|ثانية|ثالثة|رابعة|خامسة|سادسة|سابعة|ثامنة|تاسعة|عاشرة|واحد|اثنين|اثنتين|ثلاث|ثلاثة|أربع|أربعة|اربع|اربعة|خمس|خمسة|ست|ستة|سبع|سبعة|ثمان|ثمانية|تسع|تسعة|عشر|عشرة))(?:\s+(?:ونصف|ونص|وربع|وثلث|إلا\s+ربع|الا\s+ربع))?(?:\s*(?:صباحاً|صباحا|مساءً|مساء|عصراً|عصر|ظهراً|ظهر|ليلاً|ليلا))?/;
 
-  const rangeRegex = new RegExp('من\\s+(?:الساعة\\s+)?(' + timeTokenRegex.source + ')\\s+(?:إلى|الى|حتى|وحتى|لغاية|لـ|ل)\\s+(?:الساعة\\s+)?(' + timeTokenRegex.source + ')', 'i');
+  const rangeRegex = new RegExp('من\\s+(?:(?:الساعة|الساعه)\\s+)?(' + timeTokenRegex.source + ')\\s+(?:إلى|الى|حتى|وحتى|لغاية|لـ|ل)\\s+(?:(?:الساعة|الساعه)\\s+)?(' + timeTokenRegex.source + ')', 'i');
   const match = remaining.match(rangeRegex);
   if(match){
     const tStart = parseTimeTokenJs(match[1].trim());
@@ -3579,53 +3756,67 @@ function parseVoiceActivityText(rawText, categories){
     }
   }
 
-  // 2. استخراج الكميات أو الشدة
+  // 2. استخراج الكميات أو الشدة أو المدة
   let extractedQty = null;
+  let durationMins = null;
   const phrases = [
-    ["ساعتان", "ساعتان"], ["ساعتين", "ساعتان"],
-    ["ساعة ونصف", "ساعة ونصف"], ["ساعة ونص", "ساعة ونصف"],
-    ["ساعة وربع", "ساعة وربع"], ["ساعة", "1 ساعة"],
-    ["نصف ساعة", "30 دقيقة"], ["نص ساعة", "30 دقيقة"],
-    ["ثلث ساعة", "20 دقيقة"], ["ربع ساعة", "15 دقيقة"],
-    ["كوبين", "2 كوب"], ["كأسين", "2 كأس"],
-    ["حبتين", "2 حبة"], ["حبة واحدة", "1 حبة"],
-    ["جرعة واحدة", "جرعة واحدة"], ["وجبة كاملة", "وجبة كاملة"],
-    ["خفيف", "خفيف"], ["متوسط", "متوسط"], ["شديد", "شديد"]
+    ["ساعتان", "ساعتان", 120], ["ساعتين", "ساعتان", 120],
+    ["ساعة ونصف", "ساعة ونصف", 90], ["ساعة ونص", "ساعة ونصف", 90],
+    ["ساعة وربع", "ساعة وربع", 75], ["ساعة", "1 ساعة", 60],
+    ["نصف ساعة", "30 دقيقة", 30], ["نص ساعة", "30 دقيقة", 30],
+    ["ثلث ساعة", "20 دقيقة", 20], ["ربع ساعة", "15 دقيقة", 15],
+    ["كوبين", "2 كوب", null], ["كأسين", "2 كأس", null],
+    ["حبتين", "2 حبة", null], ["حبة واحدة", "1 حبة", null],
+    ["جرعة واحدة", "جرعة واحدة", null], ["وجبة كاملة", "وجبة كاملة", null],
+    ["خفيف", "خفيف", null], ["متوسط", "متوسط", null], ["شديد", "شديد", null]
   ];
 
-  for(const [phrase, std] of phrases){
+  for(const [phrase, std, mins] of phrases){
     if(remaining.includes(phrase)){
       extractedQty = std;
+      durationMins = mins;
       remaining = remaining.replace(phrase, ' ').trim();
       break;
     }
   }
 
   if(!extractedQty){
-    const numUnitMatch = remaining.match(/(\d+)\s*(دقيقة|دقائق|ساعة|ساعات|كم|كيلو|صفحة|صفحات|كوب|أكواب|حبة|حبات|جرعة)/);
+    const numUnitMatch = remaining.match(/(?:لمدة\s+)?(\d+)\s*(دقيقة|دقائق|ساعة|ساعات|كم|كيلو|صفحة|صفحات|كوب|أكواب|حبة|حبات|جرعة)/);
     if(numUnitMatch){
-      extractedQty = numUnitMatch[0];
+      extractedQty = numUnitMatch[1] + ' ' + numUnitMatch[2];
+      const val = parseInt(numUnitMatch[1], 10) || 0;
+      if(numUnitMatch[2].startsWith('دقيق')) durationMins = val;
+      else if(numUnitMatch[2].startsWith('ساع')) durationMins = val * 60;
       remaining = remaining.replace(numUnitMatch[0], ' ').trim();
     }
+  }
+
+  // إذا تم نطق مدة (مثل: "30 دقيقة") دون تحديد نطاق من.. إلى
+  if(!isTimeRange && durationMins && durationMins > 0){
+    const now = new Date();
+    endedAt = now;
+    startedAt = new Date(now.getTime() - durationMins * 60000);
+    isTimeRange = true;
   }
 
   // 3. استخراج العنوان النظيف والملاحظات
   const stopWords = new Set([
     "سجل", "تسجيل", "أضف", "اضف", "حط", "تم", "عملت", "سويت",
     "أخذت", "اخذت", "شربت", "أكلت", "اكلت", "اليوم", "أمس",
-    "من", "إلى", "الى", "حتى", "الساعة", "في", "على", "مع", "كان", "كانت"
+    "من", "إلى", "الى", "حتى", "الساعة", "الساعه", "ساعة", "ساعه",
+    "في", "على", "مع", "كان", "كانت", "لمدة", "لمده"
   ]);
 
   const cleanWords = remaining.split(/[\s,،.]+/).filter(w => w && !stopWords.has(w));
   const cleanActivity = cleanWords.join(' ').trim();
 
-  // 4. مطابقة الفئة
+  // 4. مطابقة الفئة والفئة الفرعية بشكل ذكي
   let matchedCat = null;
   let matchedSubcat = null;
 
   for(const cat of categories){
     for(const sub of (cat.subcategories || [])){
-      if(cleanActivity.includes(sub) || sub.includes(cleanActivity)){
+      if(cleanActivity.toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes(cleanActivity.toLowerCase())){
         matchedCat = cat;
         matchedSubcat = sub;
         break;
@@ -3636,7 +3827,7 @@ function parseVoiceActivityText(rawText, categories){
 
   if(!matchedCat){
     for(const cat of categories){
-      if(cleanActivity.includes(cat.name) || cat.name.includes(cleanActivity)){
+      if(cleanActivity.toLowerCase().includes(cat.name.toLowerCase()) || cat.name.toLowerCase().includes(cleanActivity.toLowerCase())){
         matchedCat = cat;
         break;
       }
@@ -3644,15 +3835,19 @@ function parseVoiceActivityText(rawText, categories){
   }
 
   if(!matchedCat){
-    for(const [groupKey, synList] of Object.entries(CATEGORY_SYNONYMS_JS)){
-      const matchedSyn = synList.find(s => cleanActivity.includes(s) || s.includes(cleanActivity));
-      if(matchedSyn){
-        matchedCat = categories.find(c => c.name.includes(groupKey) || c.id.includes(groupKey));
-        if(matchedSyn !== groupKey && !matchedSubcat){
-          matchedSubcat = matchedSyn;
+    for(const cat of categories){
+      for(const [groupKey, synList] of Object.entries(CONCEPT_SYNONYMS_JS)){
+        const actHas = synList.some(s => cleanActivity.toLowerCase().includes(s.toLowerCase()));
+        const catHas = synList.some(s => cat.name.toLowerCase().includes(s.toLowerCase()) || (cat.id||'').toLowerCase().includes(s.toLowerCase()));
+        if(actHas && catHas){
+          matchedCat = cat;
+          if(cleanActivity && cleanActivity !== cat.name){
+            matchedSubcat = cleanActivity;
+          }
+          break;
         }
-        break;
       }
+      if(matchedCat) break;
     }
   }
 
@@ -6576,6 +6771,38 @@ document.addEventListener('click', async e=>{
       case 'openCategoryEditor': openCategoryEditor(el.dataset.id); break;
       case 'pickCeTrackingType': { window._catTrackingType=el.dataset.t; document.querySelectorAll('[data-act="pickCeTrackingType"]').forEach(b=>b.classList.toggle('on',b.dataset.t===el.dataset.t)); break; }
       case 'openCategorySettings': openCategorySettings(); break;
+      case 'openTimelineSettings': openTimelineSettings(); break;
+      case 'applyTlPreset': {
+        const s = parseInt(el.dataset.s, 10) || 0;
+        const e = parseInt(el.dataset.e, 10) || 24;
+        window._tempTlStart = s;
+        window._tempTlEnd = e;
+        updateTimelineSettingsPreview();
+        break;
+      }
+      case 'stepTlStart': {
+        const step = parseInt(el.dataset.step, 10) || 0;
+        let s = (window._tempTlStart !== undefined ? window._tempTlStart : 0) + step;
+        s = Math.max(0, Math.min((window._tempTlEnd || 24) - 1, s));
+        window._tempTlStart = s;
+        updateTimelineSettingsPreview();
+        break;
+      }
+      case 'stepTlEnd': {
+        const step = parseInt(el.dataset.step, 10) || 0;
+        let e = (window._tempTlEnd !== undefined ? window._tempTlEnd : 24) + step;
+        e = Math.max((window._tempTlStart || 0) + 1, Math.min(24, e));
+        window._tempTlEnd = e;
+        updateTimelineSettingsPreview();
+        break;
+      }
+      case 'saveTimelineSettings': {
+        setTimelineHours(window._tempTlStart, window._tempTlEnd);
+        closeSheet();
+        renderLifeTracker();
+        toast(`تم ضبط نطاق الخط الزمني (${window._tempTlStart}:00 - ${window._tempTlEnd}:00) ✓`);
+        break;
+      }
       case 'openIconPickerPopup': openIconPickerPopup(); break;
       case 'openColorPickerPopup': openColorPickerPopup(); break;
       case 'pickTrackerIcon': { window._catIcon=el.dataset.ic; const prev=document.getElementById('ceIconPreview'); if(prev) prev.textContent=el.dataset.ic; closePopup(); break; }
