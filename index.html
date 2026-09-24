@@ -3439,19 +3439,73 @@ function normalizeArabicDigitsJs(str){
   return String(str||'').replace(/[٠-٩]/g, d => map[d] || d);
 }
 
-function parseTimeTokenJs(token){
-  let clean = token.replace(/الساعة/g, '').replace(/[،,.]/g, '').replace(/:/g, ' ').trim();
-  const hasHalf = clean.includes('ونصف') || clean.includes('ونص');
-  const hasQuarter = clean.includes('وربع');
-  const hasThird = clean.includes('وثلث');
-  clean = clean.replace(/ونصف|ونص|وربع|وثلث|صباحاً|صباحا|مساءً|مساء/g, '').trim();
+function suggestTrackerIconJs(text){
+  const t = String(text||'').toLowerCase();
+  if(/شراء|أغراض|اغراض|تسوق|سوق|مقاضي|سوبرماركت|بقالة|مشتريات/.test(t)) return '🛍️';
+  if(/عمل|شغل|وظيفة|دوام|اجتماع|مكتب|برمجة|مشروع/.test(t)) return '💼';
+  if(/دراسة|مذاكرة|درس|امتحان|محاضرة|بحث|جامعة|مدرسة|كتاب/.test(t)) return '📚';
+  if(/سيارة|مشوار|طريق|سفر|سياقة|قيادة|صيانة|ورشة|بنزين/.test(t)) return '🚗';
+  if(/تنظيف|ترتيب|غسيل|بيت|منزل/.test(t)) return '🧹';
+  if(/عائلة|أهل|اهل|أصدقاء|اصدقاء|زيارة|جلسة|ضيوف/.test(t)) return '👥';
+  if(/مال|فلوس|مصاريف|حساب|بنك|فاتورة/.test(t)) return '💰';
+  if(/طبخ|مطبخ|قهوة|شاي/.test(t)) return '☕';
+  if(/لعب|ألعاب|العاب|فيلم|مسلسل|سينما|ترفيه/.test(t)) return '🎮';
+  if(/صلاة|جامع|مسجد|ذكر|دعاء|تطوع|خير|قرآن/.test(t)) return '🕌';
+  if(/طبيب|عيادة|مستشفى|فحص|تحليل/.test(t)) return '🩺';
+  if(/نادي|مسبح|سباحة|دراجة|كرة/.test(t)) return '⚽';
+  return '⭐';
+}
 
-  const parts = clean.split(/\s+/).filter(Boolean);
-  if(parts.length >= 2){
-    const h = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10) || 0;
-    if(!isNaN(h) && h >= 0 && h <= 23 && m >= 0 && m <= 59){
-      return { hour: h, minute: m };
+function suggestTrackerColorJs(text){
+  const t = String(text||'').toLowerCase();
+  if(/شراء|تسوق|أغراض|اغراض|مقاضي/.test(t)) return '#F59E0B';
+  if(/عمل|شغل|مكتب/.test(t)) return '#3B82F6';
+  if(/دراسة|مذاكرة/.test(t)) return '#8B5CF6';
+  if(/سيارة|مشوار/.test(t)) return '#06B6D4';
+  if(/تنظيف|بيت/.test(t)) return '#10B981';
+  if(/ترفيه|لعب/.test(t)) return '#EC4899';
+  return '#6366F1';
+}
+
+function parseTimeTokenJs(token){
+  let clean = String(token||'').replace(/الساعة/g, '').replace(/[،,]/g, '').trim();
+
+  const isAm = /صباح|فجر/.test(clean);
+  const isPm = /مساء|عصر|ليل/.test(clean);
+
+  const hasHalf = /ونصف|ونص/.test(clean);
+  const hasQuarter = /وربع/.test(clean);
+  const hasThird = /وثلث/.test(clean);
+  const isMinusQuarter = /إلا\s+ربع|الا\s+ربع/.test(clean);
+
+  clean = clean.replace(/صباحاً|صباحا|مساءً|مساء|عصراً|عصر|ظهراً|ظهر|ليلاً|ليلا/g, '')
+               .replace(/ونصف|ونص|وربع|وثلث|إلا\s+ربع|الا\s+ربع/g, '')
+               .replace(/دقيقة|دقائق/g, '')
+               .trim();
+
+  // نمط مركب مثل "11 و 45"
+  const compMatch = clean.match(/^(\d{1,2})\s*و\s*(\d{1,2})$/);
+  if(compMatch){
+    let h = parseInt(compMatch[1], 10);
+    let m = parseInt(compMatch[2], 10) || 0;
+    if(!isNaN(h) && h >= 0 && h <= 24 && m >= 0 && m <= 59){
+      let adjH = (h === 24) ? 0 : h;
+      if(isPm && adjH < 12) adjH += 12;
+      if(isAm && adjH === 12) adjH = 0;
+      return { hour: adjH, minute: m };
+    }
+  }
+
+  // نمط رقمي مباشر "11:45" أو "11.45"
+  const colonOrDot = clean.split(/[:.]/).filter(Boolean);
+  if(colonOrDot.length === 2){
+    let h = parseInt(colonOrDot[0].trim(), 10);
+    let m = parseInt(colonOrDot[1].trim(), 10);
+    if(!isNaN(h) && !isNaN(m) && h >= 0 && h <= 24 && m >= 0 && m <= 59){
+      let adjH = (h === 24) ? 0 : h;
+      if(isPm && adjH < 12) adjH += 12;
+      if(isAm && adjH === 12) adjH = 0;
+      return { hour: adjH, minute: m };
     }
   }
 
@@ -3464,6 +3518,13 @@ function parseTimeTokenJs(token){
   if(hasHalf) minute = 30;
   else if(hasQuarter) minute = 15;
   else if(hasThird) minute = 20;
+  else if(isMinusQuarter){
+    hour = (hour === 0) ? 23 : (hour - 1);
+    minute = 45;
+  }
+
+  if(isPm && hour < 12) hour += 12;
+  if(isAm && hour === 12) hour = 0;
 
   return { hour, minute };
 }
@@ -3477,20 +3538,37 @@ function parseVoiceActivityText(rawText, categories){
   let endedAt = null;
   let isTimeRange = false;
 
-  const rangeRegex = /من\s+(?:الساعة\s+)?(.+?)\s+(?:إلى|ل)\s+(?:الساعة\s+)?([^\s،,]+(?:\s+(?:عشرة|عشر|ونصف|وربع|وثلث|صباحا|مساءً|مساء|صباحاً))?)/i;
+  const timeTokenRegex = /(?:\d{1,2}(?:[:.]\d{2})?(?:\s*و\s*\d{1,2}(?:\s*دقيقة)?)?|(?:ال)?(?:حادية\s+عشر(?:ة)?|ثانية\s+عشر(?:ة)?|إحدى\s+عشر(?:ة)?|احدى\s+عشر(?:ة)?|اثنا\s+عشر|واحدة|ثانية|ثالثة|رابعة|خامسة|سادسة|سابعة|ثامنة|تاسعة|عاشرة|واحد|اثنين|اثنتين|ثلاث|ثلاثة|أربع|أربعة|اربع|اربعة|خمس|خمسة|ست|ستة|سبع|سبعة|ثمان|ثمانية|تسع|تسعة|عشر|عشرة))(?:\s+(?:ونصف|ونص|وربع|وثلث|إلا\s+ربع|الا\s+ربع))?(?:\s*(?:صباحاً|صباحا|مساءً|مساء|عصراً|عصر|ظهراً|ظهر|ليلاً|ليلا))?/;
+
+  const rangeRegex = new RegExp('من\\s+(?:الساعة\\s+)?(' + timeTokenRegex.source + ')\\s+(?:إلى|الى|حتى|وحتى|لغاية|لـ|ل)\\s+(?:الساعة\\s+)?(' + timeTokenRegex.source + ')', 'i');
   const match = remaining.match(rangeRegex);
   if(match){
     const tStart = parseTimeTokenJs(match[1].trim());
     const tEnd = parseTimeTokenJs(match[2].trim());
     if(tStart && tEnd){
-      const isPmContext = remaining.includes('مساء') || remaining.includes('عصر') || remaining.includes('ظهر') ||
-        (new Date().getHours() >= 12 && tStart.hour < 12 && tEnd.hour <= 12);
-      let sH = (isPmContext && tStart.hour < 12) ? tStart.hour + 12 : tStart.hour;
-      let eH = (isPmContext && tEnd.hour < 12) ? tEnd.hour + 12 : tEnd.hour;
+      let sH = tStart.hour;
+      const sM = tStart.minute;
+      let eH = tEnd.hour;
+      const eM = tEnd.minute;
+
+      const isExplicitPm = /مساء|عصر|ليلا|ليلاً|عشاء/.test(normalized);
+      const isExplicitAm = /صباح|فجر/.test(normalized);
+
+      if(isExplicitPm){
+        if(sH < 12) sH += 12;
+        if(eH < 12) eH += 12;
+      } else if(!isExplicitAm){
+        if(eH < sH && eH >= 1 && eH <= 6){
+          eH += 12;
+        } else if(sH >= 1 && sH <= 6 && eH >= 1 && eH <= 7 && new Date().getHours() >= 12){
+          sH += 12;
+          eH += 12;
+        }
+      }
 
       const now = new Date();
-      const sDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, tStart.minute, 0);
-      let eDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, tEnd.minute, 0);
+      const sDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH % 24, sM, 0);
+      let eDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH % 24, eM, 0);
       if(eDate <= sDate){
         eDate.setDate(eDate.getDate() + 1);
       }
@@ -3501,51 +3579,7 @@ function parseVoiceActivityText(rawText, categories){
     }
   }
 
-  // 2. مطابقة الفئة
-  let matchedCat = null;
-  let matchedSubcat = null;
-
-  for(const cat of categories){
-    for(const sub of (cat.subcategories || [])){
-      if(remaining.includes(sub)){
-        matchedCat = cat;
-        matchedSubcat = sub;
-        remaining = remaining.replace(sub, ' ').trim();
-        break;
-      }
-    }
-    if(matchedCat) break;
-  }
-
-  if(!matchedCat){
-    for(const cat of categories){
-      if(remaining.includes(cat.name)){
-        matchedCat = cat;
-        remaining = remaining.replace(cat.name, ' ').trim();
-        break;
-      }
-    }
-  }
-
-  if(!matchedCat){
-    for(const [groupKey, synList] of Object.entries(CATEGORY_SYNONYMS_JS)){
-      const matchedSyn = synList.find(s => remaining.includes(s));
-      if(matchedSyn){
-        matchedCat = categories.find(c => c.name.includes(groupKey) || c.id.includes(groupKey));
-        if(matchedSyn !== groupKey && !matchedSubcat){
-          matchedSubcat = matchedSyn;
-        }
-        remaining = remaining.replace(matchedSyn, ' ').trim();
-        break;
-      }
-    }
-  }
-
-  if(!matchedCat && categories.length > 0){
-    matchedCat = categories[0];
-  }
-
-  // 3. استخراج الكميات أو الشدة
+  // 2. استخراج الكميات أو الشدة
   let extractedQty = null;
   const phrases = [
     ["ساعتان", "ساعتان"], ["ساعتين", "ساعتان"],
@@ -3575,15 +3609,59 @@ function parseVoiceActivityText(rawText, categories){
     }
   }
 
-  // 4. استخراج الملاحظات والكلمات المتبقية
+  // 3. استخراج العنوان النظيف والملاحظات
   const stopWords = new Set([
     "سجل", "تسجيل", "أضف", "اضف", "حط", "تم", "عملت", "سويت",
     "أخذت", "اخذت", "شربت", "أكلت", "اكلت", "اليوم", "أمس",
-    "من", "إلى", "الساعة", "في", "على", "مع", "كان", "كانت"
+    "من", "إلى", "الى", "حتى", "الساعة", "في", "على", "مع", "كان", "كانت"
   ]);
 
   const cleanWords = remaining.split(/[\s,،.]+/).filter(w => w && !stopWords.has(w));
-  const cleanNote = cleanWords.join(' ').trim();
+  const cleanActivity = cleanWords.join(' ').trim();
+
+  // 4. مطابقة الفئة
+  let matchedCat = null;
+  let matchedSubcat = null;
+
+  for(const cat of categories){
+    for(const sub of (cat.subcategories || [])){
+      if(cleanActivity.includes(sub) || sub.includes(cleanActivity)){
+        matchedCat = cat;
+        matchedSubcat = sub;
+        break;
+      }
+    }
+    if(matchedCat) break;
+  }
+
+  if(!matchedCat){
+    for(const cat of categories){
+      if(cleanActivity.includes(cat.name) || cat.name.includes(cleanActivity)){
+        matchedCat = cat;
+        break;
+      }
+    }
+  }
+
+  if(!matchedCat){
+    for(const [groupKey, synList] of Object.entries(CATEGORY_SYNONYMS_JS)){
+      const matchedSyn = synList.find(s => cleanActivity.includes(s) || s.includes(cleanActivity));
+      if(matchedSyn){
+        matchedCat = categories.find(c => c.name.includes(groupKey) || c.id.includes(groupKey));
+        if(matchedSyn !== groupKey && !matchedSubcat){
+          matchedSubcat = matchedSyn;
+        }
+        break;
+      }
+    }
+  }
+
+  // 5. هل هذه فئة جديدة غير موجودة؟
+  const isNewCategory = !matchedCat;
+  const suggestedCategoryName = isNewCategory ? (cleanActivity || 'نشاط جديد') : null;
+  const suggestedIcon = suggestTrackerIconJs(cleanActivity);
+  const suggestedColor = suggestTrackerColorJs(cleanActivity);
+  const finalTitle = cleanActivity || (matchedSubcat || (matchedCat ? matchedCat.name : 'نشاط'));
 
   let finalQty = extractedQty;
   if(isTimeRange && startedAt && endedAt){
@@ -3592,16 +3670,17 @@ function parseVoiceActivityText(rawText, categories){
   }
 
   const isSeverity = ['خفيف', 'متوسط', 'شديد'].includes(extractedQty);
-  let combinedNote = cleanNote;
-  if(isSeverity){
-    combinedNote = [extractedQty, cleanNote].filter(Boolean).join(' - ');
-    if(!isTimeRange) finalQty = null;
-  }
+  let combinedNote = isSeverity ? extractedQty : null;
 
   return {
     rawText,
+    activityTitle: finalTitle,
     category: matchedCat,
-    subcategory: matchedSubcat,
+    isNewCategory,
+    suggestedCategoryName,
+    suggestedIcon,
+    suggestedColor,
+    subcategory: matchedSubcat || (!isNewCategory && matchedCat && finalTitle !== matchedCat.name ? finalTitle : null),
     quantityOrDuration: finalQty,
     note: combinedNote,
     startedAt,
@@ -3656,16 +3735,41 @@ function startTrackerVoiceInput(){
   }
 }
 
+function toggleVrNewCat(on){
+  window._vrIsNewCat = on;
+  const banner = document.getElementById('vrNewCatBanner');
+  if(banner) banner.style.borderColor = on ? 'var(--accent)' : 'var(--border)';
+  const badge = document.getElementById('vrNewCatBadge');
+  if(badge) badge.style.display = on ? 'inline-block' : 'none';
+  const subF = document.getElementById('vrSubcatField');
+  if(subF) subF.style.display = on ? 'none' : 'block';
+  const saveB = document.getElementById('vrSaveBtn');
+  if(saveB) saveB.textContent = on ? `＋ إضافة فئة «${window._vrNewCatName}» وحفظ النشاط` : 'حفظ النشاط ✓';
+  const activeIcon = document.getElementById('vrActiveIcon');
+  if(activeIcon) activeIcon.textContent = on ? (window._vrNewCatIcon || '⭐') : '🎯';
+  document.querySelectorAll('[data-act="pickVrCat"]').forEach(b => {
+    b.classList.remove('on');
+    b.style.background = '';
+    b.style.color = '';
+    b.style.borderColor = '';
+  });
+}
+
 function openVoiceReviewSheet(parsed){
   const trk = getTrackerData();
   const cats = trk.categories;
+  const isNew = !!parsed.isNewCategory;
   const selCat = parsed.category || cats[0];
-  const catId = selCat ? selCat.id : (cats[0] ? cats[0].id : '');
+  const catId = selCat ? selCat.id : '';
   const isRange = !!parsed.isTimeRange;
 
+  window._vrParsed = parsed;
+  window._vrIsNewCat = isNew;
+  window._vrNewCatName = parsed.suggestedCategoryName || parsed.activityTitle;
+  window._vrNewCatIcon = parsed.suggestedIcon || '⭐';
+  window._vrNewCatColor = parsed.suggestedColor || '#F59E0B';
   window._vrCatId = catId;
   window._vrIsRange = isRange;
-  window._vrSubcat = parsed.subcategory || '';
 
   const now = new Date();
   let sTime = '08:00';
@@ -3680,16 +3784,38 @@ function openVoiceReviewSheet(parsed){
     sTime = eTime;
   }
 
-  openSheet(sheetHead('تسجيل صوتي ذكي 🎙️') + `
-    <div style="background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:14px;border:1px solid var(--accent-2)">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:2px">النص الصوتي المُلتقط:</div>
-      <b style="font-size:13.5px;color:var(--accent-dark)">«${esc(parsed.rawText)}»</b>
+  openSheet(sheetHead('مراجعة وتأكيد التسجيل 🎙️') + `
+    <div style="background:var(--accent-soft);border-radius:12px;padding:12px;margin-bottom:14px;border:1px solid var(--accent-2)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:3px">النشاط أو العنوان المسجل:</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px" id="vrActiveIcon">${isNew ? esc(parsed.suggestedIcon) : (selCat ? selCat.icon : '🎯')}</span>
+        <b style="font-size:16px;color:var(--accent-dark)" id="vrActiveTitle">${esc(parsed.activityTitle)}</b>
+      </div>
+      ${parsed.rawText !== parsed.activityTitle ? `
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px">🎙️ «${esc(parsed.rawText)}»</div>
+      ` : ''}
     </div>
 
-    <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px">الفئة المكتشفة:</label>
-    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none">
+    ${isNew ? `
+      <div id="vrNewCatBanner" data-act="toggleVrNewCat" style="background:var(--surface);border-radius:12px;padding:12px;margin-bottom:14px;border:1.5px solid var(--accent);box-shadow:var(--shadow-sm);cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">${esc(parsed.suggestedIcon)}</span>
+            <div>
+              <div style="font-size:11px;color:var(--accent-dark);font-weight:700">✨ فئة جديدة مقترحة (غير موجودة):</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text-1)">${esc(window._vrNewCatName)}</div>
+              <div style="font-size:11px;color:var(--text-3)">سيتم إنشاء هذه الفئة في المتتبع وتسجيل النشاط بها</div>
+            </div>
+          </div>
+          <span class="badge" id="vrNewCatBadge" style="background:var(--accent);color:#fff;font-weight:700">محددة ✓</span>
+        </div>
+      </div>
+    ` : ''}
+
+    <label style="display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px">${isNew ? 'أو اختر من الفئات الحالية:' : 'الفئة المستخرجة:'}</label>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none" id="vrCatPillsRow">
       ${cats.map(c => `
-        <button type="button" class="trk-cat-pill ${c.id===catId?'on':''}" data-act="pickVrCat" data-id="${c.id}" style="${c.id===catId?`background:${c.colorHex};color:#fff;border-color:${c.colorHex}`:''}">
+        <button type="button" class="trk-cat-pill ${(!isNew && c.id===catId)?'on':''}" data-act="pickVrCat" data-id="${c.id}" style="${(!isNew && c.id===catId)?`background:${c.colorHex};color:#fff;border-color:${c.colorHex}`:''}">
           <span>${c.icon}</span>
           <span>${esc(c.name)}</span>
         </button>
@@ -3698,7 +3824,7 @@ function openVoiceReviewSheet(parsed){
 
     <label style="display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:6px">طبيعة التوقيت:</label>
     <div style="display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:4px;margin-bottom:12px">
-      <button type="button" class="chip ${isRange?'on':''}" id="btnVrRange" data-act="toggleVrMode" data-m="range" style="flex:1;justify-content:center">⏱️ فترة (بداية ونهاية)</button>
+      <button type="button" class="chip ${isRange?'on':''}" id="btnVrRange" data-act="toggleVrMode" data-m="range" style="flex:1;justify-content:center">⏱️ فترة (من.. إلى)</button>
       <button type="button" class="chip ${!isRange?'on':''}" id="btnVrInstant" data-act="toggleVrMode" data-m="instant" style="flex:1;justify-content:center">📍 فوري لحظي</button>
     </div>
 
@@ -3722,7 +3848,7 @@ function openVoiceReviewSheet(parsed){
       </div>
     </div>
 
-    <div class="field" style="margin-bottom:10px">
+    <div class="field" id="vrSubcatField" style="display:${isNew?'none':'block'};margin-bottom:10px">
       <label>التصنيف الفرعي</label>
       <input id="vrSubcat" value="${esc(parsed.subcategory||'')}" placeholder="مثال: فطور، مشي صباحي، صداع نصفي...">
     </div>
@@ -3738,7 +3864,7 @@ function openVoiceReviewSheet(parsed){
     </div>
 
     <div style="display:flex;gap:10px">
-      <button class="btn" data-act="saveVoiceReview" style="flex:2">حفظ النشاط ✓</button>
+      <button class="btn" data-act="saveVoiceReview" id="vrSaveBtn" style="flex:2">${isNew ? `＋ إضافة فئة «${esc(window._vrNewCatName)}» وحفظ النشاط` : 'حفظ النشاط ✓'}</button>
       <button class="btn secondary" data-act="closeSheet" style="flex:1">إلغاء</button>
     </div>
   `);
@@ -3746,8 +3872,9 @@ function openVoiceReviewSheet(parsed){
 
 async function saveVoiceReview(){
   const trk = getTrackerData();
-  const cat = trk.categories.find(c => c.id === window._vrCatId) || trk.categories[0];
-  if(!cat){ toast('تعذر العثور على الفئة'); return; }
+  const isNew = !!window._vrIsNewCat;
+  let catId = window._vrCatId;
+  let catName = '';
 
   const isRange = window._vrIsRange;
   const todayIso = window._trackerDate || new Date().toISOString().slice(0, 10);
@@ -3771,12 +3898,36 @@ async function saveVoiceReview(){
     loggedAt = `${todayIso}T${iTime}:00`;
   }
 
-  const subcat = ($('#vrSubcat')||{}).value || null;
+  if(isNew && window._vrNewCatName){
+    catName = window._vrNewCatName.trim();
+    const newCat = {
+      id: 'cat_' + Date.now(),
+      name: catName,
+      icon: window._vrNewCatIcon || '⭐',
+      colorHex: window._vrNewCatColor || '#F59E0B',
+      sortOrder: trk.categories.length + 1,
+      subcategories: [],
+      dailyGoal: null,
+      reminderEnabled: false,
+      trackingType: isRange ? 'TIME_RANGE' : 'POINT_IN_TIME',
+      syncIntent: 'local_only'
+    };
+    trk.categories.push(newCat);
+    catId = newCat.id;
+    upsertTrackerCategoryCloud(newCat);
+  } else {
+    const existing = trk.categories.find(c => c.id === catId) || trk.categories[0];
+    if(!existing){ toast('تعذر العثور على الفئة'); return; }
+    catId = existing.id;
+    catName = existing.name;
+  }
+
+  const subcat = isNew ? null : (($('#vrSubcat')||{}).value || null);
   const note = ($('#vrNote')||{}).value || null;
 
   const entry = {
     id: 'ent_' + (crypto.randomUUID ? crypto.randomUUID().slice(0,10) : String(Date.now())),
-    categoryId: cat.id,
+    categoryId: catId,
     subcategory: subcat && subcat.trim() ? subcat.trim() : null,
     quantity: quantity && quantity.trim() ? quantity.trim() : null,
     startedAt: startedAt,
@@ -3790,7 +3941,7 @@ async function saveVoiceReview(){
   saveTrackerData(trk);
   closeSheet();
   renderLifeTracker();
-  toast(`تم حفظ النشاط الصوتي: ${cat.name} ${cat.icon} ✓`);
+  toast(`تم حفظ النشاط: ${catName} ✓`);
   insertTrackerEntryCloud(entry);
 }
 
@@ -6463,10 +6614,22 @@ document.addEventListener('click', async e=>{
       }
       case 'saveFullEntryEdit': await saveFullEntryEdit(el.dataset.id); break;
       case 'startTrackerVoiceInput': startTrackerVoiceInput(); break;
+      case 'toggleVrNewCat': toggleVrNewCat(true); break;
       case 'pickVrCat': {
+        window._vrIsNewCat = false;
         window._vrCatId = el.dataset.id;
         const trk = getTrackerData();
         const cat = trk.categories.find(c => c.id === el.dataset.id);
+        const banner = document.getElementById('vrNewCatBanner');
+        if(banner) banner.style.borderColor = 'var(--border)';
+        const badge = document.getElementById('vrNewCatBadge');
+        if(badge) badge.style.display = 'none';
+        const subF = document.getElementById('vrSubcatField');
+        if(subF) subF.style.display = 'block';
+        const saveB = document.getElementById('vrSaveBtn');
+        if(saveB) saveB.textContent = 'حفظ النشاط ✓';
+        const activeIcon = document.getElementById('vrActiveIcon');
+        if(activeIcon && cat) activeIcon.textContent = cat.icon;
         document.querySelectorAll('[data-act="pickVrCat"]').forEach(b => {
           const isThis = b.dataset.id === el.dataset.id;
           b.classList.toggle('on', isThis);
