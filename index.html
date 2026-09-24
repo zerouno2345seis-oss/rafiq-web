@@ -927,13 +927,23 @@ async function afterAuth(){
   window._authErr=''; window._authInfo='';
   askNotify();
   askGeo();
-  await ensureProfile(); await refreshAll(); startPolling(); renderApp();
+  const snap=loadSnap();
+  if(snap && snap.profile){ data=snap; }
+  renderApp();
+  startPolling();
+  ensureProfile().then(() => refreshAll()).then(() => renderApp());
   if(pendingJoin){ openJoinSheet(pendingJoin); }
 }
 async function ensureProfile(){
-  try{ const me=meId(); const ex=await rest('GET','profiles','id=eq.'+me+'&select=*');
-    if(!ex.length){ const meta=session.user.user_metadata||{};
-      await rest('POST','profiles',{id:me,display_name:meta.display_name||'صديقي',accent_theme:meta.accent_theme||'green'},'return=representation'); } }catch(e){}
+  try{
+    if(data && data.profile) return;
+    const me=meId();
+    const ex=await rest('GET','profiles','id=eq.'+me+'&select=*');
+    if(!ex.length){
+      const meta=(session&&session.user&&session.user.user_metadata)||{};
+      await rest('POST','profiles',{id:me,display_name:meta.display_name||'صديقي',accent_theme:meta.accent_theme||'green'},'return=representation');
+    }
+  }catch(e){}
 }
 
 /* ================= الحساب: signUp / signIn / signOut ================= */
