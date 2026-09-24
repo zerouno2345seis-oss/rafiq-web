@@ -3931,22 +3931,49 @@ function startTrackerVoiceInput(){
 }
 
 function toggleVrNewCat(on){
-  window._vrIsNewCat = on;
+  window._vrIsNewCat = (typeof on === 'boolean') ? on : !window._vrIsNewCat;
+  const isN = window._vrIsNewCat;
   const banner = document.getElementById('vrNewCatBanner');
-  if(banner) banner.style.borderColor = on ? 'var(--accent)' : 'var(--border)';
+  if(banner) banner.style.borderColor = isN ? 'var(--accent)' : 'var(--border)';
   const badge = document.getElementById('vrNewCatBadge');
-  if(badge) badge.style.display = on ? 'inline-block' : 'none';
+  if(badge) badge.style.display = isN ? 'inline-block' : 'none';
   const subF = document.getElementById('vrSubcatField');
-  if(subF) subF.style.display = on ? 'none' : 'block';
+  if(subF) subF.style.display = isN ? 'none' : 'block';
   const saveB = document.getElementById('vrSaveBtn');
-  if(saveB) saveB.textContent = on ? `＋ إضافة فئة «${window._vrNewCatName}» وحفظ النشاط` : 'حفظ النشاط ✓';
+  if(saveB) saveB.textContent = isN ? `＋ إضافة فئة «${window._vrNewCatName}» وحفظ النشاط` : 'حفظ النشاط ✓';
   const activeIcon = document.getElementById('vrActiveIcon');
-  if(activeIcon) activeIcon.textContent = on ? (window._vrNewCatIcon || '⭐') : '🎯';
-  document.querySelectorAll('[data-act="pickVrCat"]').forEach(b => {
-    b.classList.remove('on');
-    b.style.background = '';
-    b.style.color = '';
-    b.style.borderColor = '';
+  if(activeIcon) activeIcon.textContent = isN ? (window._vrNewCatIcon || '⭐') : '🎯';
+  if(isN){
+    document.querySelectorAll('[data-act="pickVrCat"]').forEach(b => {
+      b.classList.remove('on');
+      b.style.background = '';
+      b.style.color = '';
+      b.style.borderColor = '';
+    });
+  }
+}
+
+function toggleVrIconPicker(){
+  const g = document.getElementById('vrEmojiPickerGrid');
+  if(!g) return;
+  const isHidden = g.style.display === 'none' || !g.style.display;
+  g.style.display = isHidden ? 'grid' : 'none';
+}
+
+function pickVrEmoji(em){
+  window._vrNewCatIcon = em;
+  const span = document.getElementById('vrNewCatIconSpan');
+  if(span) span.textContent = em;
+  const activeIcon = document.getElementById('vrActiveIcon');
+  if(activeIcon && window._vrIsNewCat) activeIcon.textContent = em;
+  const g = document.getElementById('vrEmojiPickerGrid');
+  if(g) g.style.display = 'none';
+}
+
+function pickVrColor(hex){
+  window._vrNewCatColor = hex;
+  document.querySelectorAll('.vr-color-dot').forEach(el => {
+    el.style.border = el.getAttribute('data-col') === hex ? '2px solid var(--text-1)' : '2px solid transparent';
   });
 }
 
@@ -3991,21 +4018,31 @@ function openVoiceReviewSheet(parsed){
       ` : ''}
     </div>
 
-    ${isNew ? `
-      <div id="vrNewCatBanner" data-act="toggleVrNewCat" style="background:var(--surface);border-radius:12px;padding:12px;margin-bottom:14px;border:1.5px solid var(--accent);box-shadow:var(--shadow-sm);cursor:pointer">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:24px">${esc(parsed.suggestedIcon)}</span>
-            <div>
-              <div style="font-size:11px;color:var(--accent-dark);font-weight:700">✨ فئة جديدة مقترحة (غير موجودة):</div>
-              <div style="font-size:14px;font-weight:700;color:var(--text-1)">${esc(window._vrNewCatName)}</div>
-              <div style="font-size:11px;color:var(--text-3)">سيتم إنشاء هذه الفئة في المتتبع وتسجيل النشاط بها</div>
-            </div>
-          </div>
-          <span class="badge" id="vrNewCatBadge" style="background:var(--accent);color:#fff;font-weight:700">محددة ✓</span>
-        </div>
+    <div id="vrNewCatBanner" style="background:var(--surface);border-radius:12px;padding:12px;margin-bottom:14px;border:1.5px solid ${isNew?'var(--accent)':'var(--border)'};box-shadow:var(--shadow-sm)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11.5px;color:var(--accent-dark);font-weight:700">✨ ${isNew ? 'فئة جديدة مقترحة (غير موجودة):' : 'إنشاء كفئة جديدة مستقلة:'}</div>
+        <button type="button" class="badge" id="vrNewCatBadge" data-act="toggleVrNewCat" style="background:var(--accent);color:#fff;font-weight:700;border:none;cursor:pointer;display:${isNew?'inline-block':'none'}">محددة للإنشاء ✓</button>
+        ${!isNew ? `<button type="button" class="mini" data-act="toggleVrNewCat" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:11px">تحديد للإنشاء</button>` : ''}
       </div>
-    ` : ''}
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" id="vrIconPickerBtn" data-act="toggleVrIconPicker" title="اضغط لاختيار أيقونة" style="display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:20px;cursor:pointer">
+          <span id="vrNewCatIconSpan">${esc(window._vrNewCatIcon)}</span>
+          <span style="font-size:10px">✏️</span>
+        </button>
+        <input id="vrNewCatNameInput" value="${esc(window._vrNewCatName)}" placeholder="اسم الفئة الجديدة" style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-weight:700;font-size:13.5px" oninput="window._vrNewCatName=this.value; const b=document.getElementById('vrSaveBtn'); if(b && window._vrIsNewCat) b.textContent='＋ إضافة فئة «'+this.value+'» وحفظ النشاط'">
+      </div>
+      <div id="vrEmojiPickerGrid" style="display:none;margin-top:8px;padding:8px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);grid-template-columns:repeat(7,1fr);gap:6px">
+        ${['🛍️','🛒','🏃','💊','💧','🍽️','😴','📚','💼','🚗','🧹','🎯','⭐','☕','🩺','🌿','💡','🧘','⚽','💻','🎨','📝','🧺','🍎','🕌','✈️','💰','🚿'].map(em => `
+          <button type="button" class="mini" data-act="pickVrEmoji" data-em="${em}" style="font-size:18px;padding:4px;border:none;background:transparent;cursor:pointer">${em}</button>
+        `).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <span style="font-size:11px;color:var(--text-3)">اللون:</span>
+        ${['#F59E0B','#10B981','#3B82F6','#8B5CF6','#F43F5E','#14B8A6','#F97316'].map(col => `
+          <span class="vr-color-dot" data-act="pickVrColor" data-col="${col}" style="width:20px;height:20px;border-radius:50%;background:${col};cursor:pointer;display:inline-block;border:2px solid ${col===window._vrNewCatColor?'var(--text-1)':'transparent'}"></span>
+        `).join('')}
+      </div>
+    </div>
 
     <label style="display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:6px">${isNew ? 'أو اختر من الفئات الحالية:' : 'الفئة المستخرجة:'}</label>
     <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none" id="vrCatPillsRow">
@@ -4093,6 +4130,9 @@ async function saveVoiceReview(){
     loggedAt = `${todayIso}T${iTime}:00`;
   }
 
+  const nameIn = document.getElementById('vrNewCatNameInput');
+  if(nameIn && nameIn.value.trim()) window._vrNewCatName = nameIn.value.trim();
+
   if(isNew && window._vrNewCatName){
     catName = window._vrNewCatName.trim();
     const newCat = {
@@ -4144,11 +4184,12 @@ function openPdfExport(){
   const trk = getTrackerData();
   const selDate = window._trackerDate || new Date().toISOString().slice(0,10);
   window._pdfPreset = 'DAY';
+  window._pdfExportMode = 'BOTH';
   window._pdfCats = trk.categories.map(c => c.id);
   window._pdfNotes = true;
 
   openSheet(sheetHead('📄 تصدير تقرير متتبع الحياة')+`
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">اختر الفترة الزمنية والفئات لتوليد تقرير مفصل جاهز للطباعة أو الحفظ كـ PDF.</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">اختر الفترة الزمنية ونمط التقرير لتوليد تقرير مفصل جاهز للطباعة أو الحفظ كـ PDF.</p>
     
     <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">الفترة الزمنية:</label>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
@@ -4179,6 +4220,19 @@ function openPdfExport(){
       </div>
     </div>
 
+    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">محتوى ونمط التقرير:</label>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      ${[
+        ['BOTH', '🌟 شامل (خط + أنشطة)'],
+        ['TIMELINE', '📊 الخط الزمني فقط'],
+        ['ACTIVITIES', '📋 سجل الأنشطة فقط']
+      ].map(([k, lbl]) => `
+        <button type="button" class="chip ${(window._pdfExportMode||'BOTH')===k?'on':''}" data-act="pickPdfMode" data-k="${k}" style="flex:1;justify-content:center;font-size:11.5px;padding:6px 4px;text-align:center">
+          ${lbl}
+        </button>
+      `).join('')}
+    </div>
+
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <label style="font-size:13px;font-weight:600">تخصيص الفئات المشمولة:</label>
       <div style="display:flex;gap:8px">
@@ -4204,7 +4258,7 @@ function openPdfExport(){
   `);
 }
 
-function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, includeNotes, periodTitle){
+function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, includeNotes, periodTitle, exportMode = (window._pdfExportMode || 'BOTH')){
   const trk = getTrackerData();
   const catMap = {};
   trk.categories.forEach(c => { catMap[c.id] = c; });
@@ -4217,8 +4271,21 @@ function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, incl
   }).sort((a,b) => (b.loggedAt||'').localeCompare(a.loggedAt||''));
 
   const counts = {};
+  let totalMinutes = 0;
+  const catMinutes = {};
   entries.forEach(e => {
     counts[e.categoryId] = (counts[e.categoryId] || 0) + 1;
+    let dur = 15;
+    if(e.startedAt && e.endedAt){
+      const diff = Math.round((new Date(e.endedAt) - new Date(e.startedAt))/60000);
+      if(diff > 0) dur = diff;
+    } else if(e.quantity) {
+      const m = e.quantity.match(/\d+/);
+      if(m && (e.quantity.includes('ساعة') || e.quantity.includes('ساعات'))) dur = parseInt(m[0],10)*60;
+      else if(m && (e.quantity.includes('دقيقة') || e.quantity.includes('دقائق'))) dur = parseInt(m[0],10);
+    }
+    catMinutes[e.categoryId] = (catMinutes[e.categoryId] || 0) + dur;
+    totalMinutes += dur;
   });
 
   const periodText = startDate === endDate ? formatArabicDate(startDate) : (startDate + ' إلى ' + endDate);
@@ -4239,15 +4306,185 @@ function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, incl
     }
   });
 
-  let rowsHtml = '';
-  for(const entry of entries){
-    const cat = catMap[entry.categoryId] || { name:'أخرى', icon:'📌', colorHex:'#3B82F6' };
-    const subcat = entry.subcategory ? `<span style="font-size:11px;color:#6B7280;margin-right:4px">(${esc(entry.subcategory)})</span>` : '';
-    const qty = entry.quantity ? `<span style="background:#E0E7FF;color:#3730A3;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:4px">⏱️ ${esc(entry.quantity)}</span>` : '';
-    const note = (includeNotes && entry.note) ? `<div style="font-size:11px;color:#4B5563;margin-top:4px">📝 ${esc(entry.note)}</div>` : '';
-    const timeStr = (entry.startedAt && entry.endedAt) 
-      ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-      : formatArabicTime(entry.loggedAt);
+  const showTimeline = exportMode === 'BOTH' || exportMode === 'TIMELINE';
+  const showActivities = exportMode === 'BOTH' || exportMode === 'ACTIVITIES';
+
+  // الخط الزمني البصري لليوم وتوزيع الأوقات
+  let timelineHtml = '';
+  if (showTimeline) {
+    const isSingleDay = startDate === endDate;
+    const startHour = getTimelineStartHour();
+    const endHour = getTimelineEndHour();
+    const spanHours = Math.max(1, endHour - startHour);
+    const totalSpanMin = spanHours * 60;
+    const rowStartMin = startHour * 60;
+    const rowEndMin = endHour * 60;
+
+    if (isSingleDay) {
+      const sortedDayEntries = [...entries].sort((a,b) => (a.startedAt||a.loggedAt||'').localeCompare(b.startedAt||b.loggedAt||''));
+      let slicesHtml = '';
+      sortedDayEntries.forEach(entry => {
+        const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+        const hasRange = !!(entry.startedAt && entry.endedAt);
+        let sMin, durMin;
+        if (hasRange) {
+          sMin = parseIsoToMinutes(entry.startedAt);
+          const eMin = parseIsoToMinutes(entry.endedAt);
+          durMin = eMin > sMin ? eMin - sMin : 30;
+        } else {
+          const lMin = parseIsoToMinutes(entry.loggedAt);
+          sMin = Math.max(0, lMin - 7);
+          durMin = 15;
+        }
+        const segStart = Math.max(rowStartMin, Math.min(rowEndMin, sMin));
+        const segEnd = Math.max(rowStartMin, Math.min(rowEndMin, sMin + durMin));
+        if (segEnd > segStart || (!hasRange && sMin >= rowStartMin && sMin <= rowEndMin)) {
+          const leftPct = ((segStart - rowStartMin) / totalSpanMin) * 100;
+          const widthPct = Math.max(2.5, (Math.max(10, segEnd - segStart) / totalSpanMin) * 100);
+          slicesHtml += `<div style="position:absolute;top:4px;bottom:4px;left:${leftPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;background:${cat.colorHex};border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.15)" title="${esc(cat.name)}">${cat.icon}</div>`;
+        }
+      });
+
+      let ticksHtml = '';
+      let labelsHtml = '';
+      const step = spanHours <= 8 ? 1 : (spanHours <= 16 ? 2 : 3);
+      for (let h = startHour; h <= endHour; h += step) {
+        const pct = ((h - startHour) / spanHours) * 100;
+        ticksHtml += `<div style="position:absolute;top:0;bottom:0;left:${pct.toFixed(2)}%;width:1px;background:#D1D5DB"></div>`;
+        labelsHtml += `<span style="position:absolute;left:${pct.toFixed(2)}%;transform:translateX(-50%)">${String(h).padStart(2,'0')}:00</span>`;
+      }
+
+      timelineHtml += `
+        <div style="border:1px solid #E5E7EB;border-radius:12px;padding:14px;background:#fff;margin-bottom:20px;page-break-inside:avoid">
+          <h3 style="font-size:15px;margin:0 0 10px 0;color:#111827">📊 التمثيل البصري للخط الزمني (${String(startHour).padStart(2,'0')}:00 - ${String(endHour).padStart(2,'0')}:00)</h3>
+          <div style="direction:ltr;width:100%;position:relative">
+            <div style="position:relative;width:100%;height:48px;background:#F3F4F6;border-radius:10px;border:1px solid #D1D5DB;overflow:hidden">
+              <div style="position:absolute;inset:0">${ticksHtml}</div>
+              ${slicesHtml}
+            </div>
+            <div style="position:relative;height:18px;margin-top:4px;font-size:10px;color:#6B7280">${labelsHtml}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (totalMinutes > 0) {
+      const sortedCats = Object.entries(catMinutes).sort((a,b) => b[1] - a[1]);
+      let distRows = sortedCats.map(([cid, mins]) => {
+        const cat = catMap[cid];
+        if(!cat) return '';
+        const pct = ((mins / totalMinutes) * 100).toFixed(1);
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        const durStr = h > 0 ? (m > 0 ? `${h} س و ${m} د` : `${h} س`) : `${m} د`;
+        return `
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+              <span>${cat.icon} <b>${esc(cat.name)}</b></span>
+              <span style="color:#4B5563">${durStr} (${pct}%)</span>
+            </div>
+            <div style="width:100%;height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:${cat.colorHex};border-radius:4px"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const totalH = Math.floor(totalMinutes / 60);
+      const totalM = totalMinutes % 60;
+      const totalDurStr = totalH > 0 ? (totalM > 0 ? `${totalH} ساعة و ${totalM} دقيقة` : `${totalH} ساعة`) : `${totalM} دقيقة`;
+
+      timelineHtml += `
+        <div style="border:1px solid #E5E7EB;border-radius:12px;padding:14px;background:#fff;margin-bottom:20px;page-break-inside:avoid">
+          <h3 style="font-size:15px;margin:0 0 10px 0;color:#111827">⏱️ توزيع الوقت حسب الفئات (إجمالي: ${totalDurStr})</h3>
+          ${distRows}
+        </div>
+      `;
+    }
+  }
+
+  let tableHtml = '';
+  if (showActivities) {
+    let rowsHtml = '';
+    for(const entry of entries){
+      const cat = catMap[entry.categoryId] || { name:'أخرى', icon:'📌', colorHex:'#3B82F6' };
+      const subcat = entry.subcategory ? `<span style="font-size:11px;color:#6B7280;margin-right:4px">(${esc(entry.subcategory)})</span>` : '';
+      const qty = entry.quantity ? `<span style="background:#E0E7FF;color:#3730A3;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:4px">⏱️ ${esc(entry.quantity)}</span>` : '';
+      const note = (includeNotes && entry.note) ? `<div style="font-size:11px;color:#4B5563;margin-top:4px">📝 ${esc(entry.note)}</div>` : '';
+      const timeStr = (entry.startedAt && entry.endedAt) 
+        ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+        : formatArabicTime(entry.loggedAt);
+
+      rowsHtml += `
+        <tr style="border-bottom:1px solid #E5E7EB">
+          <td style="padding:10px 12px;width:45%">
+            <span style="background-color:${cat.colorHex}20;color:${cat.colorHex};border:1px solid ${cat.colorHex}60;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold;display:inline-block">
+              ${cat.icon} ${esc(cat.name)}
+            </span>
+            ${subcat} ${qty} ${note}
+          </td>
+          <td style="padding:10px 12px;width:25%;direction:ltr;text-align:right;color:#4B5563">${(entry.loggedAt||'').slice(0,10)}</td>
+          <td style="padding:10px 12px;width:30%;font-weight:bold;color:#374151">${timeStr}</td>
+        </tr>
+      `;
+    }
+
+    tableHtml = `
+      <div style="border:1px solid #E5E7EB;border-radius:12px;padding:14px;background:#fff;page-break-inside:avoid">
+        <h3 style="font-size:15px;margin:0 0 10px 0;color:#111827">📋 سجل الأنشطة المسجلة بالتفصيل</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>النشاط / الفئة</th>
+              <th>التاريخ</th>
+              <th>الوقت / المدة</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || '<tr><td colspan="3" style="text-align:center;color:#9CA3AF;padding:20px">لا توجد تسجيلات</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  const reportSubtitle = exportMode === 'TIMELINE' ? 'تقرير الخط الزمني وتوزيع الأوقات' : (exportMode === 'ACTIVITIES' ? 'تقرير سجل الأنشطة والتفاصيل' : 'التقرير الشامل • خط زمني وسجل الأنشطة');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="utf-8">
+      <title>تقرير متتبع الحياة - ${esc(periodTitle)}</title>
+      <style>
+        body{font-family:'Noto Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;margin:24px;color:#1F2937;background:#FFFFFF;direction:rtl}
+        .header{border-bottom:2px solid #E5E7EB;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+        .header h1{font-size:24px;color:#111827;margin:0 0 6px 0}
+        .period-badge{background:#F3F4F6;color:#4B5563;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th{background:#F9FAFB;padding:10px 12px;text-align:right;font-size:12px;color:#4B5563;border-bottom:2px solid #E5E7EB}
+        @media print{body{margin:0} .no-print{display:none}}
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <h1>📈 تقرير متتبع الحياة</h1>
+          <div style="font-size:13px;color:#6B7280">تطبيق رفيق • ${esc(reportSubtitle)}</div>
+        </div>
+        <div class="period-badge">${esc(periodText)}</div>
+      </div>
+      <div class="stats-grid">${statsHtml}</div>
+      ${timelineHtml}
+      ${tableHtml}
+      <div style="text-align:center;font-size:11px;color:#9CA3AF;margin-top:24px;border-top:1px solid #E5E7EB;padding-top:10px">
+        تم تصدير هذا التقرير تلقائيًا من تطبيق رفيق • ${new Date().toLocaleString('ar-EG')}
+      </div>
+    </body>
+    </html>
+  `;
+}
 
     rowsHtml += `
       <tr style="border-bottom:1px solid #E5E7EB">
@@ -6918,12 +7155,16 @@ document.addEventListener('click', async e=>{
         break;
       }
       case 'openPdfExport': openPdfExport(); break;
+      case 'pickPdfMode': { window._pdfExportMode=el.dataset.k; document.querySelectorAll('[data-act="pickPdfMode"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); break; }
       case 'pickPdfPreset': { window._pdfPreset=el.dataset.k; document.querySelectorAll('[data-act="pickPdfPreset"]').forEach(b=>b.classList.remove('on')); el.classList.add('on'); const cd=document.getElementById('pdfCustomDates'); if(cd) cd.style.display=(el.dataset.k==='CUSTOM')?'block':'none'; break; }
       case 'pdfSelectAllCats': { const trkAll=getTrackerData(); window._pdfCats=trkAll.categories.map(c=>c.id); document.querySelectorAll('[data-act="togglePdfCat"]').forEach(b=>b.classList.add('on')); break; }
       case 'pdfDeselectAllCats': { window._pdfCats=[]; document.querySelectorAll('[data-act="togglePdfCat"]').forEach(b=>b.classList.remove('on')); break; }
       case 'togglePdfCat': { const cid=el.dataset.id; if(!window._pdfCats) window._pdfCats=[]; if(window._pdfCats.includes(cid)){ window._pdfCats=window._pdfCats.filter(x=>x!==cid); el.classList.remove('on'); } else { window._pdfCats.push(cid); el.classList.add('on'); } break; }
       case 'togglePdfNotes': { window._pdfNotes=!window._pdfNotes; el.classList.toggle('on',window._pdfNotes); break; }
-      case 'doExportTrackerPdf': { const trkPdf=getTrackerData(); const selDate=window._trackerDate||new Date().toISOString().slice(0,10); let pdfS=selDate, pdfE=selDate, pdfTitle='تقرير'; switch(window._pdfPreset){ case 'WEEK': { const d2=new Date(selDate+'T12:00:00'); d2.setDate(d2.getDate()-6); pdfS=d2.toISOString().slice(0,10); pdfTitle='تقرير أسبوعي'; break; } case 'MONTH': pdfS=selDate.slice(0,7)+'-01'; pdfE=selDate.slice(0,7)+'-31'; pdfTitle='تقرير شهري'; break; case 'ALL': pdfS='2020-01-01'; pdfE='2099-12-31'; pdfTitle='تقرير شامل'; break; case 'CUSTOM': pdfS=(document.getElementById('pdfStartDate')||{}).value||selDate; pdfE=(document.getElementById('pdfEndDate')||{}).value||selDate; pdfTitle='تقرير مخصص'; break; } closeSheet(); const pdfHtml=generateTrackerReportHtml(pdfS,pdfE,(window._pdfCats||[]),window._pdfNotes!==false,pdfTitle); printTrackerPdf(pdfHtml); break; }
+      case 'toggleVrIconPicker': toggleVrIconPicker(); break;
+      case 'pickVrEmoji': pickVrEmoji(el.dataset.em); break;
+      case 'pickVrColor': pickVrColor(el.dataset.col); break;
+      case 'doExportTrackerPdf': { const trkPdf=getTrackerData(); const selDate=window._trackerDate||new Date().toISOString().slice(0,10); let pdfS=selDate, pdfE=selDate, pdfTitle='تقرير'; switch(window._pdfPreset){ case 'WEEK': { const d2=new Date(selDate+'T12:00:00'); d2.setDate(d2.getDate()-6); pdfS=d2.toISOString().slice(0,10); pdfTitle='تقرير أسبوعي'; break; } case 'MONTH': pdfS=selDate.slice(0,7)+'-01'; pdfE=selDate.slice(0,7)+'-31'; pdfTitle='تقرير شهري'; break; case 'ALL': pdfS='2020-01-01'; pdfE='2099-12-31'; pdfTitle='تقرير شامل'; break; case 'CUSTOM': pdfS=(document.getElementById('pdfStartDate')||{}).value||selDate; pdfE=(document.getElementById('pdfEndDate')||{}).value||selDate; pdfTitle='تقرير مخصص'; break; } closeSheet(); const pdfHtml=generateTrackerReportHtml(pdfS,pdfE,(window._pdfCats||[]),window._pdfNotes!==false,pdfTitle,window._pdfExportMode||'BOTH'); printTrackerPdf(pdfHtml); break; }
       case 'openAddDish': openAddDish(); break;
       case 'saveDish': await saveDish(); break;
       case 'closePopup': closePopup(); break;
