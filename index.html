@@ -525,7 +525,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.17';
+const APP_VERSION = '1.27';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -786,13 +786,14 @@ async function refreshAll(){
   const inC2='id=in.('+myCircleIds.join(',')+')';
   const owned=[]; // تُحسب بعد جلب الدوائر
   // جولة 2: كل الجداول الرئيسية بالتوازي (لا تعتمد على بعضها)
-  const [circles,allMembers,items,tasks,sharedLists,activity]=await Promise.all([
+  const [circles,allMembers,items,tasks,sharedLists,activity,recycleBin]=await Promise.all([
     rest('GET','circles',inC2+'&select=*'),
     rest('GET','circle_members',inC+'&select=*'),
     rest('GET','items',inC+'&order=created_at.desc&select=*'),
     rest('GET','tasks',inC+'&order=created_at.desc&select=*'),
     rest('GET','shared_lists',inC+'&select=*'),
     rest('GET','activity_events',inC+'&order=created_at.desc&limit=40&select=*'),
+    rest('GET','recycle_bin',inC+'&order=deleted_at.desc&select=*').catch(()=>[]),
   ]);
   const memberIds=[...new Set(allMembers.map(m=>m.user_id).filter(u=>u!==me))];
   const itemIds=items.map(i=>i.id), listIds=sharedLists.map(l=>l.id), evIds=activity.map(a=>a.id);
@@ -821,7 +822,7 @@ async function refreshAll(){
   }
   if(!profile){ const prev=loadSnap(); if(prev&&prev.profile) profile=prev.profile; }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
-    items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites};
+    items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites,recycleBin:recycleBin||[]};
   saveSnap();
   try{ syncTrackerFromCloud(); }catch(e){}
 }
@@ -832,6 +833,251 @@ function loadSnap(){ try{ const s=JSON.parse(localStorage.getItem('rafiq_snap')|
 const circlesOf=()=>data?data.circles:[];
 const sharedFirst=()=>circlesOf().find(c=>c.circle.type==='SHARED')||null;
 const companionOf=()=>{ const s=sharedFirst(); return s? (s.members.find(x=>x.m.user_id!==meId())||{}).p : null; };
+const curCircleId = () => (sharedFirst() ? sharedFirst().circle.id : (circlesOf()[0] ? circlesOf()[0].circle.id : null));
+
+function getWebTrashItems(){
+  const base = (data && data.recycleBin) ? [...data.recycleBin] : [];
+  const baseOrigIds = new Set(base.map(x => x.original_id));
+  const trashList = (data && data.sharedLists || []).find(l => l.title === '__سلة المحذوفات__');
+  if(trashList){
+    const legacyShop = (data.shopping || []).filter(s => s.list_id === trashList.id);
+    for(const ls of legacyShop){
+      if(!baseOrigIds.has(ls.id)){
+        const note = ls.note || '';
+        const parts = note.split('|');
+        const origListId = parts[0] === 'TRASH' ? parts[1] : null;
+        const actualNote = parts[0] === 'TRASH' ? parts.slice(2).join('|') : note;
+        const origList = origListId ? (data.sharedLists || []).find(l => l.id === origListId) : null;
+        const isPlace = origList && origList.title === 'أماكننا المحفوظة';
+        const isFood = origList && (origList.title === 'طعامنا اليومي' || origList.title === 'أطباق نحبها');
+        const itemType = isPlace ? 'place' : (isFood ? 'food' : 'shopping');
+        base.push({
+          id: ls.id,
+          circle_id: trashList.circle_id,
+          user_id: null,
+          item_type: itemType,
+          original_id: ls.id,
+          title: ls.title,
+          subtitle: origList ? origList.title : (isPlace ? 'أماكننا المحفوظة' : 'عنصر تسوق'),
+          payload: { legacy_trash: true, id: ls.id, list_id: origListId, note: actualNote, title: ls.title },
+          deleted_at: ls.created_at || new Date().toISOString()
+        });
+      }
+    }
+  }
+  return base.sort((a,b) => new Date(b.deleted_at||0) - new Date(a.deleted_at||0));
+}
+
+async function moveToTrash(itemType, originalId, title, subtitle, payload){
+  const cid = curCircleId();
+  if(!cid) return;
+  const me = meId();
+  await rest('POST', 'recycle_bin', {
+    id: uuid(),
+    circle_id: cid,
+    user_id: me,
+    item_type: itemType,
+    original_id: originalId,
+    title: (title || '').trim(),
+    subtitle: subtitle || null,
+    payload: payload || {},
+    deleted_at: new Date().toISOString()
+  }).catch(e => console.warn('moveToTrash failed', e));
+}
+
+async function restoreTrashItem(trashId){
+  const items = getWebTrashItems();
+  const item = items.find(x => x.id === trashId || x.original_id === trashId);
+  if(!item) return;
+
+  const payload = item.payload || {};
+  if(payload.legacy_trash){
+    const origListId = payload.list_id;
+    const actualNote = payload.note || null;
+    let targetListId = origListId;
+    if(!targetListId && item.item_type === 'place'){
+      const pl = placesOf();
+      targetListId = pl ? pl.id : null;
+    }
+    if(targetListId){
+      await rest('PATCH', 'shared_list_items', { list_id: targetListId, note: actualNote }, 'id=eq.'+item.id);
+    }
+    await refreshAll();
+    openTrashSheet();
+    toast('تمت استعادة «' + esc(item.title) + '» بنجاح ✓');
+    return;
+  }
+
+  const type = (item.item_type || '').toLowerCase();
+  if(type === 'place'){
+    const pl = placesOf();
+    const listId = pl ? pl.id : (payload.list_id || curCircleId());
+    await rest('POST', 'shared_list_items', {
+      id: item.original_id || uuid(),
+      list_id: listId,
+      title: item.title,
+      note: payload.note || item.subtitle || '',
+      completed: false,
+      position: 0
+    });
+  } else if(type === 'shopping' || type === 'food'){
+    let targetListId = payload.list_id;
+    if(!targetListId){
+      const l = (data.sharedLists || []).find(x => x.title === (type === 'food' ? 'طعامنا اليومي' : 'التسوق'));
+      targetListId = l ? l.id : (data.sharedLists[0] ? data.sharedLists[0].id : null);
+    }
+    await rest('POST', 'shared_list_items', {
+      id: item.original_id || uuid(),
+      list_id: targetListId,
+      title: item.title,
+      note: payload.note || null,
+      completed: false,
+      position: 0
+    });
+  } else if(type === 'task'){
+    await rest('POST', 'tasks', {
+      id: item.original_id || uuid(),
+      circle_id: item.circle_id || curCircleId(),
+      owner_id: payload.owner_id || meId(),
+      title: item.title,
+      description: payload.description || null,
+      due_at: payload.due_at || null,
+      priority: payload.priority || 'NORMAL',
+      status: payload.status || 'TODO',
+      visibility: payload.visibility || 'PRIVATE',
+      assigned_to: payload.assigned_to || null
+    });
+  } else if(['habit', 'medication', 'media', 'mood'].includes(type)){
+    await rest('POST', 'items', {
+      id: item.original_id || uuid(),
+      circle_id: item.circle_id || curCircleId(),
+      owner_id: payload.owner_id || meId(),
+      type: payload.type || type.toUpperCase(),
+      title: item.title,
+      description: payload.description || null,
+      frequency: payload.frequency || 'DAILY',
+      unit: payload.unit || null,
+      target_value: payload.target_value || null,
+      status: 'ACTIVE',
+      visibility: payload.visibility || 'CIRCLE'
+    });
+  } else if(type === 'tracker_entry'){
+    await rest('POST', 'tracker_entries', {
+      id: item.original_id || uuid(),
+      user_id: meId(),
+      category_id: payload.category_id,
+      note: payload.note || null,
+      started_at: payload.started_at || null,
+      ended_at: payload.ended_at || null,
+      logged_at: payload.logged_at || new Date().toISOString()
+    });
+  }
+
+  await rest('DELETE', 'recycle_bin', 'id=eq.'+item.id).catch(()=>{});
+  await refreshAll();
+  openTrashSheet();
+  toast('تمت استعادة «' + esc(item.title) + '» بنجاح ✓');
+}
+
+async function purgeTrashItem(trashId){
+  const items = getWebTrashItems();
+  const item = items.find(x => x.id === trashId || x.original_id === trashId);
+  if(!item) return;
+  if(item.payload && item.payload.legacy_trash){
+    await rest('DELETE', 'shared_list_items', 'id=eq.'+item.id).catch(()=>{});
+  } else {
+    await rest('DELETE', 'recycle_bin', 'id=eq.'+item.id).catch(()=>{});
+  }
+  await refreshAll();
+  openTrashSheet();
+  toast('حُذف نهائياً');
+}
+
+async function emptyTrash(){
+  const cid = curCircleId();
+  if(!cid) return;
+  await rest('DELETE', 'recycle_bin', 'circle_id=eq.'+cid).catch(()=>{});
+  const trashList = (data.sharedLists || []).find(l => l.title === '__سلة المحذوفات__');
+  if(trashList){
+    await rest('DELETE', 'shared_list_items', 'list_id=eq.'+trashList.id).catch(()=>{});
+  }
+  await refreshAll();
+  openTrashSheet();
+  toast('تم تفريغ سلة المحذوفات بالكامل 🧹');
+}
+
+window._activeTrashTab = 'ALL';
+function openTrashSheet(){
+  const allItems = getWebTrashItems();
+  const tab = window._activeTrashTab || 'ALL';
+  const filtered = allItems.filter(item => {
+    const t = (item.item_type || '').toLowerCase();
+    if(tab === 'PLACES') return t === 'place';
+    if(tab === 'TASKS') return t === 'task';
+    if(tab === 'HABITS') return ['habit', 'medication', 'media', 'mood'].includes(t);
+    if(tab === 'SHOPPING') return ['shopping', 'food', 'shared_list'].includes(t);
+    if(tab === 'TRACKER') return t.startsWith('tracker');
+    return true;
+  });
+
+  const placesCount = allItems.filter(i => (i.item_type||'').toLowerCase() === 'place').length;
+  const tasksCount = allItems.filter(i => (i.item_type||'').toLowerCase() === 'task').length;
+  const habitsCount = allItems.filter(i => ['habit', 'medication', 'media', 'mood'].includes((i.item_type||'').toLowerCase())).length;
+  const shopCount = allItems.filter(i => ['shopping', 'food', 'shared_list'].includes((i.item_type||'').toLowerCase())).length;
+
+  const html = `
+    ${sheetHead('🗑️ سلة المحذوفات')}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--text-3)">العناصر تُحفظ لمدة 30 يوماً قبل حذفها تلقائياً</span>
+      ${allItems.length ? `<button class="link" style="color:var(--error);font-weight:700" data-act="emptyTrash">تفريغ السلة 🧹</button>` : ''}
+    </div>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px">
+      <button class="badge ${tab==='ALL'?'active':''}" style="cursor:pointer;padding:6px 12px;${tab==='ALL'?'background:var(--accent-soft);color:var(--accent-dark);font-weight:700':''}" data-act="setTrashTab" data-tab="ALL">الكل (${allItems.length})</button>
+      <button class="badge ${tab==='PLACES'?'active':''}" style="cursor:pointer;padding:6px 12px;${tab==='PLACES'?'background:var(--accent-soft);color:var(--accent-dark);font-weight:700':''}" data-act="setTrashTab" data-tab="PLACES">📍 أماكن (${placesCount})</button>
+      <button class="badge ${tab==='TASKS'?'active':''}" style="cursor:pointer;padding:6px 12px;${tab==='TASKS'?'background:var(--accent-soft);color:var(--accent-dark);font-weight:700':''}" data-act="setTrashTab" data-tab="TASKS">📝 مهام (${tasksCount})</button>
+      <button class="badge ${tab==='HABITS'?'active':''}" style="cursor:pointer;padding:6px 12px;${tab==='HABITS'?'background:var(--accent-soft);color:var(--accent-dark);font-weight:700':''}" data-act="setTrashTab" data-tab="HABITS">✨ عادات (${habitsCount})</button>
+      <button class="badge ${tab==='SHOPPING'?'active':''}" style="cursor:pointer;padding:6px 12px;${tab==='SHOPPING'?'background:var(--accent-soft);color:var(--accent-dark);font-weight:700':''}" data-act="setTrashTab" data-tab="SHOPPING">🛒 تسوق (${shopCount})</button>
+    </div>
+    <div style="max-height:65vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px">
+      ${filtered.length ? filtered.map(item => {
+        const t = (item.item_type || '').toLowerCase();
+        const emoji = t==='place'?'📍':t==='task'?'📝':t==='medication'?'💊':t==='habit'?'🌱':t==='food'?'🍲':t==='shopping'?'🛒':'🗑️';
+        const typeLabel = t==='place'?'مكان محفوظ':t==='task'?'مهمة':t==='medication'?'دواء':t==='habit'?'عادة':t==='food'?'طعام':t==='shopping'?'تسوق':'عنصر';
+        const delDate = item.deleted_at ? new Date(item.deleted_at) : new Date();
+        const daysAgo = Math.max(0, Math.floor((Date.now() - delDate.getTime()) / (24*3600*1000)));
+        const daysLeft = Math.max(0, 30 - daysAgo);
+        return `
+          <div style="background:var(--surface);border:1px solid var(--divider);border-radius:14px;padding:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:38px;height:38px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px">${emoji}</div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <b style="font-size:14.5px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.title)}</b>
+                  <span class="badge" style="font-size:10px">${typeLabel}</span>
+                </div>
+                ${item.subtitle ? `<div style="font-size:11.5px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.subtitle)}</div>` : ''}
+                <div style="font-size:11px;color:var(--text-3);margin-top:4px">
+                  ${daysAgo === 0 ? 'حُذف اليوم' : `حُذف منذ ${daysAgo} يوم`} • <span style="color:${daysLeft<=5?'var(--error)':'var(--accent-dark)'};font-weight:${daysLeft<=5?'700':'400'}">متبقي ${daysLeft} يوم</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn" style="flex:1;background:var(--accent-soft);color:var(--accent-dark);font-size:12.5px;font-weight:700;padding:7px" data-act="restoreTrash" data-id="${item.id}">↺ استعادة</button>
+              <button class="btn ghost" style="color:var(--error);font-size:11.5px;padding:7px 14px" data-act="purgeTrash" data-id="${item.id}">✕ حذف نهائي</button>
+            </div>
+          </div>
+        `;
+      }).join('') : `
+        <div style="text-align:center;padding:36px 16px">
+          <div style="font-size:42px;margin-bottom:8px">🗑️</div>
+          <b style="font-size:15px;color:var(--text-1)">${allItems.length ? 'لا توجد عناصر في هذا التصنيف' : 'سلة المحذوفات فارغة'}</b>
+          <p style="font-size:12px;color:var(--text-3);margin-top:4px">أي عنصر يُحذف في التطبيق يتم نقله إلى هنا فوراً لحمايته من الضياع، مع إمكانية استعادته بضغطة زر.</p>
+        </div>
+      `}
+    </div>
+  `;
+  openSheet(html);
+}
 function isSpecialItem(it){ const f=it.frequency||''; return f.startsWith('MED|')||f.startsWith('MOOD|'); }
 function habitsFor(uid){ return data?data.items.filter(i=>i.owner_id===uid&&['HABIT','QURAN','BOOK','LEARNING','GOAL'].includes(i.type)&&!isSpecialItem(i)):[]; }
 function habitProg(uid,item){
@@ -1613,12 +1859,16 @@ async function saveRenameStore(listId){
 async function deleteStore(listId, storeName){
   if(!confirm('حذف متجر «' + storeName + '» وجميع عناصره؟')) return;
   try {
+    const list = (data.sharedLists || []).find(l => l.id === listId);
+    if(list){
+      await moveToTrash('shared_list', list.id, list.title, 'متجر تسوق', list);
+    }
     await rest('DELETE', 'shared_list_items', 'list_id=eq.' + listId);
     await rest('DELETE', 'shared_lists', 'id=eq.' + listId);
     window._activeStoreTab = 'ALL';
     await refreshAll();
     renderApp();
-    toast('حُذف المتجر ✓');
+    toast('نُقل المتجر إلى سلة المحذوفات 🗑️');
   } catch(e) {
     toast('تعذر الحذف: ' + (e && e.message ? e.message : ''));
   }
@@ -2083,6 +2333,11 @@ async function deleteTrackerCategoryCloud(catId){
 async function deleteTrackerEntryCloud(entId){
   if(!meId()) return;
   try{
+    const ent = (getTrackerData().entries || []).find(e => e.id === entId);
+    if(ent){
+      const cat = (getTrackerData().categories || []).find(c => c.id === ent.categoryId);
+      await moveToTrash('tracker_entry', ent.id, (cat ? cat.name : 'نشاط زمني'), `${ent.startTime||''} - ${ent.endTime||''}`, ent);
+    }
     await rest('DELETE','tracker_entries','id=eq.'+entId);
   }catch(e){ console.warn('tracker entry del err:', e.message); }
 }
@@ -5816,6 +6071,13 @@ function renderMore(){
       <div class="setrow"><span class="st">📱 تحميل تطبيق Android (ملف APK v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
       <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
       <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
+      <div class="setrow"><span class="st">🗑️ سلة المحذوفات</span>
+        ${(()=>{
+          const n = (getWebTrashItems()||[]).length;
+          return n ? `<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;font-weight:700">${n} عناصر</span>` : `<span class="badge">فارغة</span>`;
+        })()}
+        <button class="link" data-act="openTrashSheet">عرض</button>
+      </div>
       <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
       <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
         <button class="link" data-act="openCfg">تعديل</button></div>
@@ -7015,11 +7277,17 @@ document.addEventListener('click', async e=>{
       case 'saveRename': { const t=($('#rnTitle')||{}).value||''; if(!t.trim()){ toast('اكتب الاسم'); break; }
         await rest('PATCH','shared_list_items',{title:t.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُفظت التسمية ✓'); break; }
       case 'delMedia': { if(!confirm('حذف هذا الرابط؟')) break;
-        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُذف'); break; }
+        const pl = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(pl) await moveToTrash('media', pl.id, pl.title, pl.note, pl);
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'delShop': { if(!confirm('حذف هذا العنصر؟')) break;
-        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('حُذف العنصر ✓'); break; }
+        const item = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(item) await moveToTrash('shopping', item.id, item.title, null, { id: item.id, list_id: item.list_id, title: item.title, note: item.note });
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'delPlace': { if(!confirm('حذف هذا المكان؟')) break;
-        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذف المكان ✓'); break; }
+        const pl = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(pl) await moveToTrash('place', pl.id, pl.title, pl.note, { id: pl.id, list_id: pl.list_id, title: pl.title, note: pl.note });
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'toggleMedsView': { medsTable=(el.dataset.v==='table'); renderApp(); break; }
       case 'renameCircle': { const n=($('#crName')||{}).value||''; if(!n.trim()){ toast('اكتب الاسم'); break; }
         await rest('PATCH','circles',{name:n.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('تم تعديل الاسم ✓'); break; }
@@ -7031,19 +7299,46 @@ document.addEventListener('click', async e=>{
           html=ls.map(l=>`<div style="margin-top:6px"><b style="font-size:13.5px">${esc(l.title)}</b>`+
             ((data.shopping||[]).filter(si=>si.list_id===l.id).map(si=>`<div class="row" style="min-height:36px"><span class="htitle" style="flex:1">${esc(si.title)}</span><button class="link" style="color:var(--error)" data-act="delAnyItem2" data-id="${si.id}">حذف</button></div>`).join('')||'<div class="shop-meta">فارغة</div>')+`</div>`).join('')||'<div class="shop-meta">لا قوائم</div>'; }
         box.innerHTML=html; break; }
-      case 'delAnyItem': { if(!confirm('حذف؟')) break; await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); openCircleDetail(el.dataset.cid||''); break; }
-      case 'delAnyTask': { if(!confirm('حذف؟')) break; await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); break; }
-      case 'delAnyItem2': { if(!confirm('حذف؟')) break; await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); break; }
+      case 'delAnyItem': { if(!confirm('حذف؟')) break;
+        const itm = (data.items || []).find(x => x.id === el.dataset.id);
+        if(itm) await moveToTrash(itm.type.toLowerCase(), itm.id, itm.title, itm.description, itm);
+        await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); openCircleDetail(el.dataset.cid||''); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
+      case 'delAnyTask': { if(!confirm('حذف؟')) break;
+        const t = (data.tasks || []).find(x => x.id === el.dataset.id);
+        if(t) await moveToTrash('task', t.id, t.title, t.due_at || t.description, t);
+        await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
+      case 'delAnyItem2': { if(!confirm('حذف؟')) break;
+        const si = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(si) await moveToTrash('shopping', si.id, si.title, null, si);
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'saveMed': await saveMed(); break;
       case 'logDose': await logDose(el.dataset.id); break;
       case 'medDetail': openMedDetail(el.dataset.id); break;
       case 'delMed': { if(!confirm('حذف هذا الدواء؟')) break;
-        await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='home'; renderApp(); toast('حُذف الدواء'); break; }
+        const itm = (data.items || []).find(x => x.id === el.dataset.id);
+        if(itm) await moveToTrash('medication', itm.id, itm.title, itm.description, itm);
+        await rest('DELETE','items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='home'; renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'openMealSheet': openMealSheet(); break;
       case 'saveMeal': { const t=($('#qmText')||{}).value||''; if(!t.trim()){ toast('اكتب ما تناولتم'); break; }
         const m=window._qmMeal||'فطور'; closeSheet(); await logMeal(m,t.trim()); break; }
       case 'relogMeal': await relogMeal(el.dataset.meal, el.dataset.title); break;
-      case 'delDish': await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderFood(); break;
+      case 'delDish': {
+        const pl = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(pl) await moveToTrash('food', pl.id, pl.title, pl.note, pl);
+        await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); renderFood(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
+      case 'openTrashSheet': openTrashSheet(); break;
+      case 'setTrashTab': window._activeTrashTab = el.dataset.tab; openTrashSheet(); break;
+      case 'restoreTrash': await restoreTrashItem(el.dataset.id); break;
+      case 'purgeTrash': {
+        if(!confirm('حذف هذا العنصر نهائياً؟ لا يمكن التراجع بعد ذلك.')) break;
+        await purgeTrashItem(el.dataset.id);
+        break;
+      }
+      case 'emptyTrash': {
+        if(!confirm('تفريغ سلة المحذوفات بالكامل؟ سيتم مسح كافة العناصر نهائياً.')) break;
+        await emptyTrash();
+        break;
+      }
       case 'addCurrentPlace': openAddCurrentPlace(); break;
       case 'saveCurrentPlace': { const n=($('#cpName')||{}).value||''; if(!n.trim()){ toast('اكتب اسم المكان'); break; }
         closeSheet(); await addPlace(n.trim(), el.dataset.link||''); break; }
