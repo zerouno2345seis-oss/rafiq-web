@@ -1417,13 +1417,6 @@ function renderHome(){
         <div class="avatar">${esc((me.display_name||'؟')[0])}</div>
         <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       </div>
-      <!-- شريط تصفية المساحات السريع مدمج بجوار التحية في صف واحد -->
-      <div class="space-filter-bar">
-        <button class="space-pill all ${(!window._homeSpaceFilter||window._homeSpaceFilter==='all')?'active':''}" data-act="homeSpaceFilter" data-f="all">🌐 الكل</button>
-        <button class="space-pill me ${window._homeSpaceFilter==='me'?'active':''}" data-act="homeSpaceFilter" data-f="me">🟢 أنا<span class="pill-full"> (خاص بي)</span></button>
-        <button class="space-pill shared ${window._homeSpaceFilter==='shared'?'active':''}" data-act="homeSpaceFilter" data-f="shared">🔵 كلانا<span class="pill-full"> (مشترك)</span></button>
-        <button class="space-pill companion ${window._homeSpaceFilter==='companion'?'active':''}" data-act="homeSpaceFilter" data-f="companion">🟠 رفيقي</button>
-      </div>
       <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
     </div>
     ${(!isPwaInstalled && (window._canInstallPwa || (window._isIosSafari && window._isIosSafari())) && !sessionStorage.getItem('rafiq_pwa_banner_dismissed')) ? `
@@ -1436,23 +1429,10 @@ function renderHome(){
       <button class="btn" data-act="${window._canInstallPwa ? 'installPwa' : 'openPwaIosGuide'}" style="background:var(--accent);color:#fff;padding:6px 12px;font-size:12px;border-radius:8px">تثبيت</button>
       <button data-act="dismissPwaBanner" aria-label="إغلاق" style="font-size:16px;color:var(--text-3);padding:4px">✕</button>
     </div>` : ''}
-    <!-- شريط الأقسام السريع (ثابت عند التمرير) مباشرة تحت التحية وفوق لوحات Dashboard -->
+    <!-- شريط الأقسام السريع (ثابت عند التمرير) مباشرة تحت التحية -->
     <div id="secStrip" class="sec-strip">
       <div class="sec-pills" id="secPills"></div>
       <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
-    </div>
-    <!-- لوحات الـ Dashboard للتقدم -->
-    <div class="progress-row">
-      <div class="pcard"><div class="who"><div class="avatar sm">${esc((me.display_name||'؟')[0])}</div> أنت 👑</div>
-        ${ringSVG(myPct,'own')}
-        <div style="font-size:13px;font-weight:600">${habits.filter(h=>habitProg(me.id,h).done).length} / ${habits.length}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">${spF!=='all'?'عادات '+spaceMeta(spF).shortLabel:'من عادات اليوم'}</div></div>
-      ${comp?`<div class="pcard"><div class="who"><div class="avatar sm comp">${esc((comp.display_name||'؟')[0])}</div> رفيقك ❤️</div>
-        ${ringSVG(hisPct,'comp')}
-        <div style="font-size:13px;font-weight:600">${habitsFor(comp.id).filter(h=>habitProg(comp.id,h).done).length} / ${habitsFor(comp.id).length}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:-4px">من عادات اليوم</div></div>`
-      :`<div class="pcard" data-act="tab" data-v="more" style="cursor:pointer"><span style="font-size:24px">🤝</span>
-        <b style="font-size:13px">أضف رفيقًا</b><span style="font-size:11px;color:var(--text-3)">أنشئ دائرة مشتركة</span></div>`}
     </div>
     <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">📈</span>
@@ -5779,9 +5759,17 @@ function renderSpaces(){
     <div class="sec" style="margin-top:4px">
       <h2>🌐 نظام المساحات</h2>
     </div>
-    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">
       تنظيم ثلاثي ذكي يفصل بين ما هو خاص بك وحدك، وما تشاركونه معاً، وما يخص رفيقك.
     </p>
+
+    <!-- شريط تصفية واستعراض المساحات السريع -->
+    <div class="space-filter-bar" style="margin-bottom:14px;overflow-x:auto">
+      <button class="space-pill all ${(!window._homeSpaceFilter||window._homeSpaceFilter==='all')?'active':''}" data-act="homeSpaceFilter" data-f="all">🌐 كل المساحات</button>
+      <button class="space-pill me ${window._homeSpaceFilter==='me'?'active':''}" data-act="homeSpaceFilter" data-f="me">🟢 أنا (خاص بي)</button>
+      <button class="space-pill shared ${window._homeSpaceFilter==='shared'?'active':''}" data-act="homeSpaceFilter" data-f="shared">🔵 كلانا (مشترك)</button>
+      <button class="space-pill companion ${window._homeSpaceFilter==='companion'?'active':''}" data-act="homeSpaceFilter" data-f="companion">🟠 رفيقي</button>
+    </div>
 
     <!-- 1. بطاقة مساحتي الخاصة (🟢) -->
     <div class="space-realm-card space-realm-me">
