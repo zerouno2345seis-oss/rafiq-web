@@ -537,7 +537,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.33';
+const APP_VERSION = '1.34';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1478,6 +1478,110 @@ function renderHome(){
     <div id="secStrip" class="sec-strip">
       <div class="sec-pills-scroll" id="secPills"></div>
       <div class="sec-note" id="secNote">اسحب أفقياً لتصفح كافة الأقسام ⇠⇢</div>
+    </div>
+    <!-- لوحة الداشبورد التفاعلية (4 بطاقات - الاقتراح الثاني) -->
+    <div id="homeDashGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <!-- 1. طعامنا -->
+      <div class="dash-tile" onclick="pickSec('food')" style="background:var(--dash-food-bg, #fff9f5);border:1.2px solid #fed7aa;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:24px">🍽</span>
+          <b style="font-size:15px;color:var(--text-1)">طعامنا</b>
+        </div>
+        <div style="margin:8px 0">
+          <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${(()=>{
+            const t=new Date().toISOString().slice(0,10);
+            const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
+            return m.length? (m.length+' وجبات اليوم') : 'لم تُسجل وجبات بعد';
+          })()}</div>
+          <div style="display:flex;gap:4px;margin-top:6px">
+            ${(()=>{
+              const t=new Date().toISOString().slice(0,10);
+              const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
+              return ['فطور','غداء','عشاء'].map(meal=>{
+                const has=m.some(i=>(i.note||'').includes(meal));
+                return `<span style="font-size:9.5px;padding:2px 5px;border-radius:6px;background:${has?'rgba(234,88,12,0.15)':'var(--surface-2)'};color:${has?'#ea580c':'var(--text-3)'};font-weight:${has?'700':'400'}">${meal} ${has?'✓':'○'}</span>`;
+              }).join('');
+            })()}
+          </div>
+        </div>
+        <div>
+          <button type="button" onclick="event.stopPropagation();openMealSheet()" style="background:rgba(234,88,12,0.12);color:#ea580c;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">+ إضافة وجبة</button>
+        </div>
+      </div>
+
+      <!-- 2. جدولي -->
+      <div class="dash-tile" onclick="pickSec('schedule')" style="background:var(--dash-sched-bg, #f3f9fe);border:1.2px solid #bae6fd;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:24px">📅</span>
+          <b style="font-size:15px;color:var(--text-1)">جدولي</b>
+        </div>
+        <div style="margin:8px 0">
+          ${(()=>{
+            const todayIso=new Date().toISOString().slice(0,10);
+            const evs=(data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=todayIso);
+            const next=evs[0];
+            return next? `
+              <div style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(next.title)}</div>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${next.due_at?next.due_at.slice(0,10):'قريبًا'}</div>
+              <div style="font-size:10px;font-weight:700;color:#0284c7;margin-top:2px">${evs.length} أحداث قادمة</div>`
+            : `
+              <div style="font-size:12px;color:var(--text-2)">لا مواعيد قادمة اليوم</div>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">أضف موعدًا في جدولك</div>`;
+          })()}
+        </div>
+        <div>
+          <button type="button" onclick="event.stopPropagation();pickSec('schedule')" style="background:rgba(2,132,199,0.12);color:#0284c7;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">عرض الجدول ←</button>
+        </div>
+      </div>
+
+      <!-- 3. عاداتي -->
+      <div class="dash-tile" onclick="view='habits';renderApp();" style="background:var(--dash-habits-bg, #f2fbf6);border:1.2px solid #bbf7d0;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:24px">🌱</span>
+          <b style="font-size:15px;color:var(--text-1)">عاداتي</b>
+        </div>
+        <div style="margin:8px 0;display:flex;align-items:center;gap:8px">
+          ${(()=>{
+            const h=(data.items||[]).filter(i=>i.type==='HABIT'||i.type==='DAILY_ROUTINE');
+            const done=h.filter(i=>isHabitDoneToday(i.id)).length;
+            const pct=h.length? Math.round(done*100/h.length) : 0;
+            return `
+              <div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#16a34a;flex-shrink:0">${pct}%</div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-1)">${done} من ${h.length} عادات</div>
+                <div style="font-size:10px;color:var(--text-3)">مكتملة اليوم</div>
+              </div>`;
+          })()}
+        </div>
+        <div>
+          <button type="button" onclick="event.stopPropagation();view='habits';renderApp();" style="background:rgba(22,163,74,0.12);color:#16a34a;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">سجّل الآن ✓</button>
+        </div>
+      </div>
+
+      <!-- 4. مستعجلة -->
+      <div class="dash-tile" onclick="pickSec('urgent')" style="background:var(--dash-urgent-bg, #fff3f4);border:1.2px solid #fecdd3;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:24px">🚨</span>
+          <b style="font-size:15px;color:var(--text-1)">مستعجلة</b>
+        </div>
+        <div style="margin:8px 0">
+          ${(()=>{
+            const urg=(data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE');
+            return urg.length? `
+              <div style="display:flex;align-items:center;gap:4px">
+                <span style="background:#e11d48;color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px">${urg.length}</span>
+                <span style="font-size:12px;font-weight:700;color:var(--text-1)">رسالة مستعجلة</span>
+              </div>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(urg[0].title)}</div>`
+            : `
+              <div style="font-size:12px;color:var(--text-2)">لا رسائل مستعجلة</div>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">تصل بصوت مميز وفوري 🚨</div>`;
+          })()}
+        </div>
+        <div>
+          <button type="button" onclick="event.stopPropagation();pickSec('urgent')" style="background:rgba(225,29,72,0.12);color:#e11d48;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">أرسل رسالة 🚨</button>
+        </div>
+      </div>
     </div>
     <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">📈</span>
@@ -7956,6 +8060,8 @@ function applyCollapse(){
   try{
     const viewEl=document.getElementById('view'); if(!viewEl) return;
     const isFiltered=Boolean(activeSec);
+    const dash=document.getElementById('homeDashGrid');
+    if(dash) dash.style.display=isFiltered?'none':'grid';
     const set=isFiltered? new Set(SEC_META.map(m=>m[0]).filter(k=>k!==activeSec)) : collapsedSet();
     const secs=[...viewEl.querySelectorAll('[data-sec]')];
     secs.forEach(el=>{
