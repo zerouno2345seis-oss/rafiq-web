@@ -113,6 +113,12 @@ h2{font-size:16px;font-weight:600}
 [data-sec],.card[data-sec]{scroll-margin-top:130px}
 .sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
 .sec-pills::-webkit-scrollbar{display:none}
+.sec-pills-balanced{display:flex;flex-direction:column;width:100%;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden}
+.sec-pills-row{display:flex;width:100%}
+.sec-pills-row:not(:first-child){border-top:1px solid var(--border)}
+.sec-pills-row .pill{flex:1;min-width:0;height:48px;border:0;border-radius:0;background:var(--surface);color:var(--text-1);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap;transition:background .15s ease;-webkit-tap-highlight-color:transparent;padding:2px 1px}
+.sec-pills-row .pill:not(:first-child){border-inline-start:1px solid var(--border)}
+.sec-pills-row .pill.on{background:var(--accent);color:#fff;font-weight:700}
 .pill{border:0;border-inline-start:1px solid var(--border);border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-1);font:inherit;font-size:11px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .15s ease;-webkit-tap-highlight-color:transparent}
 .pill:hover:not(.on){background:var(--accent-verysoft)}
 .pill.on{background:var(--accent);color:#fff;font-weight:700}
@@ -1713,12 +1719,55 @@ function renderHome(){
         <button class="btn ghost" data-act="addPlace" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
       </div>
     </div>
+    <div class="sec" data-sec="bookmarks"><h2>🔖 الإشارات المرجعية</h2><button class="link" data-act="smartAddBookmark">+ إضافة رابط</button></div>
+    <div class="card" data-sec="bookmarks">
+      ${(()=>{
+        const bm = bookmarksOf();
+        const items = bm.items;
+        if(!items.length){
+          return `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك ومواقعك المفضلة لتصل إليها وتشاركها مع رفيقك بلمسة واحدة.</div>
+          <div style="padding-top:8px"><button class="btn ghost" data-act="smartAddBookmark" style="width:100%">＋ إضافة رابط</button></div>`;
+        }
+        return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-2)">🌐 ${items.length} إشارات مرجعية محفوظة</div>
+          <button class="btn" data-act="smartAddBookmark" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:12px;padding:5px 12px;border-radius:10px">+ إضافة رابط</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          ${items.map(b=>{
+            const url = b.note || '#';
+            const domain = getWebDomain(url);
+            const thumb = 'https://image.thum.io/get/width/300/crop/200/' + encodeURIComponent(url);
+            const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
+            return `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;height:56px;background:var(--surface-2);position:relative;text-decoration:none;overflow:hidden">
+                <img src="${thumb}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
+                <div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border-radius:4px;padding:1px 4px;display:flex;align-items:center;gap:3px">
+                  <img src="${fav}" alt="" style="width:10px;height:10px">
+                  <span style="font-size:8px;color:#fff;font-weight:600;max-width:45px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(domain)}</span>
+                </div>
+              </a>
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="padding:4px 5px;text-decoration:none;flex:1;min-width:0">
+                <div style="font-size:11px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title || domain)}</div>
+                <div style="font-size:8.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">/${esc(domain)}</div>
+              </a>
+              <div style="display:flex;align-items:center;justify-content:space-evenly;height:24px;border-top:1px solid var(--border);background:var(--surface)">
+                <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">↗️</button>
+                <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">✏️</button>
+                <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">🗑️</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+      })()}
+    </div>
     <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
   </div>`;
   applyCollapse();
 }
 /* ---------- قوائم التسوق والمتاجر (Shopping & Stores) ---------- */
-const RESERVED_SHOPPING_TITLES = ['طعامنا اليومي', 'أطباق نحبها', 'أماكننا المحفوظة', 'مقاطعنا الجميلة', '__سلة المحذوفات__'];
+const RESERVED_SHOPPING_TITLES = ['طعامنا اليومي', 'أطباق نحبها', 'أماكننا المحفوظة', 'مقاطعنا الجميلة', 'الإشارات المرجعية', '__سلة المحذوفات__'];
 window._activeStoreTab = 'ALL';
 
 function getStoreLists(){
@@ -6844,6 +6893,113 @@ function openRename(id,cur){
     <div class="field"><label>الاسم</label><input id="rnTitle" value="${esc(cur||'')}"></div>
     <button class="btn" data-act="saveRename" data-id="${id}">حفظ التسمية</button>`);
 }
+/* ---------- الإشارات المرجعية ---------- */
+const BOOKMARKS_TITLE = 'الإشارات المرجعية';
+
+function bookmarksOf(){
+  if(!data||!data.sharedLists) return { list:null, items:[] };
+  let l=data.sharedLists.find(x=>x.title===BOOKMARKS_TITLE);
+  const items=l? (data.shopping||[]).filter(i=>i.list_id===l.id) : [];
+  return { list:l, items };
+}
+
+async function ensureBookmarksList(){
+  const sh=sharedFirst(); if(!sh) return null;
+  return ensureList(BOOKMARKS_TITLE, sh.circle.id);
+}
+
+function extractWebUrl(text){
+  const t = (text || '').trim();
+  if(!t) return null;
+  const m = t.match(/(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/);
+  if(!m) return null;
+  let url = m[0].replace(/[\)\]\.,;'"\>]+$/, '');
+  if(!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+  try {
+    const u = new URL(url);
+    if(u.hostname && u.hostname.includes('.')) return url;
+  } catch(e){}
+  return null;
+}
+
+function getWebDomain(url){
+  try {
+    const u = new URL(url.startsWith('http') ? url : ('https://' + url));
+    return u.hostname.replace(/^www\./, '') || url.slice(0, 25);
+  } catch(e){
+    return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].slice(0, 25);
+  }
+}
+
+async function addBookmarkItem(title, link){
+  try {
+    const l = await ensureBookmarksList();
+    if(!l){ toast('أنشئ دائرة مشتركة أولًا'); return; }
+    let rawUrl = (link || '').trim();
+    if(!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) rawUrl = 'https://' + rawUrl;
+    const domain = getWebDomain(rawUrl);
+    const finalTitle = (title || '').trim() || (domain.charAt(0).toUpperCase() + domain.slice(1));
+    await rest('POST', 'shared_list_items', { id: uuid(), list_id: l.id, title: finalTitle, note: rawUrl, completed: false, position: 0 }, 'return=minimal');
+    await refreshAll(); renderApp();
+  } catch(e){
+    toast('تعذر الحفظ: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+async function smartAddBookmark(){
+  let clip = '';
+  try {
+    if(navigator.clipboard && navigator.clipboard.readText){
+      clip = await navigator.clipboard.readText();
+    }
+  } catch(e){}
+  const detected = extractWebUrl(clip);
+  if(detected){
+    const d = getWebDomain(detected);
+    const t = d.charAt(0).toUpperCase() + d.slice(1);
+    await addBookmarkItem(t, detected);
+    toast('تم حفظ الرابط من الحافظة تلقائيًا: ' + d + ' 🔖');
+  } else {
+    openAddBookmarkModal();
+  }
+}
+
+function openAddBookmarkModal(){
+  openSheet(sheetHead('🔖 إضافة إشارة مرجعية جديدة') + `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">أدخل رابط الموقع، وسنجلب لك معاينته وصورته تلقائيًا:</p>
+    <div class="field"><label>رابط الموقع (URL)</label><input id="bmUrl" placeholder="https://example.com" style="direction:ltr"></div>
+    <div class="field"><label>اسم الموقع (اختياري)</label><input id="bmTitle" placeholder="مثال: موسوعة، وصفات صحية"></div>
+    <div style="height:10px"></div>
+    <button class="btn" id="saveBmBtn">حفظ الإشارة المرجعية ✓</button>
+  `);
+  const btn = $('#saveBmBtn');
+  if(btn) btn.onclick = async ()=>{
+    const u = ($('#bmUrl') ? $('#bmUrl').value : '').trim();
+    const t = ($('#bmTitle') ? $('#bmTitle').value : '').trim();
+    if(!u){ toast('يرجى كتابة رابط الموقع أولًا'); return; }
+    await addBookmarkItem(t, u);
+    closeSheet();
+    toast('تم حفظ الإشارة المرجعية 🔖');
+  };
+}
+
+function openEditBookmarkModal(id, curTitle, curUrl){
+  openSheet(sheetHead('✏️ تعديل الإشارة المرجعية') + `
+    <div class="field"><label>رابط الموقع (URL)</label><input id="bmEditUrl" value="${esc(curUrl)}" style="direction:ltr"></div>
+    <div class="field"><label>اسم الموقع</label><input id="bmEditTitle" value="${esc(curTitle)}"></div>
+    <div style="height:10px"></div>
+    <button class="btn" id="saveEditBmBtn">حفظ التعديلات ✓</button>
+  `);
+  const btn = $('#saveEditBmBtn');
+  if(btn) btn.onclick = async ()=>{
+    const u = ($('#bmEditUrl') ? $('#bmEditUrl').value : '').trim();
+    const t = ($('#bmEditTitle') ? $('#bmEditTitle').value : '').trim();
+    if(!u){ toast('يرجى كتابة الرابط'); return; }
+    await rest('PATCH', 'shared_list_items?id=eq.' + id, { title: t || getWebDomain(u), note: u }, 'return=minimal');
+    await refreshAll(); renderApp(); closeSheet();
+    toast('تم تحديث الإشارة بنجاح ✓');
+  };
+}
 /* ---------- المراجعة الأسبوعية ---------- */
 function openReview(){
   const w=weekStats();
@@ -6882,6 +7038,7 @@ function openAddMenu(anchorBtn, targetSpace){
     ['🍽','وجبة اليوم','openMealSheet',''],
     ['🌤','شعور اليوم','openAddMood',''],
     ['🎬','رابط جميل','addMedia',''],
+    ['🔖','إشارة مرجعية','smartAddBookmark',''],
     ['💊','دواء','openAddMed',''],
     ['👥','دائرة جديدة','openCreateCircle','']
   ];
@@ -7276,6 +7433,27 @@ document.addEventListener('click', async e=>{
         const pl = (data.shopping || []).find(x => x.id === el.dataset.id);
         if(pl) await moveToTrash('place', pl.id, pl.title, pl.note, { id: pl.id, list_id: pl.list_id, title: pl.title, note: pl.note });
         await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
+      case 'smartAddBookmark': await smartAddBookmark(); break;
+      case 'editBookmark': openEditBookmarkModal(el.dataset.id, el.dataset.t, el.dataset.u); break;
+      case 'delBookmark': {
+        if(!confirm('حذف هذه الإشارة المرجعية؟')) break;
+        const bm = (data.shopping || []).find(x => x.id === el.dataset.id);
+        if(bm) await moveToTrash('bookmark', bm.id, bm.title, bm.note, { id: bm.id, list_id: bm.list_id, title: bm.title, note: bm.note });
+        await rest('DELETE', 'shared_list_items', 'id=eq.' + el.dataset.id);
+        await refreshAll(); renderApp(); toast('نُقلت إلى سلة المحذوفات 🗑️'); break;
+      }
+      case 'shareBookmark': {
+        const u = el.dataset.u, t = el.dataset.t;
+        if(navigator.share){
+          try { await navigator.share({ title: t, url: u, text: t + '\n' + u }); } catch(err){}
+        } else if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(t + '\n' + u);
+          toast('تم نسخ رابط الإشارة للمشاركة ↗️');
+        } else {
+          toast(u);
+        }
+        break;
+      }
       case 'toggleMedsView': { medsTable=(el.dataset.v==='table'); renderApp(); break; }
       case 'renameCircle': { const n=($('#crName')||{}).value||''; if(!n.trim()){ toast('اكتب الاسم'); break; }
         await rest('PATCH','circles',{name:n.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('تم تعديل الاسم ✓'); break; }
@@ -7632,6 +7810,7 @@ const SEC_META=[
   ['meds','💊','أدويتنا'],
   ['places','📍','أماكننا'],
   ['media','🎬','المقاطع'],
+  ['bookmarks','🔖','إشارات'],
   ['urgent','🚨','مستعجلة']
 ];
 function secSummary(k){
@@ -7658,6 +7837,7 @@ function secSummary(k){
     }
     if(k==='places'){ const n=lc('أماكننا المحفوظة'); return n? n+' مكان':'لا أماكن'; }
     if(k==='media'){ const n=lc('مقاطعنا الجميلة'); return n? n+' مقطع':'لا مقاطع'; }
+    if(k==='bookmarks'){ const n=lc('الإشارات المرجعية'); return n? n+' إشارة محفوظة':'لا إشارات'; }
     if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستعجلة':'لا رسائل'; }
   }catch(e){}
   return '';
@@ -7703,11 +7883,19 @@ function applyCollapse(){
       ch.textContent=isCol?'▸':'▾';
       ch.title=isCol?'توسيع':'طي';
     });
-    // شريط الأقسام الثابت
+    // شريط الأقسام الثابت: صفان متوازنان تفاعليان
     const pills=document.getElementById('secPills');
     if(pills){
       const meta=SEC_META;
-      pills.innerHTML=meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:15px;line-height:1.2">${m[1]}</span><span style="font-size:10.5px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('');
+      const total=meta.length;
+      const topCount=Math.ceil(total / 2);
+      const row1=meta.slice(0, topCount);
+      const row2=meta.slice(topCount);
+      pills.className='sec-pills-balanced';
+      pills.innerHTML=`
+        <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
+        <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
+      `;
       pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
       const note=document.getElementById('secNote');
       if(note){
