@@ -7883,19 +7883,23 @@ function applyCollapse(){
       ch.textContent=isCol?'▸':'▾';
       ch.title=isCol?'توسيع':'طي';
     });
-    // شريط الأقسام الثابت: صفان متوازنان تفاعليان
+    // شريط الأقسام الثابت: صف واحد إذا كانت 5 أو أقل، وصفان متوازنان إذا كانت أكثر ("العالي أعلى")
     const pills=document.getElementById('secPills');
     if(pills){
       const meta=SEC_META;
       const total=meta.length;
-      const topCount=Math.ceil(total / 2);
-      const row1=meta.slice(0, topCount);
-      const row2=meta.slice(topCount);
       pills.className='sec-pills-balanced';
-      pills.innerHTML=`
-        <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
-        <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
-      `;
+      if(total <= 5){
+        pills.innerHTML=`<div class="sec-pills-row">${meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>`;
+      } else {
+        const topCount=Math.ceil(total / 2);
+        const row1=meta.slice(0, topCount);
+        const row2=meta.slice(topCount);
+        pills.innerHTML=`
+          <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
+          <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
+        `;
+      }
       pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
       const note=document.getElementById('secNote');
       if(note){
