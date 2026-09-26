@@ -531,7 +531,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.27';
+const APP_VERSION = '1.30';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -8185,13 +8185,34 @@ function openPwaInstructionsSheet() {
   `);
 }
 
-// تسجيل عامل الخدمة Service Worker
+// تسجيل عامل الخدمة Service Worker مع الكشف الفوري عن التحديثات
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
       console.log('[PWA] Service Worker registered:', reg.scope);
+      // فحص أحدث إصدار دورياً
+      if (reg.update) reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[PWA] New version ready! Reloading...');
+              window.location.reload();
+            }
+          });
+        }
+      });
     }).catch((err) => {
       console.warn('[PWA] Service Worker registration failed:', err);
+    });
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   });
 }
