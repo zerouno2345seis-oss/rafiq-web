@@ -537,7 +537,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.32';
+const APP_VERSION = '1.33';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1764,10 +1764,14 @@ function renderHome(){
         const bm = bookmarksOf();
         const allItems = bm.items;
         const q = (window._bmSearch || '').trim().toLowerCase();
-        const items = q ? allItems.filter(b => (b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q)) : allItems;
+        const selCat = window._bmCat || 'الكل';
+        // الفئات المتاحة
+        const cats = ['الكل', ...new Set(allItems.map(b=>b.assigned_to||'').filter(c=>c.trim()))].sort((a,b)=>a==='الكل'?-1:b==='الكل'?1:a.localeCompare(b,'ar'));
+        let items = selCat==='الكل' ? allItems : allItems.filter(b=>(b.assigned_to||'').trim()===selCat);
+        if(q) items = items.filter(b=>(b.title||'').toLowerCase().includes(q)||(b.note||'').toLowerCase().includes(q));
         return `
-        <!-- صف واحد مدمج: حقل البحث + عداد الإشارات + زر إضافة رابط -->
-        <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px">
+        <!-- صف البحث + زر الإضافة -->
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px">
           <input type="text" id="bmSearchInput" value="${esc(window._bmSearch || '')}" placeholder="ابحث بين ${allItems.length} إشارة... 🔍"
             style="flex:1;height:40px;border-radius:10px;border:1px solid var(--border);padding:0 12px;background:var(--surface-2);color:var(--text-1);font-family:inherit;font-size:12.5px;box-sizing:border-box"
             oninput="window._bmSearch=this.value;renderApp();const el=document.getElementById('bmSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
@@ -1775,9 +1779,13 @@ function renderHome(){
             <span style="font-size:15px;font-weight:800">+</span><span>إضافة رابط</span>
           </button>
         </div>
+        <!-- شريط الفئات -->
+        ${cats.length>1?`<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none">
+          ${cats.map(cat=>`<button onclick="window._bmCat='${cat}';renderApp();" style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1px solid ${cat===selCat?'var(--accent)':'var(--border)'};background:${cat===selCat?'var(--accent)':'var(--surface)'};color:${cat===selCat?'#fff':'var(--text-2)'};font-size:12px;font-weight:${cat===selCat?'700':'500'};cursor:pointer;white-space:nowrap;font-family:inherit">${esc(cat)}</button>`).join('')}
+        </div>`:''}
         ${!items.length ? (
-          allItems.length ? `<div class="empty" style="padding:16px"><span class="e">🔍</span>لا توجد نتائج تطابق «${esc(q)}»</div>`
-          : `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك ومواقعك المفضلة لتصل إليها وتشاركها مع رفيقك بلمسة واحدة.</div>`
+          allItems.length ? `<div class="empty" style="padding:16px"><span class="e">🔍</span>لا توجد نتائج${q?` لـ «${esc(q)}»`:''}${selCat!=='الكل'?` في فئة «${esc(selCat)}»`:''}</div>`
+          : `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك المفضلة للوصول إليها بلمسة واحدة.</div>`
         ) : `
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           ${items.map(b=>{
@@ -1786,29 +1794,27 @@ function renderHome(){
             const grad = getWebDomainGrad(domain);
             const screenshot = 'https://linkdr.com/api/screenshot/' + encodeURIComponent(domain);
             const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
+            const category = (b.assigned_to||'').trim();
             return `
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
-              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;height:68px;position:relative;text-decoration:none;overflow:hidden;background:linear-gradient(135deg, ${grad[0]}, ${grad[1]})">
-                <!-- الشعار المركزي كخلفية حية دائمة -->
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center">
+              <!-- الصورة المصغرة 70% -->
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;aspect-ratio:1.4/1;position:relative;text-decoration:none;overflow:hidden;background:linear-gradient(135deg, ${grad[0]}, ${grad[1]})">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;z-index:1">
                   <img src="${fav}" alt="" style="width:22px;height:22px;border-radius:4px" onerror="this.style.opacity='0.5'">
                 </div>
-                <!-- لقطة الشاشة الحية فوق الشعار -->
-                <img src="${screenshot}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transition:opacity 0.2s" onerror="this.style.display='none'">
-                <!-- شارة النطاق -->
-                <div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.65);border-radius:5px;padding:2px 5px;display:flex;align-items:center;gap:3px;z-index:2">
-                  <img src="${fav}" alt="" style="width:10px;height:10px">
-                  <span style="font-size:8px;color:#fff;font-weight:700;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(domain)}</span>
-                </div>
+                <img src="${screenshot}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:2" onerror="this.style.display='none'">
+                ${category?`<div style="position:absolute;top:3px;left:3px;background:var(--accent);border-radius:5px;padding:1px 5px;z-index:3;font-size:8px;color:#fff;font-weight:700;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(category)}</div>`:''}
               </a>
-              <a href="${esc(url)}" target="_blank" rel="noopener" style="padding:5px 6px;text-decoration:none;flex:1;min-width:0">
-                <div style="font-size:11.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title || domain)}</div>
-                <div style="font-size:9px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">/${esc(domain)}</div>
+              <!-- الاسم 30% — بدون عنوان الموقع -->
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:4px;padding:5px 5px;text-decoration:none;flex:1;min-width:0;overflow:hidden">
+                <img src="${fav}" alt="" style="width:13px;height:13px;flex-shrink:0" onerror="this.style.opacity='0.4'">
+                <span style="font-size:11px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title || domain)}</span>
               </a>
-              <div style="display:flex;align-items:center;justify-content:space-evenly;height:28px;border-top:1px solid var(--border);background:var(--surface)">
-                <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">🗑️</button>
-                <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">✏️</button>
-                <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">↗️</button>
+              <div style="height:0.5px;background:var(--border)"></div>
+              <div style="display:flex;align-items:center;justify-content:space-evenly;height:26px;background:var(--surface)">
+                <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">🗑️</button>
+                <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" data-cat="${esc(category)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">✏️</button>
+                <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">↗️</button>
               </div>
             </div>`;
           }).join('')}
@@ -1816,6 +1822,7 @@ function renderHome(){
         `;
       })()}
     </div>
+
     <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
   </div>`;
   applyCollapse();
@@ -6995,7 +7002,7 @@ function getWebDomainGrad(d){
   return colors[Math.abs(h)%colors.length];
 }
 
-async function addBookmarkItem(title, link){
+async function addBookmarkItem(title, link, category){
   try {
     const l = await ensureBookmarksList();
     if(!l){ toast('أنشئ دائرة مشتركة أولًا'); return; }
@@ -7003,7 +7010,9 @@ async function addBookmarkItem(title, link){
     if(!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) rawUrl = 'https://' + rawUrl;
     const domain = getWebDomain(rawUrl);
     const finalTitle = (title || '').trim() || (domain.charAt(0).toUpperCase() + domain.slice(1));
-    await rest('POST', 'shared_list_items', { id: uuid(), list_id: l.id, title: finalTitle, note: rawUrl, completed: false, position: 0 }, 'return=minimal');
+    const body = { id: uuid(), list_id: l.id, title: finalTitle, note: rawUrl, completed: false, position: 0 };
+    if(category && category.trim()) body.assigned_to = category.trim();
+    await rest('POST', 'shared_list_items', body, 'return=minimal');
     await refreshAll(); renderApp();
   } catch(e){
     toast('تعذر الحفظ: ' + (e && e.message ? e.message : ''));
@@ -7021,18 +7030,32 @@ async function smartAddBookmark(){
   if(detected){
     const d = getWebDomain(detected);
     const t = d.charAt(0).toUpperCase() + d.slice(1);
-    await addBookmarkItem(t, detected);
+    await addBookmarkItem(t, detected, '');
     toast('تم حفظ الرابط من الحافظة تلقائيًا: ' + d + ' 🔖');
   } else {
     openAddBookmarkModal();
   }
 }
 
+const BM_CAT_SUGGESTED = ['أعمال','تقنية','ترفيه','أخبار','تعليم','صحة','تسوق','أخرى'];
+
+function bmCatChips(selCat, inputId){
+  const bm = bookmarksOf();
+  const existing = [...new Set(bm.items.map(b=>b.assigned_to||'').filter(c=>c.trim()))];
+  const cats = ['بلا فئة', ...BM_CAT_SUGGESTED, ...existing].filter((v,i,a)=>a.indexOf(v)===i);
+  return cats.map(cat=>`<button type="button" onclick="document.getElementById('${inputId}').value='${cat==='بلا فئة'?'':cat}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.background=b===this?'var(--accent)':'var(--surface)');this.parentElement.querySelectorAll('button').forEach(b=>b.style.color=b===this?'#fff':'var(--text-2)');this.parentElement.querySelectorAll('button').forEach(b=>b.style.borderColor=b===this?'var(--accent)':'var(--border)');"
+    style="flex-shrink:0;padding:4px 10px;border-radius:16px;border:1px solid ${(!selCat&&cat==='بلا فئة')||selCat===cat?'var(--accent)':'var(--border)'};background:${(!selCat&&cat==='بلا فئة')||selCat===cat?'var(--accent)':'var(--surface)'};color:${(!selCat&&cat==='بلا فئة')||selCat===cat?'#fff':'var(--text-2)'};font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">${esc(cat)}</button>`).join('');
+}
+
 function openAddBookmarkModal(){
-  openSheet(sheetHead('🔖 إضافة إشارة مرجعية جديدة') + `
-    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">أدخل رابط الموقع، وسنجلب لك معاينته وصورته تلقائيًا:</p>
+  openSheet(sheetHead('🔖 إضافة إشارة مرجعية') + `
+    <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">أدخل رابط الموقع:</p>
     <div class="field"><label>رابط الموقع (URL)</label><input id="bmUrl" placeholder="https://example.com" style="direction:ltr"></div>
-    <div class="field"><label>اسم الموقع (اختياري)</label><input id="bmTitle" placeholder="مثال: موسوعة، وصفات صحية"></div>
+    <div class="field"><label>اسم الموقع (اختياري)</label><input id="bmTitle" placeholder="مثال: ويكيبيديا"></div>
+    <div class="field"><label>الفئة (اختياري)</label>
+      <div style="display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none">${bmCatChips('','bmCatInput')}</div>
+      <input id="bmCatInput" placeholder="أو اكتب فئة جديدة..." style="margin-top:4px">
+    </div>
     <div style="height:10px"></div>
     <button class="btn" id="saveBmBtn">حفظ الإشارة المرجعية ✓</button>
   `);
@@ -7040,17 +7063,22 @@ function openAddBookmarkModal(){
   if(btn) btn.onclick = async ()=>{
     const u = ($('#bmUrl') ? $('#bmUrl').value : '').trim();
     const t = ($('#bmTitle') ? $('#bmTitle').value : '').trim();
+    const cat = ($('#bmCatInput') ? $('#bmCatInput').value : '').trim();
     if(!u){ toast('يرجى كتابة رابط الموقع أولًا'); return; }
-    await addBookmarkItem(t, u);
+    await addBookmarkItem(t, u, cat);
     closeSheet();
     toast('تم حفظ الإشارة المرجعية 🔖');
   };
 }
 
-function openEditBookmarkModal(id, curTitle, curUrl){
+function openEditBookmarkModal(id, curTitle, curUrl, curCat){
   openSheet(sheetHead('✏️ تعديل الإشارة المرجعية') + `
     <div class="field"><label>رابط الموقع (URL)</label><input id="bmEditUrl" value="${esc(curUrl)}" style="direction:ltr"></div>
     <div class="field"><label>اسم الموقع</label><input id="bmEditTitle" value="${esc(curTitle)}"></div>
+    <div class="field"><label>الفئة</label>
+      <div style="display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none">${bmCatChips(curCat||'','bmEditCatInput')}</div>
+      <input id="bmEditCatInput" value="${esc(curCat||'')}" placeholder="أو اكتب فئة جديدة...">
+    </div>
     <div style="height:10px"></div>
     <button class="btn" id="saveEditBmBtn">حفظ التعديلات ✓</button>
   `);
@@ -7058,12 +7086,15 @@ function openEditBookmarkModal(id, curTitle, curUrl){
   if(btn) btn.onclick = async ()=>{
     const u = ($('#bmEditUrl') ? $('#bmEditUrl').value : '').trim();
     const t = ($('#bmEditTitle') ? $('#bmEditTitle').value : '').trim();
+    const cat = ($('#bmEditCatInput') ? $('#bmEditCatInput').value : '').trim();
     if(!u){ toast('يرجى كتابة الرابط'); return; }
-    await rest('PATCH', 'shared_list_items?id=eq.' + id, { title: t || getWebDomain(u), note: u }, 'return=minimal');
+    const body = { title: t || getWebDomain(u), note: u, assigned_to: cat || null };
+    await rest('PATCH', 'shared_list_items?id=eq.' + id, body, 'return=minimal');
     await refreshAll(); renderApp(); closeSheet();
     toast('تم تحديث الإشارة بنجاح ✓');
   };
 }
+
 /* ---------- المراجعة الأسبوعية ---------- */
 function openReview(){
   const w=weekStats();
@@ -7498,7 +7529,7 @@ document.addEventListener('click', async e=>{
         if(pl) await moveToTrash('place', pl.id, pl.title, pl.note, { id: pl.id, list_id: pl.list_id, title: pl.title, note: pl.note });
         await rest('DELETE','shared_list_items','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('نُقل إلى سلة المحذوفات 🗑️'); break; }
       case 'smartAddBookmark': await smartAddBookmark(); break;
-      case 'editBookmark': openEditBookmarkModal(el.dataset.id, el.dataset.t, el.dataset.u); break;
+      case 'editBookmark': openEditBookmarkModal(el.dataset.id, el.dataset.t, el.dataset.u, el.dataset.cat||''); break;
       case 'delBookmark': {
         if(!confirm('حذف هذه الإشارة المرجعية؟')) break;
         const bm = (data.shopping || []).find(x => x.id === el.dataset.id);
