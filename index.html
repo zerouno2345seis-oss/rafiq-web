@@ -531,7 +531,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.30';
+const APP_VERSION = '1.31';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1146,9 +1146,23 @@ function renderAuthForms(){
       <button class="btn" id="liBtn">دخول</button><div style="height:10px"></div>
       <button class="btn ghost" data-act="authMode" data-v="0">رجوع</button>
       ${err?`<div class="err">${esc(err)}</div>`:''}</div>`;
-    $('#liBtn').onclick=async()=>{ const b=$('#liBtn'); b.textContent='جارٍ...'; b.disabled=true;
-      const r=await signIn($('#liEmail').value.trim(),$('#liPass').value);
-      if(!r.ok){ window._authErr=arErr(r); window._authInfo=''; renderAuthForms(); } };
+    $('#liBtn').onclick=async()=>{
+      const b=$('#liBtn'); b.textContent='جارٍ...'; b.disabled=true;
+      try {
+        const r=await signIn($('#liEmail').value.trim(),$('#liPass').value);
+        if(!r.ok){
+          b.textContent='دخول'; b.disabled=false;
+          window._authErr=arErr(r); window._authInfo=''; renderAuthForms();
+        } else {
+          window._authErr=''; window._authInfo='';
+          await afterAuth();
+        }
+      } catch(err) {
+        b.textContent='دخول'; b.disabled=false;
+        window._authErr='تعذر تسجيل الدخول: ' + (err.message || 'تحقق من الإنترنت');
+        renderAuthForms();
+      }
+    };
   } else {
     el.innerHTML=`<div class="card"><h2 style="margin-bottom:10px">إنشاء حساب جديد</h2>
       <div class="field"><label>اسمك الظاهر</label><input id="suName" placeholder="مثال: زاهر"></div>
@@ -1160,11 +1174,23 @@ function renderAuthForms(){
       <button class="btn" id="suBtn">إنشاء الحساب</button><div style="height:10px"></div>
       <button class="btn ghost" data-act="authMode" data-v="0">رجوع</button>
       ${err?`<div class="err">${esc(err)}</div>`:''}${info?`<div class="info-msg">${esc(info)}</div>`:''}</div>`;
-    $('#suBtn').onclick=async()=>{ const b=$('#suBtn'); if(!$('#suName').value.trim()){ toast('اكتب اسمك أولًا'); return; }
+    $('#suBtn').onclick=async()=>{
+      const b=$('#suBtn'); if(!$('#suName').value.trim()){ toast('اكتب اسمك أولًا'); return; }
       b.textContent='جارٍ...'; b.disabled=true;
-      const r=await signUp($('#suEmail').value.trim(),$('#suPass').value,$('#suName').value.trim(),window._acc||'green');
-      if(r.ok){ window._authErr=''; window._authInfo=''; await afterAuth(); }
-      else { window._authErr=arErr(r); window._authInfo=r.mode==='confirm_email'?'أُرسل رابط التأكيد إلى بريدك — أكّده ثم سجّل الدخول':''; renderAuthForms(); } };
+      try {
+        const r=await signUp($('#suEmail').value.trim(),$('#suPass').value,$('#suName').value.trim(),window._acc||'green');
+        if(r.ok){
+          window._authErr=''; window._authInfo=''; await afterAuth();
+        } else {
+          b.textContent='إنشاء الحساب'; b.disabled=false;
+          window._authErr=arErr(r); window._authInfo=r.mode==='confirm_email'?'أُرسل رابط التأكيد إلى بريدك — أكّده ثم سجّل الدخول':''; renderAuthForms();
+        }
+      } catch(err) {
+        b.textContent='إنشاء الحساب'; b.disabled=false;
+        window._authErr='تعذر إنشاء الحساب: ' + (err.message || 'تحقق من الإنترنت');
+        renderAuthForms();
+      }
+    };
   }
 }
 function arErr(r){ const m=(r.msg||'').toLowerCase();
@@ -1177,14 +1203,21 @@ function arErr(r){ const m=(r.msg||'').toLowerCase();
 }
 async function afterAuth(){
   window._authErr=''; window._authInfo='';
-  askNotify();
-  askGeo();
-  const snap=loadSnap();
-  if(snap && snap.profile){ data=snap; }
-  renderApp();
-  startPolling();
-  ensureProfile().then(() => refreshAll()).then(() => renderApp());
-  if(pendingJoin){ openJoinSheet(pendingJoin); }
+  try {
+    const snap=loadSnap();
+    if(snap && snap.profile){ data=snap; renderApp(); }
+    await ensureProfile().catch(()=>{});
+    await refreshAll().catch(()=>{});
+    renderApp();
+    __bootOk=true;
+    startPolling();
+    askNotify();
+    askGeo();
+    if(pendingJoin){ openJoinSheet(pendingJoin); }
+  } catch(e) {
+    console.error('afterAuth error:', e);
+    renderApp();
+  }
 }
 async function ensureProfile(){
   try{
@@ -1719,47 +1752,62 @@ function renderHome(){
         <button class="btn ghost" data-act="addPlace" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
       </div>
     </div>
-    <div class="sec" data-sec="bookmarks"><h2>🔖 الإشارات المرجعية</h2><button class="link" data-act="smartAddBookmark">+ إضافة رابط</button></div>
+    <div class="sec" data-sec="bookmarks"><h2>🔖 الإشارات المرجعية</h2></div>
     <div class="card" data-sec="bookmarks">
       ${(()=>{
         const bm = bookmarksOf();
-        const items = bm.items;
-        if(!items.length){
-          return `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك ومواقعك المفضلة لتصل إليها وتشاركها مع رفيقك بلمسة واحدة.</div>
-          <div style="padding-top:8px"><button class="btn ghost" data-act="smartAddBookmark" style="width:100%">＋ إضافة رابط</button></div>`;
-        }
+        const allItems = bm.items;
+        const q = (window._bmSearch || '').trim().toLowerCase();
+        const items = q ? allItems.filter(b => (b.title||'').toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q)) : allItems;
         return `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px">
-          <div style="font-size:13px;font-weight:700;color:var(--text-2)">🌐 ${items.length} إشارات مرجعية محفوظة</div>
-          <button class="btn" data-act="smartAddBookmark" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:12px;padding:5px 12px;border-radius:10px">+ إضافة رابط</button>
+        <!-- صف واحد مدمج: حقل البحث + عداد الإشارات + زر إضافة رابط -->
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px">
+          <input type="text" id="bmSearchInput" value="${esc(window._bmSearch || '')}" placeholder="ابحث بين ${allItems.length} إشارة... 🔍"
+            style="flex:1;height:40px;border-radius:10px;border:1px solid var(--border);padding:0 12px;background:var(--surface-2);color:var(--text-1);font-family:inherit;font-size:12.5px;box-sizing:border-box"
+            oninput="window._bmSearch=this.value;renderApp();const el=document.getElementById('bmSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
+          <button class="btn" data-act="smartAddBookmark" style="height:40px;padding:0 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:12px;font-weight:700;border-radius:10px;white-space:nowrap;display:flex;align-items:center;gap:4px">
+            <span style="font-size:15px;font-weight:800">+</span><span>إضافة رابط</span>
+          </button>
         </div>
+        ${!items.length ? (
+          allItems.length ? `<div class="empty" style="padding:16px"><span class="e">🔍</span>لا توجد نتائج تطابق «${esc(q)}»</div>`
+          : `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك ومواقعك المفضلة لتصل إليها وتشاركها مع رفيقك بلمسة واحدة.</div>`
+        ) : `
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           ${items.map(b=>{
             const url = b.note || '#';
             const domain = getWebDomain(url);
-            const thumb = 'https://image.thum.io/get/width/300/crop/200/' + encodeURIComponent(url);
+            const grad = getWebDomainGrad(domain);
+            const screenshot = 'https://linkdr.com/api/screenshot/' + encodeURIComponent(domain);
             const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
             return `
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
-              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;height:56px;background:var(--surface-2);position:relative;text-decoration:none;overflow:hidden">
-                <img src="${thumb}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
-                <div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border-radius:4px;padding:1px 4px;display:flex;align-items:center;gap:3px">
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;height:68px;position:relative;text-decoration:none;overflow:hidden;background:linear-gradient(135deg, ${grad[0]}, ${grad[1]})">
+                <!-- الشعار المركزي كخلفية حية دائمة -->
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center">
+                  <img src="${fav}" alt="" style="width:22px;height:22px;border-radius:4px" onerror="this.style.opacity='0.5'">
+                </div>
+                <!-- لقطة الشاشة الحية فوق الشعار -->
+                <img src="${screenshot}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transition:opacity 0.2s" onerror="this.style.display='none'">
+                <!-- شارة النطاق -->
+                <div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.65);border-radius:5px;padding:2px 5px;display:flex;align-items:center;gap:3px;z-index:2">
                   <img src="${fav}" alt="" style="width:10px;height:10px">
-                  <span style="font-size:8px;color:#fff;font-weight:600;max-width:45px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(domain)}</span>
+                  <span style="font-size:8px;color:#fff;font-weight:700;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(domain)}</span>
                 </div>
               </a>
-              <a href="${esc(url)}" target="_blank" rel="noopener" style="padding:4px 5px;text-decoration:none;flex:1;min-width:0">
-                <div style="font-size:11px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title || domain)}</div>
-                <div style="font-size:8.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">/${esc(domain)}</div>
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="padding:5px 6px;text-decoration:none;flex:1;min-width:0">
+                <div style="font-size:11.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title || domain)}</div>
+                <div style="font-size:9px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">/${esc(domain)}</div>
               </a>
-              <div style="display:flex;align-items:center;justify-content:space-evenly;height:24px;border-top:1px solid var(--border);background:var(--surface)">
-                <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">↗️</button>
-                <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">✏️</button>
-                <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px">🗑️</button>
+              <div style="display:flex;align-items:center;justify-content:space-evenly;height:28px;border-top:1px solid var(--border);background:var(--surface)">
+                <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">🗑️</button>
+                <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">✏️</button>
+                <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:12px;padding:3px 6px">↗️</button>
               </div>
             </div>`;
           }).join('')}
-        </div>`;
+        </div>`}
+        `;
       })()}
     </div>
     <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
@@ -6931,6 +6979,16 @@ function getWebDomain(url){
   }
 }
 
+function getWebDomainGrad(d){
+  const colors = [
+    ['#2563EB','#1D4ED8'],['#7C3AED','#6D28D9'],['#DB2777','#BE185D'],
+    ['#059669','#047857'],['#D97706','#B45309'],['#0891B2','#0E7490'],
+    ['#4F46E5','#4338CA'],['#0D9488','#0F766E'],['#DC2626','#B91C1C'],['#EA580C','#C2410C']
+  ];
+  let h=0; for(let i=0;i<d.length;i++) h=(h*31+d.charCodeAt(i))&0xfffffff;
+  return colors[Math.abs(h)%colors.length];
+}
+
 async function addBookmarkItem(title, link){
   try {
     const l = await ensureBookmarksList();
@@ -7890,14 +7948,14 @@ function applyCollapse(){
       const total=meta.length;
       pills.className='sec-pills-balanced';
       if(total <= 5){
-        pills.innerHTML=`<div class="sec-pills-row">${meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>`;
+        pills.innerHTML=`<div class="sec-pills-row" style="height:62px">${meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:56px;padding:6px 2px"><span style="font-size:20px;line-height:1.2">${m[1]}</span><span style="font-size:11.5px;font-weight:700;margin-top:3px">${m[2]}</span></button>`).join('')}</div>`;
       } else {
         const topCount=Math.ceil(total / 2);
         const row1=meta.slice(0, topCount);
         const row2=meta.slice(topCount);
         pills.innerHTML=`
-          <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
-          <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button"><span style="font-size:14px;line-height:1.2">${m[1]}</span><span style="font-size:9.5px;font-weight:600;margin-top:1px">${m[2]}</span></button>`).join('')}</div>
+          <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:50px;padding:4px 2px"><span style="font-size:16px;line-height:1.2">${m[1]}</span><span style="font-size:10px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('')}</div>
+          <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:50px;padding:4px 2px"><span style="font-size:16px;line-height:1.2">${m[1]}</span><span style="font-size:10px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('')}</div>
         `;
       }
       pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
@@ -8224,15 +8282,20 @@ if ('serviceWorker' in navigator) {
     const snap=loadSnap();
     if(snap && snap.profile){ data=snap; renderApp(); __bootOk=true; }
     // 2) الشبكة في الخلفية
-    if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession();
-    await ensureProfile();
-    await refreshAll(); renderApp(); __bootOk=true; startPolling();
+    if(session.expires_at&&session.expires_at-Date.now()<120000) await refreshSession().catch(()=>{});
+    await ensureProfile().catch(()=>{});
+    await refreshAll().catch(()=>{});
+    renderApp(); __bootOk=true; startPolling();
     if(pendingJoin){ setTimeout(()=>openJoinSheet(pendingJoin),400); }
   }catch(e){
-    // الجلسة غير صالحة (مثلًا مفتاح متغير) — عودة للدخول
-    session=null; saveSession(); renderAuth();
-    window._authErr='انتهت الجلسة — سجّل الدخول من جديد';
-    renderAuthForms();
+    console.error('[boot error]', e);
+    if(e && (e.message==='NO_SESSION' || e.status===401 || (e.message||'').includes('401'))){
+      session=null; saveSession(); renderAuth();
+      window._authErr='انتهت الجلسة — سجّل الدخول من جديد';
+      renderAuthForms();
+    } else {
+      renderApp();
+    }
   }
 })();
 // التنقل بالسحب داخل النوافذ يعمل تلقائيًا عبر overflow-y:auto

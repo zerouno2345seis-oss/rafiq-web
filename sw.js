@@ -1,8 +1,8 @@
 /* ==========================================================================
-   رفيق — Progressive Web App Service Worker (v1.30)
+   رفيق — Progressive Web App Service Worker (v1.31)
    ========================================================================== */
 
-const CACHE_NAME = 'rafiq-pwa-v1.30';
+const CACHE_NAME = 'rafiq-pwa-v1.31';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
