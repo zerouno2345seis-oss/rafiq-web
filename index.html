@@ -111,6 +111,12 @@ h2{font-size:16px;font-weight:600}
 .add-ic{width:26px;height:26px;border-radius:8px;background:var(--accent-verysoft);display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
 .sec-strip{position:-webkit-sticky;position:sticky;top:6px;z-index:45;background:var(--surface);border:1px solid var(--nav-border);border-radius:var(--r-card);box-shadow:0 4px 16px rgba(0,0,0,.08);padding:8px 8px 4px;margin-bottom:12px}
 [data-sec],.card[data-sec]{scroll-margin-top:130px}
+.sec-pills-scroll{display:flex;width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:14px;background:var(--surface);height:66px}
+.sec-pills-scroll::-webkit-scrollbar{display:none}
+.sec-pills-scroll .pill{flex:0 0 76px;min-width:76px;height:66px;border:0;border-radius:0;background:var(--surface);color:var(--text-1);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap;transition:background .15s ease;-webkit-tap-highlight-color:transparent;padding:4px 2px}
+.sec-pills-scroll .pill:not(:first-child){border-inline-start:1px solid var(--border)}
+.sec-pills-scroll .pill.on{background:var(--accent);color:#fff;font-weight:700}
+.sec-pills-scroll.stretch .pill{flex:1;min-width:0}
 .sec-pills{display:grid;grid-template-rows:repeat(2,44px);grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
 .sec-pills::-webkit-scrollbar{display:none}
 .sec-pills-balanced{display:flex;flex-direction:column;width:100%;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden}
@@ -531,7 +537,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.31';
+const APP_VERSION = '1.32';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1470,8 +1476,8 @@ function renderHome(){
     </div>` : ''}
     <!-- شريط الأقسام السريع (ثابت عند التمرير) مباشرة تحت التحية -->
     <div id="secStrip" class="sec-strip">
-      <div class="sec-pills" id="secPills"></div>
-      <div class="sec-note" id="secNote">اضغط قسمًا ليفتح أمامك مباشرة ⇣</div>
+      <div class="sec-pills-scroll" id="secPills"></div>
+      <div class="sec-note" id="secNote">اسحب أفقياً لتصفح كافة الأقسام ⇠⇢</div>
     </div>
     <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">📈</span>
@@ -7855,11 +7861,11 @@ function toggleSec(k){ const set=collapsedSet(); if(set.has(k)) set.delete(k); e
 function collapseAllSec(){ saveCollapsed(new Set(SEC_META.map(m=>m[0]))); applyCollapse(); }
 function expandAllSec(){ saveCollapsed(new Set()); applyCollapse(); }
 const SEC_META=[
-  ['lifetracker','📈','متتبع العادات'],
+  ['lifetracker','📈','الأنشطة'],
   ['food','🍽','طعامنا'],
   ['schedule','📅','جدولي'],
   ['remind','🔔','ذكّرني'],
-  ['habits','🌱','عادات اليوم'],
+  ['habits','🌱','عاداتي'],
   ['overdue','⏰','المتأخرة'],
   ['reminders','📨','التذكيرات'],
   ['shopping','🛒','التسوق'],
@@ -7868,7 +7874,7 @@ const SEC_META=[
   ['meds','💊','أدويتنا'],
   ['places','📍','أماكننا'],
   ['media','🎬','المقاطع'],
-  ['bookmarks','🔖','إشارات'],
+  ['bookmarks','🔖','الإشارات'],
   ['urgent','🚨','مستعجلة']
 ];
 function secSummary(k){
@@ -7941,28 +7947,31 @@ function applyCollapse(){
       ch.textContent=isCol?'▸':'▾';
       ch.title=isCol?'توسيع':'طي';
     });
-    // شريط الأقسام الثابت: صف واحد إذا كانت 5 أو أقل، وصفان متوازنان إذا كانت أكثر ("العالي أعلى")
+    // شريط الأقسام: صف واحد أفقي أنيق مع التمرير الأفقي وأيقونة واضحة وكلمة واحدة
     const pills=document.getElementById('secPills');
     if(pills){
       const meta=SEC_META;
       const total=meta.length;
-      pills.className='sec-pills-balanced';
-      if(total <= 5){
-        pills.innerHTML=`<div class="sec-pills-row" style="height:62px">${meta.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:56px;padding:6px 2px"><span style="font-size:20px;line-height:1.2">${m[1]}</span><span style="font-size:11.5px;font-weight:700;margin-top:3px">${m[2]}</span></button>`).join('')}</div>`;
-      } else {
-        const topCount=Math.ceil(total / 2);
-        const row1=meta.slice(0, topCount);
-        const row2=meta.slice(topCount);
-        pills.innerHTML=`
-          <div class="sec-pills-row">${row1.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:50px;padding:4px 2px"><span style="font-size:16px;line-height:1.2">${m[1]}</span><span style="font-size:10px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('')}</div>
-          <div class="sec-pills-row">${row2.map(m=>`<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button" style="height:50px;padding:4px 2px"><span style="font-size:16px;line-height:1.2">${m[1]}</span><span style="font-size:10px;font-weight:600;margin-top:2px">${m[2]}</span></button>`).join('')}</div>
-        `;
+      pills.className='sec-pills-scroll' + (total <= 4 ? ' stretch' : '');
+      pills.innerHTML=meta.map(m=>{
+        const singleWord=(m[2]||'').trim().split(' ')[0];
+        return `<button class="pill ${activeSec===m[0]?'on':''}" data-pill="${m[0]}" type="button">
+          <span style="font-size:22px;line-height:1.2">${m[1]}</span>
+          <span style="font-size:11.5px;font-weight:700;margin-top:3px">${singleWord}</span>
+        </button>`;
+      }).join('');
+      pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>{
+        pickSec(b.dataset.pill);
+        b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      });
+      if(activeSec){
+        const onBtn=pills.querySelector('.pill.on');
+        if(onBtn) onBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       }
-      pills.querySelectorAll('[data-pill]').forEach(b=>b.onclick=()=>pickSec(b.dataset.pill));
       const note=document.getElementById('secNote');
       if(note){
         const m=SEC_META.find(x=>x[0]===activeSec);
-        note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : 'اضغط قسمًا ليفتح أمامك مباشرة ⇣';
+        note.textContent = m? (m[1]+' '+m[2]+' — '+secSummary(m[0])) : 'اسحب أفقياً لتصفح كافة الأقسام ⇠⇢';
         note.style.display = 'block';
       }
     }
