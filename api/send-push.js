@@ -40,20 +40,36 @@ module.exports = async (req, res) => {
     const { to_token, title, message, urgent, prio } = body;
     if (!to_token) return res.status(400).json({ error: "to_token required" });
     const access = await googleAccessToken(sa);
+    const isUrgent = (urgent === true || urgent === "true" || urgent === 1 || urgent === "1");
     const payload = {
       message: {
         token: to_token,
-        notification: { title: urgent ? "\u{1F6A8} " + (title || "رسالة مستجلة") : (title || "رفيق"), body: message || "" },
-        data: { title: title || "رفيق", body: message || "", urgent: urgent ? "1" : "0" },
+        data: {
+          title: isUrgent ? ("🚨 " + (title || "رسالة مستعجلة")) : (title || "رفيق"),
+          body: message || "",
+          message: message || "",
+          urgent: isUrgent ? "1" : "0",
+          prio: isUrgent ? "max" : (prio || "high"),
+          kind: isUrgent ? "URGENT" : (body.kind || "GENERAL"),
+        },
         android: {
-          priority: (urgent || prio === "high") ? "HIGH" : (prio === "low" ? "NORMAL" : "HIGH"),
-          notification: {
-            sound: (urgent || prio === "high") ? "rafiq_urgent" : "default",
-            channel_id: (urgent || prio === "high") ? "rafiq_urgent" : (prio === "low" ? "rafiq_low" : "rafiq_med"),
-          },
+          priority: "HIGH",
         },
       },
     };
+
+    // الرسائل العادية ترسل كـ Notification + Data
+    // الرسائل المستعجلة ترسل Data-only لإجبار أندرويد على استدعاء onMessageReceived حتى والتطبيق مغلق لتشغيل منبه USAGE_ALARM واختراق الصامت
+    if (!isUrgent) {
+      payload.message.notification = {
+        title: title || "رفيق",
+        body: message || "",
+      };
+      payload.message.android.notification = {
+        sound: prio === "low" ? "default" : "rafiq_urgent",
+        channel_id: prio === "low" ? "rafiq_low" : "rafiq_med",
+      };
+    }
     const r = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
       method: "POST",
       headers: { Authorization: "Bearer " + access, "Content-Type": "application/json" },
