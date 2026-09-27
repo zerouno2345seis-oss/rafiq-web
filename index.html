@@ -1927,7 +1927,7 @@ function renderHome(){
       })()}
     </div>
 
-    <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية<br>«رافقني، لا تراقبني.»</div>
+    <div class="foot">رفيق — نسخة الويب v${APP_VERSION} • مزامنة حية</div>
   </div>`;
   applyCollapse();
 }
@@ -5634,7 +5634,7 @@ function renderHabits(){
           <button class="mini" data-act="incHabit" data-id="${item.id}">＋</button>`}
       </div></div>`;}).join('')
     :`<div class="card"><div class="empty"><span class="e">🌱</span>لا توجد عادات بعد.<br>أضف أول خطوة في رحلتك.<div style="height:12px"></div><button class="btn" style="max-width:220px;margin:0 auto" data-act="openAddHabit">+ إضافة</button></div></div>`}
-    <p class="foot">سجّل تقدمك بلمسة واحدة — رافقني، لا تراقبني.</p></div>`;
+    <p class="foot">سجّل تقدمك بلمسة واحدة.</p></div>`;
 }
 function circleName(cid){ const c=circlesOf().find(x=>x.circle.id===cid); return c?c.circle.name:''; }
 
@@ -5874,7 +5874,7 @@ function renderActivity(){
       <p class="foot">اضغط حالة المهمة لتبديلها: للتنفيذ ← جارية ← منجزة</p>
     `}
 
-    <div class="foot" style="margin-top:16px">سجّل نشاطك بلمسة واحدة — رافقني، لا تراقبني 🌱</div>
+    <div class="foot" style="margin-top:16px">سجّل نشاطك بلمسة واحدة 🌱</div>
   </div>`;
 }
 
@@ -6297,7 +6297,7 @@ function renderMore(){
         <button class="btn ghost" data-act="openJoinSheet" style="flex:1">🔑 انضمام برمز/QR</button>
       </div>
     </div>
-    <p class="foot">رفيق — نسخة الويب v1.0 • يعمل على الهاتف والآيباد والحاسوب<br>«رافقني، لا تراقبني.»</p></div>`;
+    <p class="foot">رفيق — نسخة الويب v1.0 • يعمل على الهاتف والآيباد والحاسوب</p></div>`;
 }
 </script>
 <script>
@@ -6905,7 +6905,7 @@ function reportHTML(){
   <h2>👥 الدوائر</h2><table><tr><th>الدائرة</th><th>النوع</th><th>الأعضاء</th></tr>
   ${rows((data.circles||[]),c=>`<tr><td>${esc(c.circle.name)}</td><td>${c.circle.type==='PERSONAL'?'شخصية':'مشتركة'}</td><td>${c.members.map(x=>esc(x.p.display_name||'')).join('، ')}</td></tr>`)}
   </table>
-  <div class="foot">رافقني، لا تراقبني — رفيق • ${today.toLocaleDateString('ar')}</div>
+  <div class="foot">رفيق • ${today.toLocaleDateString('ar')}</div>
   </div></body></html>`;
 }
 function openReport(){
@@ -7449,7 +7449,7 @@ function openFontSheet(){
           <span style="font-size:20px">${cur===f.id?'✓':'🔤'}</span>
           <div class="space-choice-text" style="font-family:${f.family}">
             <div class="space-choice-title" style="font-family:${f.family}">${esc(f.name)} ${cur===f.id?'<span style="color:var(--accent);font-weight:800"> (النشط)</span>':''}</div>
-            <div class="space-choice-desc" style="font-family:${f.family}">${esc(f.desc)} • رافقني، لا تراقبني 🌿 123</div>
+            <div class="space-choice-desc" style="font-family:${f.family}">${esc(f.desc)} • معًا خطوة بخطوة 🌿 123</div>
           </div>
         </button>
       `).join('')}
