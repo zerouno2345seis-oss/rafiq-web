@@ -37,20 +37,23 @@ module.exports = async (req, res) => {
     if (!saRaw) return res.status(500).json({ error: "FIREBASE_SA missing" });
     const sa = JSON.parse(saRaw);
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { to_token, title, message, urgent, prio } = body;
+    const { to_token, title, message, urgent, prio, level, kind, task_id, has_voice } = body;
     if (!to_token) return res.status(400).json({ error: "to_token required" });
     const access = await googleAccessToken(sa);
-    const isUrgent = (urgent === true || urgent === "true" || urgent === 1 || urgent === "1");
+    const isUrgent = (urgent === true || urgent === "true" || urgent === 1 || urgent === "1" || kind === "URGENT" || kind === "VOICE_URGENT");
     const payload = {
       message: {
         token: to_token,
         data: {
-          title: isUrgent ? ("🚨 " + (title || "رسالة مستعجلة")) : (title || "رفيق"),
+          title: title || (isUrgent ? "رسالة مستعجلة 🚨" : "رفيق"),
           body: message || "",
           message: message || "",
           urgent: isUrgent ? "1" : "0",
           prio: isUrgent ? "max" : (prio || "high"),
-          kind: isUrgent ? "URGENT" : (body.kind || "GENERAL"),
+          kind: isUrgent ? (kind || "URGENT") : (kind || "GENERAL"),
+          level: level || (isUrgent ? "high" : "med"),
+          task_id: task_id || "",
+          has_voice: (has_voice === true || has_voice === "true" || has_voice === "1" || has_voice === 1) ? "1" : "0",
         },
         android: {
           priority: "HIGH",
