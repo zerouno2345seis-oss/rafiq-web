@@ -93,9 +93,10 @@ h2{font-size:16px;font-weight:600}
 .sec h2{font-size:18px;font-weight:700;flex:1}
 .sec > button, .sec > .link, .sec > .mini{flex-shrink:0}
 .greet{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;width:100%;box-sizing:border-box}
-.greet-side{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-width:0}
-.greet-side .g h1{font-size:16px;font-weight:700;line-height:1.2;white-space:nowrap}
-.greet-side .g p{font-size:11.5px;color:var(--text-2);white-space:nowrap}
+.greet-side{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0}
+.greet-side .g{flex:1;min-width:0}
+.greet-side .g h1{font-size:16px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.greet-side .g p{font-size:11.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .greet .g{flex:1;min-width:0}
 .greet .g p{font-size:13px;color:var(--text-2)}
 .hicon-btn{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 44px;background:none}
@@ -559,6 +560,198 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .space-choice-text{flex:1;min-width:0}
 .space-choice-title{font-size:14.5px;font-weight:700;color:var(--text-1);margin-bottom:2px}
 .space-choice-desc{font-size:11.5px;color:var(--text-2)}
+
+/* Dashboard Grid & Tiles System */
+.home-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media(min-width: 880px){
+  .home-dash-grid {
+    gap: 12px;
+  }
+}
+.dash-card {
+  border-radius: 20px;
+  padding: 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 168px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  box-sizing: border-box;
+}
+.dash-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.dash-card:active {
+  transform: scale(0.985);
+}
+.dash-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.dash-card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.dash-card-emoji {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.dash-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-unpin-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-3);
+  background: rgba(0,0,0,0.05);
+  border: none;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.dash-unpin-btn:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.dash-card-body {
+  margin: 8px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.dash-action-pill {
+  border: none;
+  padding: 6px 11px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.dash-action-pill:hover {
+  opacity: 0.85;
+}
+
+/* Settings Category Tiles Grid (Android Twinned) */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+@media(min-width: 680px){
+  .settings-grid {
+    gap: 12px;
+  }
+}
+.setting-cat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 124px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  text-align: start;
+  box-sizing: border-box;
+}
+.setting-cat-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.setting-cat-tile:active {
+  transform: scale(0.985);
+}
+.setting-cat-tile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+.setting-cat-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.setting-cat-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  white-space: nowrap;
+}
+.setting-cat-badge.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.setting-cat-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-top: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.setting-cat-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+  margin-top: 3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 </head>
 <body>
@@ -1487,6 +1680,491 @@ function ringSVG(pct,cls){
       stroke-dasharray="${c}" stroke-dashoffset="${off}" ${cls==='own'?`stroke="var(--accent)"`:`stroke="var(--companion)"`}/>
   </svg><div class="lbl">${pct}%</div></div>`;
 }
+
+/* ============================================================
+   نظام بطاقات الشاشة الرئيسية (Home Dashboard Cards System)
+   متطابق 100% مع تطبيق Android مع دعم الإضافة والحذف والتخصيص
+   ============================================================ */
+
+const DASH_TILES = {
+  food: {
+    key: 'food',
+    emoji: '🍽',
+    title: 'طعامنا',
+    desc: 'سجل الوجبات اليومية والمفضلة',
+    light: { bg: '#FFF9F5', border: '#FED7AA', accent: '#EA580C' },
+    dark:  { bg: '#281C16', border: '#4C2F20', accent: '#EA580C' },
+    actionLabel: '+ إضافة وجبة',
+    actionAct: 'openMealSheet',
+    renderBody: function(){
+      const t = new Date().toISOString().slice(0,10);
+      const m = foodEntries().filter(i => (i.note||'').startsWith(t));
+      const pills = ['فطور','غداء','عشاء'].map(meal => {
+        const has = m.some(i => (i.note||'').includes(meal));
+        return `<span style="font-size:9.5px;padding:2px 5.5px;border-radius:6px;background:${has?'rgba(234,88,12,0.15)':'var(--surface-2)'};color:${has?'#EA580C':'var(--text-3)'};font-weight:${has?'700':'400'}">${meal} ${has?'✓':'○'}</span>`;
+      }).join('');
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${m.length ? (m.length + ' وجبات اليوم') : 'لم تُسجل وجبات بعد'}</div>
+        <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${pills}</div>
+      `;
+    }
+  },
+  schedule: {
+    key: 'schedule',
+    emoji: '📅',
+    title: 'جدولي',
+    desc: 'المواعيد والأحداث القادمة',
+    light: { bg: '#F3F9FE', border: '#BAE6FD', accent: '#0284C7' },
+    dark:  { bg: '#142433', border: '#203B52', accent: '#0284C7' },
+    actionLabel: '+ موعد جديد',
+    actionAct: 'openAddEvent',
+    renderBody: function(){
+      const todayIso = new Date().toISOString().slice(0,10);
+      const evs = (data.tasks||[]).filter(t => t.priority === 'EVENT' && (t.due_at||'') >= todayIso).sort((a,b) => (a.due_at||'').localeCompare(b.due_at||''));
+      const next = evs[0];
+      if(next){
+        return `
+          <div style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(next.title)}</div>
+          <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${next.due_at ? next.due_at.slice(0,10) : 'قريبًا'}</div>
+          <div style="font-size:10px;font-weight:700;color:#0284C7;margin-top:2px">${evs.length} أحداث قادمة</div>
+        `;
+      }
+      return `
+        <div style="font-size:12px;color:var(--text-2)">لا مواعيد قادمة اليوم</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">أضف موعدًا في جدولك</div>
+      `;
+    }
+  },
+  habits: {
+    key: 'habits',
+    emoji: '🌱',
+    title: 'عاداتي',
+    desc: 'العادات اليومية ونسبة الإنجاز',
+    light: { bg: '#F2FBF6', border: '#BBF7D0', accent: '#16A34A' },
+    dark:  { bg: '#14261B', border: '#22442C', accent: '#16A34A' },
+    actionLabel: 'سجّل عادة ✓',
+    actionAct: 'gotoHabits',
+    renderBody: function(){
+      const me = meId();
+      const h = habitsFor(me);
+      const done = h.filter(i => isHabitDoneToday(i.id)).length;
+      const pct = h.length ? Math.round(done * 100 / h.length) : 0;
+      return `
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#16A34A;flex-shrink:0">${pct}%</div>
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.length ? (done + ' من ' + h.length + ' عادات') : 'لا عادات مضافة'}</div>
+            <div style="font-size:10px;color:var(--text-3);margin-top:1px">مكتملة اليوم</div>
+          </div>
+        </div>
+      `;
+    }
+  },
+  urgent: {
+    key: 'urgent',
+    emoji: '🚨',
+    title: 'مستعجلة',
+    desc: 'رسائل وتنبيهات فورية عالية الأهمية',
+    light: { bg: '#FFF3F4', border: '#FECDD3', accent: '#E11D48' },
+    dark:  { bg: '#2D161A', border: '#4C2128', accent: '#E11D48' },
+    actionLabel: 'أرسل رسالة 🚨',
+    actionAct: 'openUrgentSheet',
+    renderBody: function(){
+      const urg = (data.tasks||[]).filter(t => t.priority === 'URGENT' && t.status !== 'DONE');
+      if(urg.length){
+        return `
+          <div style="display:flex;align-items:center;gap:4px">
+            <span style="background:#E11D48;color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px">${urg.length}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text-1)">رسالة مستعجلة</span>
+          </div>
+          <div style="font-size:10.5px;color:var(--text-3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(urg[0].title)}</div>
+        `;
+      }
+      return `
+        <div style="font-size:12px;color:var(--text-2)">لا رسائل مستعجلة</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">تصل بصوت مميز وفوري 🚨</div>
+      `;
+    }
+  },
+  shopping: {
+    key: 'shopping',
+    emoji: '🛒',
+    title: 'التسوق',
+    desc: 'قوائم المشتريات والأغراض المطلوبة',
+    light: { bg: '#FEFDF0', border: '#FDE68A', accent: '#CA8A04' },
+    dark:  { bg: '#262214', border: '#453D20', accent: '#CA8A04' },
+    actionLabel: '+ عنصر تسوق',
+    actionAct: 'openQuickAddShopping',
+    renderBody: function(){
+      const totalItems = (data.shopping||[]).length;
+      const pending = (data.shopping||[]).filter(i => !i.completed).length;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${pending} عناصر للشراء</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">من أصل ${totalItems} عنصر في القوائم</div>
+      `;
+    }
+  },
+  remind: {
+    key: 'remind',
+    emoji: '🔔',
+    title: 'ذكّرني',
+    desc: 'تذكيرات سريعة لرفيقك',
+    light: { bg: '#F8F4FD', border: '#DDD6FE', accent: '#7C3AED' },
+    dark:  { bg: '#221A2D', border: '#3C2C52', accent: '#7C3AED' },
+    actionLabel: 'أرسل تذكير 🔔',
+    actionAct: 'openRemindSheet',
+    renderBody: function(){
+      const rems = (data.tasks||[]).filter(t => t.priority === 'REMINDER' && t.status !== 'DONE');
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${rems.length ? (rems.length + ' تذكيرات نشطة') : 'لا تذكيرات حالية'}</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">ذكّر رفيقك بلمسة واحدة</div>
+      `;
+    }
+  },
+  bookmarks: {
+    key: 'bookmarks',
+    emoji: '🔖',
+    title: 'الإشارات',
+    desc: 'الروابط والمواقع المحفوظة',
+    light: { bg: '#F4F6FE', border: '#C7D2FE', accent: '#4F46E5' },
+    dark:  { bg: '#1B1E30', border: '#2F3554', accent: '#4F46E5' },
+    actionLabel: '+ إضافة رابط 🔖',
+    actionAct: 'openSmartAddLink',
+    renderBody: function(){
+      const bmList = (data.sharedLists||[]).find(x => x.title === 'الإشارات المرجعية');
+      const bms = bmList ? (data.shopping||[]).filter(i => i.list_id === bmList.id).length : 0;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${bms} إشارة محفوظة</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">روابطك ومواقعك السريعة</div>
+      `;
+    }
+  },
+  meds: {
+    key: 'meds',
+    emoji: '💊',
+    title: 'أدويتنا',
+    desc: 'جدول الأدوية والجرعات اليومية',
+    light: { bg: '#FDF2F8', border: '#FBCFE8', accent: '#DB2777' },
+    dark:  { bg: '#291823', border: '#48273D', accent: '#DB2777' },
+    actionLabel: '+ دواء جديد 💊',
+    actionAct: 'gotoMeds',
+    renderBody: function(){
+      const active = (medsOf()||[]).filter(m => m.activeToday()).length;
+      const total = (medsOf()||[]).length;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${active} أدوية نشطة اليوم</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">من إجمالي ${total} أدوية مسجلة</div>
+      `;
+    }
+  },
+  mood: {
+    key: 'mood',
+    emoji: '🌤',
+    title: 'شعورنا',
+    desc: 'سجل المشاعر اليومية والتواصل',
+    light: { bg: '#FFFDF0', border: '#FEF08A', accent: '#D97706' },
+    dark:  { bg: '#262215', border: '#453D22', accent: '#D97706' },
+    actionLabel: '+ شعور جديد 🌤',
+    actionAct: 'openAddMood',
+    renderBody: function(){
+      const mList = moodsOf();
+      const last = mList[0];
+      if(last){
+        return `
+          <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${esc(last.mood_emoji||'🌤')} ${esc(last.mood_label||'تسجيل حديث')}</div>
+          <div style="font-size:10.5px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(last.note||'سجل مشاعرك وتواصل')}</div>
+        `;
+      }
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">لم يُسجّل شعور اليوم</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">سجل مشاعرك لرفيقك 🌤</div>
+      `;
+    }
+  },
+  places: {
+    key: 'places',
+    emoji: '📍',
+    title: 'أماكننا',
+    desc: 'الأماكن والخريطة المشتركة',
+    light: { bg: '#F0FDFD', border: '#A5F3FC', accent: '#0891B2' },
+    dark:  { bg: '#142528', border: '#204147', accent: '#0891B2' },
+    actionLabel: '+ حفظ مكان 📍',
+    actionAct: 'openAddPlace',
+    renderBody: function(){
+      const pList = (data.sharedLists||[]).find(x => x.title === 'أماكننا المحفوظة');
+      const pCount = pList ? (data.shopping||[]).filter(i => i.list_id === pList.id).length : 0;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${pCount} مكان محفوظ</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">أماكننا وخريطتنا المشتركة</div>
+      `;
+    }
+  },
+  media: {
+    key: 'media',
+    emoji: '🎬',
+    title: 'المقاطع',
+    desc: 'مقاطع الفيديو والروابط المفضلة',
+    light: { bg: '#FFF1F2', border: '#FECDD3', accent: '#E11D48' },
+    dark:  { bg: '#2A151C', border: '#4A2330', accent: '#E11D48' },
+    actionLabel: '+ رابط جديد 🎬',
+    actionAct: 'openAddMedia',
+    renderBody: function(){
+      const mList = (data.sharedLists||[]).find(x => x.title === 'مقاطعنا الجميلة');
+      const mCount = mList ? (data.shopping||[]).filter(i => i.list_id === mList.id).length : 0;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${mCount} مقطع مسجل</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">مقاطعنا وروابطنا المفضلة</div>
+      `;
+    }
+  },
+  overdue: {
+    key: 'overdue',
+    emoji: '⏰',
+    title: 'المتأخرة',
+    desc: 'مهام فائتة تحتاج متابعة عاجلة',
+    light: { bg: '#FFF7ED', border: '#FFEDD5', accent: '#EA580C' },
+    dark:  { bg: '#2C1E14', border: '#4C3020', accent: '#EA580C' },
+    actionLabel: 'عرض المتأخرات ←',
+    actionAct: 'pickSecOverdue',
+    renderBody: function(){
+      const od = (overdueTasks()||[]).length;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:${od ? '#EA580C' : 'var(--text-1)'}">${od} مهام متأخرة</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${od ? 'تحتاج متابعة عاجلة' : 'كل المهام في وقتها ✓'}</div>
+      `;
+    }
+  },
+  review: {
+    key: 'review',
+    emoji: '🗓',
+    title: 'المراجعة',
+    desc: 'ملخص إنجازات وتحديات الأسبوع',
+    light: { bg: '#F5F3FF', border: '#EDE9FE', accent: '#7C3AED' },
+    dark:  { bg: '#1E1B2E', border: '#352E54', accent: '#7C3AED' },
+    actionLabel: 'فتح المراجعة 🗓',
+    actionAct: 'openReviewSheet',
+    renderBody: function(){
+      const revs = (data.activity||[]).filter(a => a.kind === 'WEEKLY_REVIEW');
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${revs.length ? `${revs.length} مراجعات سابقة` : 'ملخص الأسبوع'}</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">إنجازاتك وتحدياتك المشتركة</div>
+      `;
+    }
+  },
+  lifetracker: {
+    key: 'lifetracker',
+    emoji: '📈',
+    title: 'متتبع الأنشطة',
+    desc: 'تتبع المشي والماء والنوم وساعات النشاط',
+    light: { bg: '#F0FDF4', border: '#86EFAC', accent: '#16A34A' },
+    dark:  { bg: '#13251A', border: '#20452D', accent: '#16A34A' },
+    actionLabel: '+ نشاط جديد 📈',
+    actionAct: 'openLifeTracker',
+    renderBody: function(){
+      const trk = getTrackerData();
+      const todayIso = new Date().toISOString().slice(0,10);
+      const n = (trk.entries||[]).filter(e => (e.loggedAt||'').startsWith(todayIso)).length;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${n ? (n + ' نشاط مسجل اليوم') : 'سجل نشاطك الآن'}</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">المشي، الماء، النوم، الأدوية</div>
+      `;
+    }
+  }
+};
+
+function getDashboardKeys(){
+  try {
+    const raw = localStorage.getItem('rafiq_dashboard_keys');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length > 0){
+        const valid = parsed.filter(k => DASH_TILES[k]);
+        if(valid.length) return valid;
+      }
+    }
+  }catch(e){}
+  return ['food', 'schedule', 'habits', 'urgent'];
+}
+
+function setDashboardKeys(keys){
+  const valid = (keys||[]).filter(k => DASH_TILES[k]);
+  const finalKeys = valid.length ? valid : ['food', 'schedule', 'habits', 'urgent'];
+  localStorage.setItem('rafiq_dashboard_keys', JSON.stringify(finalKeys));
+  if(view === 'home') renderHome();
+}
+
+function unpinFromDashboard(key, ev){
+  if(ev) ev.stopPropagation();
+  const keys = getDashboardKeys();
+  if(keys.length <= 1){
+    toast('يجب إبقاء بطاقة واحدة على الأقل');
+    return;
+  }
+  const next = keys.filter(k => k !== key);
+  setDashboardKeys(next);
+  const meta = DASH_TILES[key];
+  toast(`أُزيلت «${meta ? meta.title : key}» من لوحتك ✓`);
+}
+
+function openCustomizeDashboardSheet(){
+  const curKeys = new Set(getDashboardKeys());
+  const allKeys = Object.keys(DASH_TILES);
+  
+  openSheet(sheetHead('تخصيص لوحة البطاقات 🎛️') + `
+    <div style="background:var(--accent-verysoft);border:1px solid var(--accent-2);border-radius:14px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:12.5px;color:var(--text-1)">
+        <b>اختر البطاقات التفاعلية</b> التي تظهر في شاشتك الرئيسية:
+      </div>
+      <button class="mini" data-act="resetDashboardCards" style="font-size:11px;padding:4px 8px">الافتراضي ↺</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:58vh;overflow-y:auto;padding-inline-end:4px">
+      ${allKeys.map(k => {
+        const item = DASH_TILES[k];
+        const on = curKeys.has(k);
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface);border:1.5px solid ${on ? 'var(--accent)' : 'var(--border)'};cursor:pointer" onclick="toggleDashboardCard('${k}')">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0">
+              <span style="font-size:24px;line-height:1">${item.emoji}</span>
+              <div style="min-width:0">
+                <b style="font-size:14px;color:var(--text-1)">${esc(item.title)}</b>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.desc)}</div>
+              </div>
+            </div>
+            <button class="switch ${on ? 'on' : ''}" style="pointer-events:none;flex-shrink:0"><i></i></button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn full" data-act="closeSheet" style="font-weight:700">تم الحفظ ✓</button>
+    </div>
+  `);
+}
+
+function toggleDashboardCard(k){
+  const keys = getDashboardKeys();
+  const idx = keys.indexOf(k);
+  if(idx >= 0){
+    if(keys.length <= 1){
+      toast('يجب إبقاء بطاقة واحدة على الأقل');
+      return;
+    }
+    keys.splice(idx, 1);
+  } else {
+    keys.push(k);
+  }
+  setDashboardKeys(keys);
+  openCustomizeDashboardSheet();
+}
+
+function resetDashboardCards(){
+  setDashboardKeys(['food', 'schedule', 'habits', 'urgent']);
+  openCustomizeDashboardSheet();
+  toast('تمت استعادة البطاقات الافتراضية');
+}
+
+function renderHomeDashboard(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const keys = getDashboardKeys();
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 2px 8px">
+      <h2 style="font-size:16px;font-weight:700">لوحة المهام السريعة</h2>
+      <button class="mini" data-act="openCustomizeDashboard" style="font-size:11.5px;padding:4px 10px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
+        ⚙️ تخصيص (${keys.length})
+      </button>
+    </div>
+    <div id="homeDashGrid" class="home-dash-grid">
+      ${keys.map(k => {
+        const item = DASH_TILES[k];
+        if(!item) return '';
+        const theme = isDark ? item.dark : item.light;
+        return `
+          <div class="dash-card" onclick="onDashboardCardClick('${k}')" style="background:${theme.bg};border:1.3px solid ${theme.border}">
+            <div class="dash-card-head">
+              <div class="dash-card-title">
+                <span class="dash-card-emoji">${item.emoji}</span>
+                <span class="dash-card-name">${esc(item.title)}</span>
+              </div>
+              <button type="button" class="dash-unpin-btn" onclick="unpinFromDashboard('${k}', event)" title="إزالة من اللوحة" aria-label="إزالة">✕</button>
+            </div>
+            <div class="dash-card-body">
+              ${item.renderBody()}
+            </div>
+            <div>
+              <button type="button" class="dash-action-pill" onclick="onDashboardCardAction('${k}', event)" style="background:${theme.accent}1f;color:${theme.accent}">
+                ${esc(item.actionLabel)}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function onDashboardCardClick(key){
+  if(key === 'food') { view = 'food'; renderApp(); }
+  else if(key === 'schedule') { view = 'schedule'; renderApp(); }
+  else if(key === 'habits') { view = 'habits'; renderApp(); }
+  else if(key === 'shopping') { view = 'shopping'; renderApp(); }
+  else if(key === 'meds') { view = 'meds'; renderApp(); }
+  else if(key === 'lifetracker') { view = 'lifetracker'; renderApp(); }
+  else { pickSec(key); }
+}
+
+function onDashboardCardAction(key, ev){
+  if(ev) ev.stopPropagation();
+  const item = DASH_TILES[key];
+  if(!item) return;
+  switch(item.actionAct){
+    case 'openMealSheet': openMealSheet(); break;
+    case 'openAddEvent': openAddEvent(); break;
+    case 'gotoHabits': view = 'habits'; renderApp(); break;
+    case 'openUrgentSheet': openUrgentSheet(); break;
+    case 'openQuickAddShopping': openQuickAddShopping(); break;
+    case 'openRemindSheet': openRemind(); break;
+    case 'openSmartAddLink': openSmartAddLink(); break;
+    case 'gotoMeds': view = 'meds'; renderApp(); break;
+    case 'openAddMood': openAddMood(); break;
+    case 'openAddPlace': openAddPlace(); break;
+    case 'openAddMedia': openAddMedia(); break;
+    case 'pickSecOverdue': pickSec('overdue'); break;
+    case 'openReviewSheet': openReview(); break;
+    case 'openLifeTracker': openLifeTracker(); break;
+    default: pickSec(key); break;
+  }
+}
+
+function openUrgentSheet(){
+  openSheet(sheetHead('إرسال رسالة مستعجلة 🚨') + `
+    <div style="background:rgba(225,29,72,0.08);border:1.5px solid rgba(225,29,72,0.3);border-radius:14px;padding:12px;margin-bottom:14px;color:var(--text-1);font-size:13px;line-height:1.5">
+      <b>⚠️ تنبيه مستعجل وفوري:</b> تصل هذه الرسالة إلى رفيقك بإشعار فوري وصوت رنين مميز حتى يراها دون تأخير.
+    </div>
+    <div class="field">
+      <label>نص الرسالة المستعجلة</label>
+      <textarea id="urgSheetMsg" placeholder="اكتب رسالتك العاجلة هنا..." rows="3" style="width:100%;font-size:15px"></textarea>
+    </div>
+    <button class="btn full" data-act="sendUrgentFromSheet" style="background:#E11D48;color:#fff;font-weight:700">إرسال مستعجل الآن 🚨</button>
+  `);
+}
+
+function openQuickAddShopping(){
+  const stores = getStoreLists();
+  openSheet(sheetHead('إضافة عنصر تسوق 🛒') + `
+    <div class="field">
+      <label>اسم الغرض / السلعة</label>
+      <input type="text" id="quickShopTitle" placeholder="مثال: حليب، خبز، فواكه..." autofocus>
+    </div>
+    <div class="field">
+      <label>المتجر أو التصنيف</label>
+      <select id="quickShopList">
+        ${stores.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn full" data-act="submitQuickShop" style="font-weight:700">＋ إضافة إلى السلة</button>
+  `);
+}
+
 function renderHome(){
   const me=meProfile(); if(!me){ $('#view').innerHTML='<div class="screen"><div class="empty">جارٍ التحميل…</div></div>'; return; }
   const comp=companionOf();
@@ -1533,110 +2211,8 @@ function renderHome(){
       <div class="sec-pills-scroll" id="secPills"></div>
       <div class="sec-note" id="secNote">اسحب أفقياً لتصفح كافة الأقسام ⇠⇢</div>
     </div>
-    <!-- لوحة الداشبورد التفاعلية (4 بطاقات - الاقتراح الثاني) -->
-    <div id="homeDashGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <!-- 1. طعامنا -->
-      <div class="dash-tile" onclick="pickSec('food')" style="background:var(--dash-food-bg, #fff9f5);border:1.2px solid #fed7aa;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:24px">🍽</span>
-          <b style="font-size:15px;color:var(--text-1)">طعامنا</b>
-        </div>
-        <div style="margin:8px 0">
-          <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${(()=>{
-            const t=new Date().toISOString().slice(0,10);
-            const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
-            return m.length? (m.length+' وجبات اليوم') : 'لم تُسجل وجبات بعد';
-          })()}</div>
-          <div style="display:flex;gap:4px;margin-top:6px">
-            ${(()=>{
-              const t=new Date().toISOString().slice(0,10);
-              const m=foodEntries().filter(i=>(i.note||'').startsWith(t));
-              return ['فطور','غداء','عشاء'].map(meal=>{
-                const has=m.some(i=>(i.note||'').includes(meal));
-                return `<span style="font-size:9.5px;padding:2px 5px;border-radius:6px;background:${has?'rgba(234,88,12,0.15)':'var(--surface-2)'};color:${has?'#ea580c':'var(--text-3)'};font-weight:${has?'700':'400'}">${meal} ${has?'✓':'○'}</span>`;
-              }).join('');
-            })()}
-          </div>
-        </div>
-        <div>
-          <button type="button" onclick="event.stopPropagation();openMealSheet()" style="background:rgba(234,88,12,0.12);color:#ea580c;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">+ إضافة وجبة</button>
-        </div>
-      </div>
-
-      <!-- 2. جدولي -->
-      <div class="dash-tile" onclick="pickSec('schedule')" style="background:var(--dash-sched-bg, #f3f9fe);border:1.2px solid #bae6fd;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:24px">📅</span>
-          <b style="font-size:15px;color:var(--text-1)">جدولي</b>
-        </div>
-        <div style="margin:8px 0">
-          ${(()=>{
-            const todayIso=new Date().toISOString().slice(0,10);
-            const evs=(data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=todayIso);
-            const next=evs[0];
-            return next? `
-              <div style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(next.title)}</div>
-              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${next.due_at?next.due_at.slice(0,10):'قريبًا'}</div>
-              <div style="font-size:10px;font-weight:700;color:#0284c7;margin-top:2px">${evs.length} أحداث قادمة</div>`
-            : `
-              <div style="font-size:12px;color:var(--text-2)">لا مواعيد قادمة اليوم</div>
-              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">أضف موعدًا في جدولك</div>`;
-          })()}
-        </div>
-        <div>
-          <button type="button" onclick="event.stopPropagation();pickSec('schedule')" style="background:rgba(2,132,199,0.12);color:#0284c7;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">عرض الجدول ←</button>
-        </div>
-      </div>
-
-      <!-- 3. عاداتي -->
-      <div class="dash-tile" onclick="view='habits';renderApp();" style="background:var(--dash-habits-bg, #f2fbf6);border:1.2px solid #bbf7d0;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:24px">🌱</span>
-          <b style="font-size:15px;color:var(--text-1)">عاداتي</b>
-        </div>
-        <div style="margin:8px 0;display:flex;align-items:center;gap:8px">
-          ${(()=>{
-            const h=(data.items||[]).filter(i=>i.type==='HABIT'||i.type==='DAILY_ROUTINE');
-            const done=h.filter(i=>isHabitDoneToday(i.id)).length;
-            const pct=h.length? Math.round(done*100/h.length) : 0;
-            return `
-              <div style="width:36px;height:36px;border-radius:50%;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#16a34a;flex-shrink:0">${pct}%</div>
-              <div>
-                <div style="font-size:12px;font-weight:700;color:var(--text-1)">${done} من ${h.length} عادات</div>
-                <div style="font-size:10px;color:var(--text-3)">مكتملة اليوم</div>
-              </div>`;
-          })()}
-        </div>
-        <div>
-          <button type="button" onclick="event.stopPropagation();view='habits';renderApp();" style="background:rgba(22,163,74,0.12);color:#16a34a;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">سجّل الآن ✓</button>
-        </div>
-      </div>
-
-      <!-- 4. مستعجلة -->
-      <div class="dash-tile" onclick="pickSec('urgent')" style="background:var(--dash-urgent-bg, #fff3f4);border:1.2px solid #fecdd3;border-radius:18px;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:24px">🚨</span>
-          <b style="font-size:15px;color:var(--text-1)">مستعجلة</b>
-        </div>
-        <div style="margin:8px 0">
-          ${(()=>{
-            const urg=(data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE');
-            return urg.length? `
-              <div style="display:flex;align-items:center;gap:4px">
-                <span style="background:#e11d48;color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px">${urg.length}</span>
-                <span style="font-size:12px;font-weight:700;color:var(--text-1)">رسالة مستعجلة</span>
-              </div>
-              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(urg[0].title)}</div>`
-            : `
-              <div style="font-size:12px;color:var(--text-2)">لا رسائل مستعجلة</div>
-              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">تصل بصوت مميز وفوري 🚨</div>`;
-          })()}
-        </div>
-        <div>
-          <button type="button" onclick="event.stopPropagation();pickSec('urgent')" style="background:rgba(225,29,72,0.12);color:#e11d48;border:none;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">أرسل رسالة 🚨</button>
-        </div>
-      </div>
-    </div>
+    <!-- لوحة الداشبورد التفاعلية (قابلة للإضافة والحذف والتخصيص كليًا مثل أندرويد) -->
+    ${renderHomeDashboard()}
     <div class="card" data-sec="lifetracker" data-act="openLifeTracker" style="cursor:pointer">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:22px">📈</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700">متتبع العادات والأنشطة</div>
@@ -3974,6 +4550,7 @@ function openEntryDetails(entryId){
   window._editEntrySubcat = entry.subcategory || '';
 
   const entryDate = (entry.startedAt || entry.loggedAt || new Date().toISOString()).slice(0, 10);
+  const hasRange = !!(entry.startedAt && entry.endedAt);
   
   let sTime = '08:00';
   let eTime = '08:30';
@@ -6244,59 +6821,365 @@ function renderSpacesDrilldown(spaceKey){
     </div>
   </div>`;
 }
-/* ---------- المزيد ---------- */
+/* ---------- المزيد (مطابق لتطبيق Android بنظام الشبكة والتصنيفات) ---------- */
+window._activeMoreCategory = null;
+
+function playNotificationSound(type){
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if(type === 'urgent'){
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch(e){}
+}
+
 function renderMore(){
-  const me=meProfile(); const dark=localStorage.getItem('rafiq_web_dark')||'auto';
-  $('#view').innerHTML=`<div class="screen">
-    <div class="sec"><h2>المزيد</h2></div>
-    <div class="card"><div class="greet" style="margin:0"><div class="avatar">${esc((me.display_name||'؟')[0])}</div>
-      <div style="flex:1"><b style="font-size:16px">${esc(me.display_name||'بدون اسم')}</b>
-      <div style="font-size:12px;color:var(--text-2)">${me.accent_theme==='rose'?'🌸 هوية وردية':'🟢 هوية خضراء'}</div></div>
-      <button class="link" data-act="editProfile">تعديل</button></div></div>
-    <div class="card">
-      <div class="setrow"><span class="st">🌙 الوضع الداكن</span><span class="badge">${dark==='on'?'مفعّل':dark==='off'?'مطفأ':'تلقائي'}</span>
-        <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button></div>
-      <div class="setrow"><span class="st">🎨 الخط العربي</span><span class="badge">${(ARABIC_FONTS.find(x => x.id === (localStorage.getItem('rafiq_web_font') || 'system')) || {}).name || 'خط النظام'}</span>
-        <button class="link" data-act="openFontSheet">تغيير</button></div>
-      <div class="setrow"><span class="st">📈 متتبع العادات والأنشطة</span><button class="link" data-act="openLifeTracker">افتح</button></div>
-      <div class="setrow"><span class="st">📊 الإحصائيات العامة</span><button class="link" data-act="tab" data-v="stats">عرض</button></div>
-      <div class="setrow"><span class="st">📲 تثبيت تطبيق الويب (PWA)</span>
-        ${(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
-          ? `<span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-weight:700">✓ مُثبّت كـ PWA</span>`
-          : window._canInstallPwa
-            ? `<button class="link" style="color:var(--accent);font-weight:700" data-act="installPwa">تثبيت الآن 📲</button>`
-            : (window._isIosSafari && window._isIosSafari())
-              ? `<button class="link" data-act="openPwaIosGuide">طريقة التثبيت 📲</button>`
-              : `<button class="link" data-act="openPwaInstructions">تثبيت التطبيق 📲</button>`}
-      </div>
-      <div class="setrow"><span class="st">📱 تحميل تطبيق Android (ملف APK v${APP_VERSION})</span><a class="link" href="${APP_APK}" download>تحميل</a></div>
-      <div class="setrow"><span class="st">🔔 الإشعارات في المتصفح</span><button class="link" data-act="askNotify">تفعيل الإشعارات</button></div>
-      <div class="setrow"><span class="st">📄 تصدير التقرير (PDF)</span><button class="link" data-act="openReport">تصدير</button></div>
-      <div class="setrow"><span class="st">🗑️ سلة المحذوفات</span>
-        ${(()=>{
-          const n = (getWebTrashItems()||[]).length;
-          return n ? `<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;font-weight:700">${n} عناصر</span>` : `<span class="badge">فارغة</span>`;
-        })()}
-        <button class="link" data-act="openTrashSheet">عرض</button>
-      </div>
-      <div class="setrow"><span class="st">📅 جدولي (تقويم المواعيد)</span><button class="link" data-act="openSchedule">افتح</button></div>
-      <div class="setrow"><span class="st">🔗 الاتصال</span><span class="badge">${esc(CFG.url.replace('https://','').slice(0,22))}…</span>
-        <button class="link" data-act="openCfg">تعديل</button></div>
-      <div class="setrow"><span class="st" style="color:var(--error)">تسجيل الخروج</span><button class="link" style="color:var(--error)" data-act="signOut">خروج</button></div>
-    </div>
-    <div class="sec"><h2>الدوائر</h2><button class="link" data-act="openCreateCircle">+ دائرة جديدة</button></div>
-    <div class="card">
-      ${circlesOf().map(ci=>`<button class="circlerow" data-act="openCircle" data-id="${ci.circle.id}">
-        <span class="cico ${ci.circle.type==='PERSONAL'?'personal':''}">${ci.circle.type==='PERSONAL'?'🔒':'👥'}</span>
-        <span style="flex:1;min-width:0"><b style="font-size:15px">${esc(ci.circle.name)}</b>
-        <span style="font-size:12px;color:var(--text-3);display:block">${ci.circle.type==='PERSONAL'?'دائرة شخصية • لا يراها أحد':'دائرة مشتركة • '+ci.members.length+' أعضاء'}</span></span>
-        <span class="badge">${ci.circle.type}</span></button>`).join('')}
-      <div style="display:flex;gap:8px;padding-top:12px">
-        <button class="btn ghost" data-act="openCreateCircle" style="flex:1">＋ إنشاء دائرة</button>
-        <button class="btn ghost" data-act="openJoinSheet" style="flex:1">🔑 انضمام برمز/QR</button>
+  const me = meProfile();
+  if(!me){
+    $('#view').innerHTML = '<div class="screen"><div class="empty">جارٍ التحميل…</div></div>';
+    return;
+  }
+  const dark = localStorage.getItem('rafiq_web_dark') || 'auto';
+  const trashItems = getWebTrashItems() || [];
+  const trashCount = trashItems.length;
+  const colSet = collapsedSet();
+  const hiddenCount = colSet.size;
+
+  // Header: Profile Card
+  const profileCard = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="greet" style="margin:0;display:flex;align-items:center;gap:12px">
+        <div class="avatar" style="width:48px;height:48px;font-size:20px">${esc((me.display_name||'؟')[0])}</div>
+        <div style="flex:1;min-width:0">
+          <b style="font-size:16px;color:var(--text-1)">${esc(me.display_name||'بدون اسم')}</b>
+          <div style="font-size:12px;color:var(--text-2);margin-top:2px">
+            حساب حقيقي — ${me.accent_theme==='rose' ? '🌸 هوية وردية' : '🟢 هوية خضراء'}
+          </div>
+        </div>
+        <button class="mini" data-act="editProfile" style="padding:6px 12px;font-size:12.5px">تعديل</button>
       </div>
     </div>
-    <p class="foot">رفيق — نسخة الويب v1.0 • يعمل على الهاتف والآيباد والحاسوب</p></div>`;
+  `;
+
+  // If no category is selected: show Android Category Grid
+  if(!window._activeMoreCategory){
+    const categories = [
+      {
+        id: 'sections',
+        icon: '🧩',
+        title: 'شريط الأقسام والداشبورد',
+        subtitle: 'ترتيب وإظهار الأقسام وبطاقات الشاشة',
+        badge: `${15 - hiddenCount}/15 مفعّل`
+      },
+      {
+        id: 'circles',
+        icon: '👥',
+        title: 'الدوائر والشريك',
+        subtitle: 'المساحة الخاصة، الشريك، وإدارة الدوائر',
+        badge: `${circlesOf().length} دوائر`
+      },
+      {
+        id: 'data',
+        icon: '💾',
+        title: 'البيانات والمحذوفات',
+        subtitle: 'سلة المحذوفات، التصدير، والتقويم',
+        badge: trashCount > 0 ? `${trashCount} محذوف` : null,
+        badgeDanger: trashCount > 0
+      },
+      {
+        id: 'appearance',
+        icon: '🎨',
+        title: 'المظهر والتخصيص',
+        subtitle: 'الوضع الداكن، الخطوط، والأيقونات',
+        badge: dark === 'on' ? 'داكن' : (dark === 'off' ? 'فاتح' : 'تلقائي')
+      },
+      {
+        id: 'notifications',
+        icon: '🔔',
+        title: 'الإشعارات والإنذار',
+        subtitle: 'أولوية التنبيه، نغمة الطوارئ، والصامت',
+        badge: 'إنذار 🚨'
+      },
+      {
+        id: 'system',
+        icon: '⚡',
+        title: 'النظام والاتصال',
+        subtitle: 'تحديث التطبيق، Supabase، والخروج',
+        badge: `v${APP_VERSION}`
+      },
+      {
+        id: 'timeline',
+        icon: '🕐',
+        title: 'خط نشاط الرفيق',
+        subtitle: 'الأحداث المشتركة والتفاعلات الأخيرة',
+        badge: `${(data.activity||[]).length} أحداث`
+      }
+    ];
+
+    $('#view').innerHTML = `
+      <div class="screen">
+        <div class="sec"><h2>⚙️ الإعدادات</h2></div>
+        ${profileCard}
+        <div class="sec" style="margin-top:14px"><h2>📂 أقسام الإعدادات</h2></div>
+        <div class="settings-grid">
+          ${categories.map(c => `
+            <div class="setting-cat-tile" data-act="moreCategory" data-id="${c.id}">
+              <div>
+                <div class="setting-cat-tile-top">
+                  <div class="setting-cat-icon-wrap">${c.icon}</div>
+                  ${c.badge ? `<span class="setting-cat-badge ${c.badgeDanger ? 'danger' : ''}">${c.badge}</span>` : ''}
+                </div>
+                <div class="setting-cat-title">${esc(c.title)}</div>
+              </div>
+              <div class="setting-cat-sub">${esc(c.subtitle)}</div>
+            </div>
+          `).join('')}
+        </div>
+        <p class="foot" style="margin-top:20px">رفيق — تطبيق الويب الذكي v${APP_VERSION} • متوافق مع Android والآيباد والماك</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Active Category View
+  const cat = window._activeMoreCategory;
+  let catContent = '';
+
+  if(cat === 'sections'){
+    const dashKeys = getDashboardKeys();
+    catContent = `
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-head">
+          <h2 style="font-size:15px">🎛️ بطاقات الشاشة الرئيسية (لوحة الداشبورد)</h2>
+          <button class="mini" data-act="openCustomizeDashboard" style="font-size:11.5px;padding:4px 8px">تخصيص ⚙️</button>
+        </div>
+        <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">انقر لتفعيل أو إلغاء ظهور أي بطاقة على الشاشة الرئيسية:</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${Object.keys(DASH_TILES).map(k => {
+            const tile = DASH_TILES[k];
+            const on = dashKeys.includes(k);
+            return `<button class="chip ${on ? 'on' : ''}" onclick="toggleDashboardCard('${k}');renderMore();" style="cursor:pointer">
+              ${tile.emoji} ${esc(tile.title)} ${on ? '✓' : ''}
+            </button>`;
+          }).join('')}
+        </div>
+        <div style="margin-top:12px;border-top:1px solid var(--divider);padding-top:10px">
+          <button class="btn ghost" data-act="resetDashboardCards" style="width:100%">↺ استعادة البطاقات الافتراضية</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 style="font-size:15px">🧩 شريط الأقسام والطي</h2>
+          <div style="display:flex;gap:6px">
+            <button class="mini" onclick="expandAllSec();renderMore();" style="font-size:11px;padding:4px 8px">توسيع الكل</button>
+            <button class="mini" onclick="collapseAllSec();renderMore();" style="font-size:11px;padding:4px 8px">طي الكل</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${SEC_META.map(([k, emoji, name]) => {
+            const isHidden = colSet.has(k);
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--divider)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:20px">${emoji}</span>
+                  <b style="font-size:14px;color:var(--text-1)">${esc(name)}</b>
+                </div>
+                <button class="mini" onclick="toggleSec('${k}');renderMore();" style="font-size:11.5px;padding:4px 10px;background:${isHidden ? 'var(--surface-2)' : 'var(--accent-soft)'};color:${isHidden ? 'var(--text-3)' : 'var(--accent-dark)'}">
+                  ${isHidden ? '🚫 مخفي' : '👁 مفعّل'}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  } else if(cat === 'circles'){
+    catContent = `
+      <div class="card">
+        <div class="card-head">
+          <h2 style="font-size:15px">👥 إدارة الدوائر</h2>
+          <button class="mini" data-act="openCreateCircle">＋ دائرة جديدة</button>
+        </div>
+        ${circlesOf().map(ci => `
+          <button class="circlerow" data-act="openCircle" data-id="${ci.circle.id}">
+            <span class="cico ${ci.circle.type==='PERSONAL'?'personal':''}">${ci.circle.type==='PERSONAL'?'🔒':'👥'}</span>
+            <span style="flex:1;min-width:0">
+              <b style="font-size:15px">${esc(ci.circle.name)}</b>
+              <span style="font-size:12px;color:var(--text-3);display:block">
+                ${ci.circle.type==='PERSONAL' ? 'دائرة شخصية • لا يراها أحد غيرك' : 'دائرة مشتركة • ' + ci.members.length + ' أعضاء'}
+              </span>
+            </span>
+            <span class="badge">${ci.circle.type}</span>
+          </button>
+        `).join('')}
+        <div style="display:flex;gap:8px;padding-top:14px">
+          <button class="btn ghost" data-act="openCreateCircle" style="flex:1">＋ إنشاء دائرة</button>
+          <button class="btn ghost" data-act="openJoinSheet" style="flex:1">🔑 انضمام برمز/QR</button>
+        </div>
+      </div>
+    `;
+  } else if(cat === 'data'){
+    catContent = `
+      <div class="card">
+        <div class="setrow">
+          <span class="st">🗑️ سلة المحذوفات</span>
+          ${trashCount ? `<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;font-weight:700">${trashCount} عناصر</span>` : `<span class="badge">فارغة</span>`}
+          <button class="link" data-act="openTrashSheet">عرض</button>
+        </div>
+        <div class="setrow">
+          <span class="st">📄 تصدير التقرير والنسخ الاحتياطي (PDF)</span>
+          <button class="link" data-act="openReport">تصدير</button>
+        </div>
+        <div class="setrow">
+          <span class="st">📅 جدولي (تقويم المواعيد)</span>
+          <button class="link" data-act="openSchedule">افتح</button>
+        </div>
+        <div class="setrow">
+          <span class="st">📈 متتبع العادات والأنشطة</span>
+          <button class="link" data-act="openLifeTracker">افتح</button>
+        </div>
+        <div class="setrow">
+          <span class="st">📊 الإحصائيات العامة</span>
+          <button class="link" data-act="tab" data-v="stats">عرض</button>
+        </div>
+      </div>
+    `;
+  } else if(cat === 'appearance'){
+    catContent = `
+      <div class="card">
+        <div class="setrow">
+          <span class="st">🌙 الوضع الداكن</span>
+          <span class="badge">${dark==='on' ? 'مفعّل' : (dark==='off' ? 'مطفأ' : 'تلقائي')}</span>
+          <button class="switch ${localStorage.getItem('rafiq_web_dark')==='on'?'on':''}" data-act="toggleDark"><i></i></button>
+        </div>
+        <div class="setrow">
+          <span class="st">🎨 الخط العربي</span>
+          <span class="badge">${(ARABIC_FONTS.find(x => x.id === (localStorage.getItem('rafiq_web_font') || 'system')) || {}).name || 'خط النظام'}</span>
+          <button class="link" data-act="openFontSheet">تغيير</button>
+        </div>
+        <div class="setrow">
+          <span class="st">🌸 الهوية والسمة</span>
+          <span class="badge">${me.accent_theme==='rose' ? '🌸 هوية وردية' : '🟢 هوية خضراء'}</span>
+          <button class="link" data-act="editProfile">تعديل</button>
+        </div>
+      </div>
+    `;
+  } else if(cat === 'notifications'){
+    catContent = `
+      <div class="card">
+        <div class="setrow">
+          <span class="st">🔔 إشعارات المتصفح</span>
+          <button class="mini" data-act="askNotify">تفعيل الآن 🔔</button>
+        </div>
+        <div class="setrow">
+          <span class="st">🔊 تجربة نغمة الإشعار</span>
+          <button class="mini" data-act="testNotifySound">تجربة الصوت 🔔</button>
+        </div>
+        <div class="setrow">
+          <span class="st">🚨 تجربة صوت الإنذار المستعجل</span>
+          <button class="mini" data-act="testUrgentSound" style="background:rgba(225,29,72,0.15);color:#E11D48">تجربة الإنذار 🚨</button>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn" onclick="openUrgentSheet()" style="background:#E11D48;color:#fff;font-weight:700">🚨 إرسال رسالة مستعجلة للرفيق</button>
+        </div>
+      </div>
+    `;
+  } else if(cat === 'system'){
+    catContent = `
+      <div class="card">
+        <div class="setrow">
+          <span class="st">🚀 إصدار التطبيق (Web PWA)</span>
+          <span class="badge" style="font-weight:700;background:var(--accent-soft);color:var(--accent-dark)">v${APP_VERSION}</span>
+        </div>
+        <div class="setrow">
+          <span class="st">📲 تثبيت تطبيق الويب (PWA)</span>
+          ${(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+            ? `<span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-weight:700">✓ مُثبّت</span>`
+            : window._canInstallPwa
+              ? `<button class="link" style="color:var(--accent);font-weight:700" data-act="installPwa">تثبيت الآن 📲</button>`
+              : (window._isIosSafari && window._isIosSafari())
+                ? `<button class="link" data-act="openPwaIosGuide">طريقة التثبيت 📲</button>`
+                : `<button class="link" data-act="openPwaInstructions">تثبيت التطبيق 📲</button>`}
+        </div>
+        <div class="setrow">
+          <span class="st">📱 تحميل تطبيق Android (ملف APK)</span>
+          <a class="link" href="${APP_APK}" download>تحميل</a>
+        </div>
+        <div class="setrow">
+          <span class="st">🔗 اتصال Supabase</span>
+          <span class="badge">${esc(CFG.url.replace('https://','').slice(0,20))}…</span>
+          <button class="link" data-act="openCfg">تعديل</button>
+        </div>
+        <div class="setrow">
+          <span class="st" style="color:var(--error);font-weight:700">تسجيل الخروج</span>
+          <button class="link" style="color:var(--error);font-weight:700" data-act="signOut">خروج</button>
+        </div>
+      </div>
+    `;
+  } else if(cat === 'timeline'){
+    const acts = (data.activity || []).slice(0, 20);
+    catContent = `
+      <div class="card">
+        <div class="card-head">
+          <h2 style="font-size:15px">🕐 خط نشاط الرفيق والتفاعلات الأخيرة</h2>
+        </div>
+        ${acts.length ? acts.map(a => `
+          <div class="row" style="min-height:46px;padding:8px 0">
+            <span style="font-size:20px;flex-shrink:0">
+              ${a.kind==='TASK_DONE' ? '✅' : (a.kind==='ITEM_COMPLETED' ? '🌱' : (a.kind==='SHOP_ADDED' ? '🛒' : '⚡'))}
+            </span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;font-weight:600;color:var(--text-1)">${esc(a.payload||a.kind)}</div>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">${a.created_at ? a.created_at.slice(0,16).replace('T',' ') : ''}</div>
+            </div>
+          </div>
+        `).join('') : '<div class="empty">لا أحداث تفاعلية مسجلة بعد</div>'}
+      </div>
+    `;
+  }
+
+  const catTitles = {
+    sections: '🧩 شريط الأقسام والداشبورد',
+    circles: '👥 الدوائر والشريك',
+    data: '💾 البيانات والمحذوفات',
+    appearance: '🎨 المظهر والتخصيص',
+    notifications: '🔔 الإشعارات والإنذار',
+    system: '⚡ النظام والاتصال',
+    timeline: '🕐 خط نشاط الرفيق'
+  };
+
+  $('#view').innerHTML = `
+    <div class="screen">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button class="mini" data-act="backToMoreCategories" style="font-size:12.5px;padding:6px 12px;background:var(--surface);border:1px solid var(--border);cursor:pointer">
+          ← رجوع للإعدادات
+        </button>
+        <h2 style="margin:0;font-size:17px;font-weight:700">${catTitles[cat] || 'الإعدادات'}</h2>
+      </div>
+      ${catContent}
+    </div>
+  `;
 }
 </script>
 <script>
@@ -6313,6 +7196,9 @@ function openPopup(html){
 }
 function closePopup(){ $('#popup-root').innerHTML=''; }
 function sheetHead(t){ return `<div class="sheet-head"><h3>${esc(t)}</h3><button class="sheet-x" data-act="closeSheet">✕</button></div>`; }
+function visWrap(id, sel, circle){
+  return `<div id="${id}">${visOptions(sel, circle)}</div>`;
+}
 function visOptions(sel,circle){
   const opts=[['PRIVATE','🔒 خاص بي','يراه صاحبه فقط'],['CIRCLE','👥 كل الدائرة',circle?'يراه جميع أعضاء «'+circle.circle.name+'»':'يراه الجميع في دائرتك'],['SELECTED_MEMBERS','@ أشخاص محددون','يراه من تختاره فقط']];
   return opts.map(([v,t,d])=>`<button class="vis-opt ${sel===v?'on':''}" data-act="pickVis" data-v="${v}">
@@ -7976,6 +8862,72 @@ document.addEventListener('click', async e=>{
           if(mine.length) await rest('DELETE','reactions','id=eq.'+mine[0].id); else throw ex; });
         await refreshAll(); renderStats(); break;
       case 'openNotifs': openNotifs(); break;
+      case 'openCustomizeDashboard': openCustomizeDashboardSheet(); break;
+      case 'resetDashboardCards': resetDashboardCards(); break;
+      case 'sendUrgentFromSheet': {
+        const inp = $('#urgSheetMsg');
+        const t = ((inp && inp.value) || '').trim();
+        if(!t){ toast('اكتب الرسالة'); break; }
+        const me = meId();
+        const sh = (data.circles||[]).find(c=>c.circle.type==='SHARED') || (data.circles||[])[0];
+        if(!sh){ toast('تحتاج دائرة مشتركة أولًا'); break; }
+        const peer = ((sh.members||[])[0]&&(sh.members||[])[0].p&&(sh.members||[])[0].p.id!==me)?(sh.members||[])[0].p:((sh.members||[])[1]||{}).p||null;
+        closeSheet();
+        playNotificationSound('urgent');
+        await rest('POST','tasks',{id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),owner_id:me,circle_id:sh.circle.id,title:t,visibility:'CIRCLE',assigned_to:peer?peer.id:null,priority:'URGENT',status:'TODO'});
+        try {
+          const ptok = (peer&&peer.avatar_url||'').startsWith('FCM:')?peer.avatar_url.slice(4):null;
+          if(ptok) await fetch('https://rafiq-web-tau.vercel.app/api/send-push',{method:'POST',headers:{'Content-Type':'application/json','x-rafiq-key':'rk_77d1db341635c4e56368244df9fa09a3'},body:JSON.stringify({to_token:ptok,title:'رسالة مستعجلة 🚨',message:t,urgent:true})});
+        } catch(e){}
+        await refreshAll(); renderApp(); toast('أُرسلت الرسالة المستعجلة 🚨');
+        break;
+      }
+      case 'submitQuickShop': {
+        const inp = $('#quickShopTitle');
+        const tit = ((inp && inp.value) || '').trim();
+        if(!tit){ toast('اكتب اسم العنصر'); break; }
+        const sel = $('#quickShopList');
+        const listId = (sel && sel.value) || null;
+        closeSheet();
+        try {
+          let targetListId = listId;
+          if(!targetListId){
+            const stores = getStoreLists();
+            targetListId = stores[0] ? stores[0].id : null;
+            if(!targetListId){
+              const sh = sharedFirst();
+              const cid = sh ? sh.circle.id : ((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+              const nl = await ensureList('عام', cid);
+              targetListId = nl.id;
+            }
+          }
+          await rest('POST','shared_list_items',{id:uuid(),list_id:targetListId,title:tit,completed:false},'return=minimal');
+          const list = (data.sharedLists||[]).find(l=>l.id===targetListId);
+          if(list) logAct(list.circle_id,'SHOP_ADDED',tit);
+          await refreshAll(); renderApp(); toast('أُضيف إلى السلة 🛒 ✓');
+        } catch(e){ toast(friendly(e)); }
+        break;
+      }
+      case 'moreCategory': {
+        window._activeMoreCategory = el.dataset.id;
+        renderMore();
+        break;
+      }
+      case 'backToMoreCategories': {
+        window._activeMoreCategory = null;
+        renderMore();
+        break;
+      }
+      case 'testNotifySound': {
+        playNotificationSound('chime');
+        toast('🔔 نغمة الإشعار التجريبية');
+        break;
+      }
+      case 'testUrgentSound': {
+        playNotificationSound('urgent');
+        toast('🚨 نغمة الإنذار المستعجل التجريبية');
+        break;
+      }
       case 'openReport': openReport(); break;
       case 'askNotify': askNotify(); toast('إن وافق المتصفح ستصل التنبيهات 🔔'); break;
       case 'installPwa': await triggerPwaInstall(); break;
