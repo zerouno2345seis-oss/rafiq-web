@@ -537,7 +537,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.40';
+const APP_VERSION = '1.45';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -3197,48 +3197,47 @@ function renderLifeTracker(){
                 </div>
               </div>
             </div>
+
+            <!-- قائمة تفاصيل سجلات اليوم أسفل الخط الزمني -->
+            <div class="card" style="min-height:140px;padding:12px">
+              <b style="font-size:13.5px;color:var(--text-1);display:block;margin-bottom:10px">سجلات اليوم (${dayEntries.length})</b>
+              ${dayEntries.length ? `
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  ${dayEntries.map(entry => {
+                    const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
+                    const hasRange = !!(entry.startedAt && entry.endedAt);
+                    const timeLabel = hasRange
+                      ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
+                      : `${formatArabicTime(entry.loggedAt)}`;
+                    return `
+                      <div class="row" style="cursor:pointer;padding:8px 10px;background:var(--surface-2);border-radius:10px;border-inline-start:4px solid ${cat.colorHex}" data-act="openEntryDetails" data-id="${entry.id}">
+                        <span style="font-size:20px">${cat.icon}</span>
+                        <div style="flex:1;min-width:0">
+                          <div style="display:flex;align-items:center;gap:6px">
+                            <b style="font-size:13px;color:var(--text-1)">${esc(cat.name)}</b>
+                            ${entry.subcategory ? `<span style="font-size:11.5px;color:var(--text-2)">(${esc(entry.subcategory)})</span>` : ''}
+                            ${hasRange ? '<span class="badge mini" style="font-size:9.5px">⏱️ فترة</span>' : '<span class="badge mini" style="font-size:9.5px;background:var(--accent-soft);color:var(--accent-dark)">📍 فوري</span>'}
+                          </div>
+                          <div style="font-size:11px;color:var(--text-3);margin-top:2px">
+                            <span>${timeLabel}</span>
+                            ${entry.quantity ? ` • <b>${esc(entry.quantity)}</b>` : ''}
+                            ${entry.note ? ` • <i>${esc(entry.note)}</i>` : ''}
+                          </div>
+                        </div>
+                        <span style="font-size:13px;color:var(--text-3)">✏️</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              ` : `
+                <div class="empty" style="padding:20px 0">
+                  <span class="e">🎯</span>
+                  <b>لا توجد تسجيلات على الخط الزمني لهذا اليوم</b>
+                </div>
+              `}
+            </div>
           `;
         })() : `
-
-          <!-- قائمة تفاصيل سجلات اليوم أسفل الخط الزمني -->
-          <div class="card" style="min-height:140px;padding:12px">
-            <b style="font-size:13.5px;color:var(--text-1);display:block;margin-bottom:10px">سجلات اليوم (${dayEntries.length})</b>
-            ${dayEntries.length ? `
-              <div style="display:flex;flex-direction:column;gap:8px">
-                ${dayEntries.map(entry => {
-                  const cat = catMap[entry.categoryId] || { icon:'📌', colorHex:'#3B82F6', name:'' };
-                  const hasRange = !!(entry.startedAt && entry.endedAt);
-                  const timeLabel = hasRange
-                    ? `من ${formatArabicTime(entry.startedAt)} إلى ${formatArabicTime(entry.endedAt)}`
-                    : `${formatArabicTime(entry.loggedAt)}`;
-                  return `
-                    <div class="row" style="cursor:pointer;padding:8px 10px;background:var(--surface-2);border-radius:10px;border-inline-start:4px solid ${cat.colorHex}" data-act="openEntryDetails" data-id="${entry.id}">
-                      <span style="font-size:20px">${cat.icon}</span>
-                      <div style="flex:1;min-width:0">
-                        <div style="display:flex;align-items:center;gap:6px">
-                          <b style="font-size:13px;color:var(--text-1)">${esc(cat.name)}</b>
-                          ${entry.subcategory ? `<span style="font-size:11.5px;color:var(--text-2)">(${esc(entry.subcategory)})</span>` : ''}
-                          ${hasRange ? '<span class="badge mini" style="font-size:9.5px">⏱️ فترة</span>' : '<span class="badge mini" style="font-size:9.5px;background:var(--accent-soft);color:var(--accent-dark)">📍 فوري</span>'}
-                        </div>
-                        <div style="font-size:11px;color:var(--text-3);margin-top:2px">
-                          <span>${timeLabel}</span>
-                          ${entry.quantity ? ` • <b>${esc(entry.quantity)}</b>` : ''}
-                          ${entry.note ? ` • <i>${esc(entry.note)}</i>` : ''}
-                        </div>
-                      </div>
-                      <span style="font-size:13px;color:var(--text-3)">✏️</span>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            ` : `
-              <div class="empty" style="padding:20px 0">
-                <span class="e">🎯</span>
-                <b>لا توجد تسجيلات على الخط الزمني لهذا اليوم</b>
-              </div>
-            `}
-          </div>
-        ` : `
           <!-- عرض البلوكات الكلاسيكي -->
           <div class="card" style="min-height:180px;padding:12px">
             ${dayEntries.length ? `
@@ -5044,66 +5043,6 @@ function generateTrackerReportHtml(startDate, endDate, selectedCategoryIds, incl
       ${timelineHtml}
       ${tableHtml}
       <div style="text-align:center;font-size:11px;color:#9CA3AF;margin-top:24px;border-top:1px solid #E5E7EB;padding-top:10px">
-        تم تصدير هذا التقرير تلقائيًا من تطبيق رفيق • ${new Date().toLocaleString('ar-EG')}
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-    rowsHtml += `
-      <tr style="border-bottom:1px solid #E5E7EB">
-        <td style="padding:10px 12px;width:45%">
-          <span style="background-color:${cat.colorHex}20;color:${cat.colorHex};border:1px solid ${cat.colorHex}60;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold;display:inline-block">
-            ${cat.icon} ${esc(cat.name)}
-          </span>
-          ${subcat} ${qty} ${note}
-        </td>
-        <td style="padding:10px 12px;width:25%;direction:ltr;text-align:right;color:#4B5563">${(entry.loggedAt||'').slice(0,10)}</td>
-        <td style="padding:10px 12px;width:30%;font-weight:bold;color:#374151">${timeStr}</td>
-      </tr>
-    `;
-  }
-
-  return `
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="utf-8">
-      <title>تقرير متتبع الحياة - ${esc(periodTitle)}</title>
-      <style>
-        body{font-family:'Noto Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;margin:24px;color:#1F2937;background:#FFFFFF;direction:rtl}
-        .header{border-bottom:2px solid #E5E7EB;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-        .header h1{font-size:24px;color:#111827;margin:0 0 6px 0}
-        .period-badge{background:#F3F4F6;color:#4B5563;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
-        table{width:100%;border-collapse:collapse;margin-top:12px}
-        th{background:#F9FAFB;padding:10px 12px;text-align:right;font-size:12px;color:#4B5563;border-bottom:2px solid #E5E7EB}
-        @media print{body{margin:0} .no-print{display:none}}
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div>
-          <h1>📈 تقرير متتبع الحياة</h1>
-          <div style="font-size:13px;color:#6B7280">تطبيق رفيق • سجل الأنشطة واليوميات</div>
-        </div>
-        <div class="period-badge">${esc(periodText)}</div>
-      </div>
-      <div class="stats-grid">${statsHtml}</div>
-      <table>
-        <thead>
-          <tr>
-            <th>النشاط / الفئة</th>
-            <th>التاريخ</th>
-            <th>الوقت / المدة</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml || '<tr><td colspan="3" style="text-align:center;padding:30px;color:#9CA3AF">لا توجد سجلات في هذه الفترة</td></tr>'}
-        </tbody>
-      </table>
-      <div style="margin-top:30px;font-size:11px;color:#9CA3AF;text-align:center;border-top:1px solid #E5E7EB;padding-top:12px">
         تم تصدير هذا التقرير تلقائيًا من تطبيق رفيق • ${new Date().toLocaleString('ar-EG')}
       </div>
     </body>
