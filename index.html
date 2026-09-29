@@ -764,7 +764,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.45';
+const APP_VERSION = '1.45.4';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1634,6 +1634,17 @@ function spaceMeta(sp){
   return { key:'shared', label:'مشترك بيننا', shortLabel:'كلانا', emoji:'🔵', color:'var(--space-shared)', bg:'var(--space-shared-soft)', stripe:'space-stripe-shared', badgeCls:'space-badge-shared' };
 }
 
+function spaceDot(sp, size=8){
+  const m = spaceMeta(sp);
+  const s = size + 'px';
+  return `<span class="space-dot" style="display:inline-block;width:${s};height:${s};min-width:${s};min-height:${s};border-radius:50%;background:${m.color};border:1px solid rgba(255,255,255,0.7);box-shadow:0 0 2px rgba(0,0,0,0.25);vertical-align:middle;margin-inline-end:5px" title="${m.label}"></span>`;
+}
+
+function spaceBadgeDot(sp){
+  const m = spaceMeta(sp);
+  return `<span class="space-badge-dot ${m.badgeCls}" style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:600;background:${m.bg};color:${m.color};border:1px solid ${m.color}40">${spaceDot(sp, 6)}<span>${m.label}</span></span>`;
+}
+
 function spaceMenuBtn(type, id){
   return `<button class="dots-btn" data-act="openSpaceMenu" data-type="${type}" data-id="${id}" title="تحديد المساحة والملكية" aria-label="خيارات">⋯</button>`;
 }
@@ -1641,9 +1652,32 @@ function spaceMenuBtn(type, id){
 function renderNav(){
   const activeTabId = (view === 'habits' || view === 'tasks') ? 'activity' : view;
   const hasUpdate = window._webUpdateAvailable === true;
+
+  if(window._navRevealed){
+    const colSet = typeof collapsedSet === 'function' ? collapsedSet() : new Set();
+    const activeSecs = (typeof SEC_META !== 'undefined' ? SEC_META : []).filter(m => !colSet.has(m[0]));
+    $('#nav').innerHTML = `
+      <div style="display:flex;align-items:center;width:100%;height:56px;padding:4px 8px;gap:6px;background:var(--surface);border-top:1px solid var(--border);box-sizing:border-box">
+        <button data-act="closeNavReveal" style="width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:var(--text-2);cursor:pointer;flex-shrink:0" title="إغلاق">✕</button>
+        <div style="width:1px;height:24px;background:var(--border);flex-shrink:0"></div>
+        <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;padding:2px 0;scrollbar-width:none">
+          ${activeSecs.map(m => {
+            const singleWord = (m[2]||'').trim().split(' ')[0];
+            return `<button data-act="openSecFromNav" data-sec="${m[0]}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;min-width:52px;height:46px;border-radius:8px;background:transparent;border:none;cursor:pointer;padding:2px;color:var(--text-1)">
+              <span style="font-size:18px;line-height:1">${m[1]}</span>
+              <span style="font-size:9.5px;font-weight:600;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48px">${singleWord}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   $('#nav').innerHTML=`<div class="in">${TABS.map(([id,l,ic])=>{
     const isMore = id === 'more';
-    return `<button data-act="tab" data-v="${id}" class="${activeTabId===id?'on':''}">
+    return `<button data-act="tab" data-v="${id}" class="${activeTabId===id?'on':''}" style="position:relative">
+      ${isMore ? '<span data-act="revealNav" style="position:absolute;top:2px;width:18px;height:3px;border-radius:2px;background:var(--text-3);opacity:0.4;cursor:pointer"></span>' : ''}
       <span class="ic" style="position:relative">${ic}${isMore && hasUpdate ? '<span style="position:absolute;top:-1px;right:-3px;width:7px;height:7px;border-radius:50%;background:#EF4444;border:1.5px solid var(--surface)"></span>' : ''}</span>
       <span>${l}</span>
     </button>`;
@@ -2641,6 +2675,7 @@ function shopRow(si){
   return `<div class="row ${sm.stripe}"><button class="check ${si.completed?'on':''}" data-act="toggleShop" data-id="${si.id}">✓</button>
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:6px">
+        ${spaceDot(sp)}
         <div class="htitle" style="${si.completed?'color:var(--text-3);text-decoration:line-through':''}">${esc(si.title)}</div>
         <span class="${sm.badgeCls}">${sm.emoji}</span>
       </div>
@@ -2838,6 +2873,7 @@ function habitRow(uid,item){
   return `<div class="row ${sm.stripe}">
     <span class="hicon">${typeEmoji(item.type)}</span>
     <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+      ${spaceDot(sp)}
       <span class="htitle">${esc(item.title)}</span>
       <span class="${sm.badgeCls}">${sm.emoji}</span>
     </div>
@@ -2906,7 +2942,7 @@ function renderSchedule(){
     <div class="card">${upcoming.length? upcoming.map(t=>`<div class="row">
       <div style="text-align:center;min-width:52px"><div style="font-size:12px;font-weight:700;color:var(--accent-dark)">${evTimeText(t)}</div>
       <div style="font-size:10px;color:var(--text-3)">${new Date(t.due_at).toLocaleDateString('ar')}</div></div>
-      <div style="flex:1;min-width:0"><div class="htitle">${esc(t.title)}</div>
+      <div style="flex:1;min-width:0"><div class="htitle">${spaceDot(getItemSpace('task', t))}${esc(t.title)}</div>
       <div class="badges"><span class="badge">${esc(nameOf(t.owner_id))}</span>
       <span class="badge">${t.visibility==='PRIVATE'?'🔒 خاص':t.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون'}</span></div></div>
       ${t.owner_id===meId()?`<button class="link" style="color:var(--error)" data-act="delEvent" data-id="${t.id}">حذف</button>`:''}
@@ -3011,6 +3047,7 @@ function renderFood(){
           return `<div class="row ${sm.stripe}" style="min-height:44px">
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;gap:6px">
+                ${spaceDot(sp)}
                 <div class="htitle">${esc(i.title)}</div>
                 <span class="${sm.badgeCls}">${sm.emoji}</span>
               </div>
@@ -3032,6 +3069,7 @@ function renderFood(){
         const sm = spaceMeta(sp);
         return `<div class="row ${sm.stripe}" style="min-height:40px">
           <div style="flex:1;display:flex;align-items:center;gap:6px">
+            ${spaceDot(sp)}
             <span class="htitle">${esc(d.title)}</span>
             <span class="${sm.badgeCls}">${sm.emoji}</span>
           </div>
@@ -6022,6 +6060,7 @@ function renderMeds(){
           <div class="med-pat-stripe" style="background:${patCol};height:40px"></div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px">
+              ${spaceDot(getItemSpace('med', m))}
               <span style="font-size:15px;font-weight:700;color:var(--text-1)">${esc(m.item.title)}</span>
               <span class="badge" style="background:var(--surface-2);color:var(--text-2);font-size:11px">${esc(m.item.unit||'حبة')}</span>
             </div>
@@ -6086,7 +6125,10 @@ function renderMeds(){
               const doses = parseDosesForMed(m.item.id, data.entries);
               return `<tr>
                 <td class="med-name-cell">
-                  <div style="font-size:12.5px;font-weight:600;color:var(--text-1)">${esc(m.item.title)}</div>
+                  <div style="font-size:12.5px;font-weight:600;color:var(--text-1);display:flex;align-items:center;gap:4px">
+                    ${spaceDot(getItemSpace('med', m), 6)}
+                    <span>${esc(m.item.title)}</span>
+                  </div>
                   <div style="font-size:10px;color:var(--text-3)">${esc(m.item.unit||'حبة')}</div>
                 </td>
                 ${weekDays.map(d => {
@@ -6322,7 +6364,7 @@ function renderTasks(){
       const sm=spaceMeta(sp);
       return `<div class="card ${sm.stripe}"><div class="task-row">
         <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
-        <div style="flex:1;min-width:0"><div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+        <div style="flex:1;min-width:0"><div class="task-title ${t.status==='DONE'?'dn':''}">${spaceDot(sp)}${esc(t.title)}</div>
         <div class="badges">
           <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
           ${cn?`<span class="badge">${esc(cn)}</span>`:''}
@@ -6416,7 +6458,7 @@ function renderActivity(){
           <div class="row">
             <span class="hicon">${typeEmoji(item.type)}</span>
             <div style="flex:1;min-width:0">
-              <div style="font-size:15px;font-weight:600">${esc(item.title)}</div>
+              <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">${spaceDot(sp)}<span>${esc(item.title)}</span></div>
               <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
                 <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
                 <span class="badge">${visLabel(item.visibility)}</span>
@@ -6461,7 +6503,7 @@ function renderActivity(){
           <div class="task-row">
             <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
             <div style="flex:1;min-width:0">
-              <div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+              <div class="task-title ${t.status==='DONE'?'dn':''}">${spaceDot(sp)}${esc(t.title)}</div>
               <div class="badges">
                 <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
                 ${cn ? `<span class="badge">${esc(cn)}</span>` : ''}
@@ -6754,13 +6796,31 @@ function renderSpacesDrilldown(spaceKey){
   const sm = spaceMeta(spaceKey);
   const comp = companionOf();
 
+  window._spacesCollapsed = window._spacesCollapsed || {};
+
   // Filter all items for this space
   const tasks = visibleTasks().filter(t => getItemSpace('task', t) === spaceKey);
   const habits = (data.items||[]).filter(i => getItemSpace('habit', i) === spaceKey && !isSpecialItem(i));
   const meds = (medsOf()||[]).filter(m => getItemSpace('med', m) === spaceKey);
   const shopping = (data.shopping||[]).filter(s => getItemSpace('shopping', s) === spaceKey && !RESERVED_SHOPPING_TITLES.includes(s.title));
   const food = foodEntries().filter(f => getItemSpace('food', f) === spaceKey);
-  const totalCount = tasks.length + habits.length + meds.length + shopping.length + food.length;
+  const bookmarks = (bookmarksOf().items||[]).filter(b => getItemSpace('bookmark', b) === spaceKey);
+  const places = (placesOf().items||[]).filter(p => getItemSpace('place', p) === spaceKey);
+  const media = (typeof mediaOf === 'function' ? mediaOf().items : []).filter(m => getItemSpace('media', m) === spaceKey);
+
+  const totalCount = tasks.length + habits.length + meds.length + shopping.length + food.length + bookmarks.length + places.length + media.length;
+
+  const secsList = [];
+  if(tasks.length) secsList.push('tasks');
+  if(habits.length) secsList.push('habits');
+  if(meds.length) secsList.push('meds');
+  if(shopping.length) secsList.push('shopping');
+  if(food.length) secsList.push('food');
+  if(bookmarks.length) secsList.push('bookmarks');
+  if(places.length) secsList.push('places');
+  if(media.length) secsList.push('media');
+
+  const allCollapsed = secsList.length > 0 && secsList.every(s => !!window._spacesCollapsed[s]);
 
   $('#view').innerHTML = `
   <div class="screen">
@@ -6770,7 +6830,7 @@ function renderSpacesDrilldown(spaceKey){
       <span style="width:40px"></span>
     </div>
 
-    <div class="card" style="background:${sm.bg};border:1.5px solid ${sm.color};padding:12px 14px;margin-bottom:14px">
+    <div class="card" style="background:${sm.bg};border:1.5px solid ${sm.color};padding:12px 14px;margin-bottom:12px">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <b style="font-size:15px;color:var(--text-1)">إجمالي العناصر: ${totalCount}</b>
         <span class="${sm.badgeCls}">${sm.label}</span>
@@ -6780,14 +6840,30 @@ function renderSpacesDrilldown(spaceKey){
       </div>
     </div>
 
-    <!-- المهام -->
+    <!-- شريط طي وتوسيع الأقسام -->
+    ${totalCount > 0 ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 2px 6px">
+        <span style="font-size:12px;font-weight:700;color:var(--text-2)">أقسام المساحة القابلة للطي:</span>
+        <button class="link" data-act="toggleAllSpaceSecs" style="font-size:12px;font-weight:700;color:${sm.color};padding:3px 10px;border-radius:8px;background:${sm.bg};border:1px solid ${sm.color}40;cursor:pointer">
+          ${allCollapsed ? 'توسيع الكل ⏷' : 'طي الكل ⏶'}
+        </button>
+      </div>
+    ` : ''}
+
+    <!-- 1) المهام -->
     ${tasks.length ? `
-      <div class="sec"><h2>✅ المهام (${tasks.length})</h2></div>
-      ${tasks.map(t => {
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="tasks">
+        <h2 style="margin:0">✅ المهام (${tasks.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['tasks'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['tasks'] ? tasks.map(t => {
         return `<div class="card ${sm.stripe}"><div class="task-row">
           <button class="status s-${t.status}" data-act="cycleTask" data-id="${t.id}">${stLabel(t.status)}</button>
           <div style="flex:1;min-width:0">
-            <div class="task-title ${t.status==='DONE'?'dn':''}">${esc(t.title)}</div>
+            <div class="task-title ${t.status==='DONE'?'dn':''}" style="display:flex;align-items:center;gap:6px">
+              ${spaceDot(spaceKey)}
+              <span>${esc(t.title)}</span>
+            </div>
             <div class="badges">
               <span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span>
               ${t.assigned_to ? `<span class="badge">👤 ${esc(nameOf(t.assigned_to))}</span>` : ''}
@@ -6796,57 +6872,145 @@ function renderSpacesDrilldown(spaceKey){
           </div>
           ${spaceMenuBtn('task', t.id)}
         </div></div>`;
-      }).join('')}
+      }).join('') : ''}
     ` : ''}
 
-    <!-- العادات -->
+    <!-- 2) العادات -->
     ${habits.length ? `
-      <div class="sec"><h2>🌱 العادات والأهداف (${habits.length})</h2></div>
-      ${habits.map(h => {
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="habits">
+        <h2 style="margin:0">🌱 العادات والأهداف (${habits.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['habits'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['habits'] ? habits.map(h => {
         return `<div class="card ${sm.stripe}"><div class="row">
           <span class="hicon">${typeEmoji(h.type)}</span>
           <div style="flex:1;min-width:0">
-            <div style="font-size:15px;font-weight:600">${esc(h.title)}</div>
+            <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">
+              ${spaceDot(spaceKey)}
+              <span>${esc(h.title)}</span>
+            </div>
             <div style="margin-top:4px"><span class="${sm.badgeCls}">${sm.emoji} ${sm.label}</span></div>
           </div>
           ${spaceMenuBtn('habit', h.id)}
         </div></div>`;
-      }).join('')}
+      }).join('') : ''}
     ` : ''}
 
-    <!-- الأدوية -->
+    <!-- 3) الأدوية -->
     ${meds.length ? `
-      <div class="sec"><h2>💊 الأدوية (${meds.length})</h2></div>
-      ${meds.map(m => {
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="meds">
+        <h2 style="margin:0">💊 الأدوية (${meds.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['meds'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['meds'] ? meds.map(m => {
         return `<div class="card ${sm.stripe}"><div class="row">
           <span style="font-size:20px">💊</span>
           <div style="flex:1;min-width:0">
-            <div class="htitle">${esc(m.item.title)}</div>
+            <div class="htitle" style="display:flex;align-items:center;gap:6px">
+              ${spaceDot(spaceKey)}
+              <span>${esc(m.item.title)}</span>
+            </div>
             <div class="shop-meta">${esc(m.scheduleAr())} • لمن: ${medWho(m.patient)}</div>
           </div>
           <button class="mini" data-act="logDose" data-id="${m.item.id}">سجّل جرعة</button>
           ${spaceMenuBtn('med', m.item.id)}
         </div></div>`;
-      }).join('')}
+      }).join('') : ''}
     ` : ''}
 
-    <!-- التسوق -->
+    <!-- 4) التسوق -->
     ${shopping.length ? `
-      <div class="sec"><h2>🛒 بنود التسوق (${shopping.length})</h2></div>
-      ${shopping.map(s => shopRow(s)).join('')}
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="shopping">
+        <h2 style="margin:0">🛒 بنود التسوق (${shopping.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['shopping'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['shopping'] ? shopping.map(s => shopRow(s)).join('') : ''}
     ` : ''}
 
-    <!-- الطعام -->
+    <!-- 5) الطعام -->
     ${food.length ? `
-      <div class="sec"><h2>🍽️ وجبات الطعام (${food.length})</h2></div>
-      ${food.slice(0, 10).map(f => `<div class="card ${sm.stripe}"><div class="row">
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="food">
+        <h2 style="margin:0">🍽️ وجبات الطعام (${food.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['food'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['food'] ? food.slice(0, 15).map(f => `<div class="card ${sm.stripe}"><div class="row">
         <span style="font-size:18px">🍽️</span>
         <div style="flex:1;min-width:0">
-          <div class="htitle">${esc(f.title)}</div>
+          <div class="htitle" style="display:flex;align-items:center;gap:6px">
+            ${spaceDot(spaceKey)}
+            <span>${esc(f.title)}</span>
+          </div>
           <div class="shop-meta">${(f.note||'').split('|')[0]}</div>
         </div>
         ${spaceMenuBtn('food', f.id)}
-      </div></div>`).join('')}
+      </div></div>`).join('') : ''}
+    ` : ''}
+
+    <!-- 6) الإشارات المرجعية -->
+    ${bookmarks.length ? `
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="bookmarks">
+        <h2 style="margin:0">🔖 الإشارات المرجعية (${bookmarks.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['bookmarks'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['bookmarks'] ? bookmarks.map(b => `<div class="card ${sm.stripe}"><div class="row">
+        <span style="font-size:18px">🔖</span>
+        <div style="flex:1;min-width:0">
+          <div class="htitle" style="display:flex;align-items:center;gap:6px">
+            ${spaceDot(spaceKey)}
+            <span>${esc(b.title || b.note)}</span>
+          </div>
+          <div class="shop-meta" style="direction:ltr;text-align:right">${esc(b.note||'')}</div>
+        </div>
+        <a href="${esc(b.note||'#')}" target="_blank" rel="noopener" class="mini ghost" style="text-decoration:none">↗</a>
+        ${spaceMenuBtn('bookmark', b.id)}
+      </div></div>`).join('') : ''}
+    ` : ''}
+
+    <!-- 7) الأماكن المحفوظة -->
+    ${places.length ? `
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="places">
+        <h2 style="margin:0">📍 الأماكن المحفوظة (${places.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['places'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['places'] ? places.map(p => {
+        const parsed = (typeof parsePlace === 'function') ? parsePlace(p) : { cat: '', addr: '', link: p.note };
+        const mapUrl = parsed.link || ('https://maps.google.com/?q=' + encodeURIComponent(p.title));
+        return `<div class="card ${sm.stripe}"><div class="row">
+          <span style="font-size:18px">📍</span>
+          <div style="flex:1;min-width:0">
+            <div class="htitle" style="display:flex;align-items:center;gap:6px">
+              ${spaceDot(spaceKey)}
+              <span>${esc(p.title)}</span>
+            </div>
+            ${parsed.addr ? `<div class="shop-meta">🏢 ${esc(parsed.addr)}</div>` : ''}
+          </div>
+          <a href="${esc(mapUrl)}" target="_blank" rel="noopener" class="mini ghost" style="text-decoration:none">🗺️</a>
+          ${spaceMenuBtn('place', p.id)}
+        </div></div>`;
+      }).join('') : ''}
+    ` : ''}
+
+    <!-- 8) المقاطع والروابط -->
+    ${media.length ? `
+      <div class="sec" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-top:8px;border-bottom:1px solid var(--divider)" data-act="toggleSpaceSec" data-sec="media">
+        <h2 style="margin:0">🎬 المقاطع والروابط (${media.length})</h2>
+        <span style="font-size:12.5px;font-weight:700;color:${sm.color}">${window._spacesCollapsed['media'] ? 'توسيع ⏷' : 'طي ⏶'}</span>
+      </div>
+      ${!window._spacesCollapsed['media'] ? media.map(m => {
+        const pf = (typeof detectMediaPlatform === 'function') ? detectMediaPlatform(m.note) : { icon: '🔗' };
+        return `<div class="card ${sm.stripe}"><div class="row">
+          <span style="font-size:18px">${pf.icon || '🎬'}</span>
+          <div style="flex:1;min-width:0">
+            <div class="htitle" style="display:flex;align-items:center;gap:6px">
+              ${spaceDot(spaceKey)}
+              <span>${esc(m.title)}</span>
+            </div>
+            <div class="shop-meta" style="direction:ltr;text-align:right">${esc((m.note||'').slice(0, 45))}</div>
+          </div>
+          <a href="${esc(m.note||'#')}" target="_blank" rel="noopener" class="mini ghost" style="text-decoration:none">↗</a>
+          ${spaceMenuBtn('media', m.id)}
+        </div></div>`;
+      }).join('') : ''}
     ` : ''}
 
     ${!totalCount ? `
@@ -7539,8 +7703,24 @@ async function saveTask(){
 }
 function otherId(){ return (sharedFirst()?sharedFirst().members.find(x=>x.m.user_id!==meId()):{}).m?.user_id||null; }
 
+const HABIT_CATEGORIES = {
+  QURAN: { id:'QURAN', type:'QURAN', emoji:'📖', title:'قرآن وتدبر', hint:'مثال: قراءة ورد القرآن', defaultMode:'QUANTITY', defaultTarget:4, defaultUnit:'صفحات',
+    presets:[{t:'ورد 4 صفحات',m:'QUANTITY',u:'صفحات',v:4},{t:'ورد جزء (20 ص)',m:'QUANTITY',u:'صفحة',v:20},{t:'سورة الكهف',m:'BINARY',u:'',v:1},{t:'صفحتين بعد الصلاة',m:'QUANTITY',u:'صفحة',v:2},{t:'تدبر صفحة',m:'BINARY',u:'',v:1}] },
+  WORSHIP: { id:'WORSHIP', type:'HABIT', emoji:'🕌', title:'عبادة وذكر', hint:'مثال: أذكار الصباح والمساء', defaultMode:'BINARY', defaultTarget:1, defaultUnit:'',
+    presets:[{t:'أذكار الصباح والمساء',m:'BINARY',u:'',v:1},{t:'صلاة الوتر',m:'BINARY',u:'',v:1},{t:'صلاة الضحى',m:'BINARY',u:'',v:1},{t:'قيام الليل',m:'BINARY',u:'',v:1},{t:'استغفار 100 مرة',m:'QUANTITY',u:'مرة',v:100}] },
+  BOOK: { id:'BOOK', type:'BOOK', emoji:'📘', title:'قراءة وكتاب', hint:'مثال: قراءة كتاب نافع', defaultMode:'QUANTITY', defaultTarget:10, defaultUnit:'صفحة',
+    presets:[{t:'قراءة 10 صفحات',m:'QUANTITY',u:'صفحة',v:10},{t:'قراءة 20 دقيقة',m:'TIME',u:'دقيقة',v:20},{t:'قراءة فصل كامل',m:'QUANTITY',u:'فصل',v:1},{t:'قراءة 5 صفحات',m:'QUANTITY',u:'صفحة',v:5}] },
+  HEALTH: { id:'HEALTH', type:'HABIT', emoji:'🏃‍♂️', title:'صحة ولياقة', hint:'مثال: شرب 8 أكواب ماء', defaultMode:'QUANTITY', defaultTarget:8, defaultUnit:'أكواب',
+    presets:[{t:'شرب 8 أكواب ماء',m:'QUANTITY',u:'أكواب',v:8},{t:'مشي 6000 خطوة',m:'QUANTITY',u:'خطوة',v:6000},{t:'30 دقيقة رياضة',m:'TIME',u:'دقيقة',v:30},{t:'نوم مبكر',m:'BINARY',u:'',v:1},{t:'تمارين صباحية',m:'TIME',u:'دقيقة',v:15}] },
+  LEARNING: { id:'LEARNING', type:'LEARNING', emoji:'🎓', title:'تعلم وتطوير', hint:'مثال: تعلم لغة أو مهارة', defaultMode:'TIME', defaultTarget:15, defaultUnit:'دقيقة',
+    presets:[{t:'درس لغة 15 دقيقة',m:'TIME',u:'دقيقة',v:15},{t:'استماع لبودكاست',m:'BINARY',u:'',v:1},{t:'حفظ 3 كلمات',m:'QUANTITY',u:'كلمات',v:3},{t:'دورة تدريبية 30 د',m:'TIME',u:'دقيقة',v:30}] },
+  GOAL: { id:'GOAL', type:'GOAL', emoji:'🎯', title:'هدف شخصي', hint:'مثال: مشروع أو تحدٍ جديد', defaultMode:'BINARY', defaultTarget:1, defaultUnit:'',
+    presets:[{t:'ادخار مبلغ يومي',m:'BINARY',u:'',v:1},{t:'ساعة عمل عميق',m:'TIME',u:'دقيقة',v:60},{t:'إنجاز أهم مهمة',m:'BINARY',u:'',v:1},{t:'كتابة اليوميات',m:'BINARY',u:'',v:1}] },
+  CUSTOM: { id:'CUSTOM', type:'HABIT', emoji:'🌱', title:'عادة حرة', hint:'اكتب اسم العادة أو الهدف...', defaultMode:'BINARY', defaultTarget:1, defaultUnit:'', presets:[] }
+};
+
 function openAddHabit(){
-  const s=sharedFirst();
+  const s = sharedFirst();
   const targetSpace = window._addMenuTargetSpace || 'me';
   let initCircle = 'personal';
   let initVis = 'PRIVATE';
@@ -7548,46 +7728,301 @@ function openAddHabit(){
     initCircle = s.circle.id;
     initVis = 'CIRCLE';
   }
-  openSheet(sheetHead('عادة / هدف جديد')+`
-    <div class="field"><label>النوع</label><div class="chips" id="hType">
-      ${Object.entries(HABIT_TYPES).map(([k,e],i)=>`<button class="chip ${i===0?'on':''}" data-t="${k}">${e} ${{HABIT:'عادة',QURAN:'قرآن',BOOK:'كتاب',LEARNING:'تعلم',GOAL:'هدف'}[k]}</button>`).join('')}</div></div>
-    <div class="field"><label>الاسم</label><input id="hTitle" placeholder="مثال: قراءة القرآن"></div>
-    <div id="qFields">
-      <div class="field"><label>الهدف اليومي + الوحدة</label><div style="display:flex;gap:8px">
-        <input id="hTarget" type="number" value="10" min="1" style="flex:1">
-        <input id="hUnit" value="صفحات" style="flex:1"></div></div>
-    </div>
-    <div class="field"><label>الدائرة</label><div class="chips" id="hCircle">
-      <button class="chip ${initCircle==='personal'?'on':''}" data-c="personal">مساحتي الخاصة</button>
-      ${s?`<button class="chip ${initCircle===s.circle.id?'on':''}" data-c="${s.circle.id}">${esc(s.circle.name)}</button>`:''}</div></div>
-    <div class="field"><label>من يراها؟</label>${visWrap('hVis',window._visSel=initVis,initCircle==='personal'?null:s)}</div>
-    <button class="btn" data-act="saveHabit">إضافة</button>`);
-  window._hType='HABIT'; window._hCircle=initCircle;
-  $('#hType').addEventListener('click',e=>{ const b=e.target.closest('[data-t]'); if(!b) return;
-    window._hType=b.dataset.t; $('#hType').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
-  const wc=$('#hCircle'); wc.addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b) return;
-    window._hCircle=b.dataset.c; wc.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    $('#hVis').innerHTML=visOptions(window._visSel,window._hCircle==='personal'?null:s); });
-  const wv=$('#hVis'); wv.addEventListener('click',e=>{ const b=e.target.closest('[data-act=pickVis]'); if(!b) return;
-    window._visSel=b.dataset.v; wv.innerHTML=visOptions(window._visSel,window._hCircle==='personal'?null:s); });
+
+  let catKey = 'QURAN';
+  let curCat = HABIT_CATEGORIES[catKey];
+  let curMode = curCat.defaultMode;
+  let curTarget = curCat.defaultTarget;
+  let curUnit = curCat.defaultUnit;
+
+  window._hCat = catKey;
+  window._hType = curCat.type;
+  window._hMode = curMode;
+  window._hCircle = initCircle;
+  window._visSel = initVis;
+
+  function renderSheetContent(){
+    curCat = HABIT_CATEGORIES[window._hCat] || HABIT_CATEGORIES.CUSTOM;
+    const isBin = window._hMode === 'BINARY';
+    const isTime = window._hMode === 'TIME';
+    const isQuant = window._hMode === 'QUANTITY';
+    const titleVal = ($('#hTitle') ? $('#hTitle').value : '') || '';
+    const sp = (window._hCircle === 'personal' || window._visSel === 'PRIVATE') ? 'me' : 'shared';
+    const sm = spaceMeta(sp);
+
+    const modeGoalText = isBin ? 'إنجاز يومي مباشر (تم / لم يتم)' : (isTime ? `${curTarget} دقيقة يوميًا` : `${curTarget} ${curUnit||'مرات'} يوميًا`);
+
+    return `
+      <!-- 1. بطاقة المعاينة الحية -->
+      <div class="card" style="background:${sm.bg};border:1.5px solid ${sm.color}60;padding:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:42px;height:42px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--border)">
+            ${curCat.emoji}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${esc(titleVal || 'اسم العادة / الهدف')}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11.5px;color:var(--text-2)">
+              ${spaceBadgeDot(sp)}
+              <span>•</span>
+              <span style="font-weight:600;color:var(--accent-dark)">${modeGoalText}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. فئات العادات الـ 7 -->
+      <div class="field">
+        <label>اختر القسم المناسب</label>
+        <div class="chips" id="hCatChips" style="overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+          ${Object.values(HABIT_CATEGORIES).map(c => `
+            <button type="button" class="chip ${window._hCat===c.id?'on':''}" data-cat="${c.id}" style="white-space:nowrap;padding:6px 12px">
+              ${c.emoji} ${c.title}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- 3. النماذج السريعة المقترحة -->
+      ${curCat.presets && curCat.presets.length ? `
+        <div style="margin-bottom:12px">
+          <div style="font-size:11.5px;font-weight:700;color:var(--text-3);margin-bottom:5px">💡 نماذج شائعة بنقرة واحدة:</div>
+          <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+            ${curCat.presets.map((pr, idx) => `
+              <button type="button" class="chip" data-preset="${idx}" style="font-size:11px;padding:4px 10px;background:var(--surface-2);border-color:var(--border)">
+                ${esc(pr.t)}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- 4. حقل الاسم -->
+      <div class="field">
+        <label>اسم العادة أو الهدف</label>
+        <input id="hTitle" value="${esc(titleVal)}" placeholder="${curCat.hint}">
+      </div>
+
+      <!-- 5. نمط التتبع (3 أنماط) -->
+      <div class="field">
+        <label>طريقة التتبع</label>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="chip ${isBin?'on':''}" data-mode="BINARY" style="flex:1;text-align:center;padding:8px 4px;font-size:12px;font-weight:600">
+            ✅ إنجاز مباشر
+          </button>
+          <button type="button" class="chip ${isQuant?'on':''}" data-mode="QUANTITY" style="flex:1;text-align:center;padding:8px 4px;font-size:12px;font-weight:600">
+            🔢 عدّاد كمي
+          </button>
+          <button type="button" class="chip ${isTime?'on':''}" data-mode="TIME" style="flex:1;text-align:center;padding:8px 4px;font-size:12px;font-weight:600">
+            ⏱️ مدة زمنية
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. تفاصيل الهدف والوحدة حسب النمط -->
+      ${!isBin ? `
+        <div style="background:var(--surface-2);padding:10px 12px;border-radius:12px;border:1px solid var(--border);margin-bottom:12px">
+          ${isTime ? `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:12.5px;font-weight:700">المدة اليومية بالدقائق:</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button type="button" class="mini" data-time-step="-5" style="width:30px;height:30px;font-weight:bold">-5</button>
+                <b id="timeValDisplay" style="font-size:16px;color:var(--accent-dark);min-width:40px;text-align:center">${curTarget} د</b>
+                <button type="button" class="mini" data-time-step="+5" style="width:30px;height:30px;font-weight:bold">+5</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none">
+              ${[10,15,20,30,45,60].map(m => `
+                <button type="button" class="mini ghost ${curTarget===m?'on':''}" data-set-time="${m}" style="flex:1;padding:4px 0;font-size:11px">${m} د</button>
+              `).join('')}
+            </div>
+          ` : `
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <div style="flex:1">
+                <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:2px">الهدف اليومي</label>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button type="button" class="mini" data-quant-step="-1" style="width:28px;height:28px;font-weight:bold">-</button>
+                  <input id="hTarget" type="number" value="${curTarget}" min="1" style="flex:1;text-align:center;font-weight:700;height:36px">
+                  <button type="button" class="mini" data-quant-step="+1" style="width:28px;height:28px;font-weight:bold">+</button>
+                </div>
+              </div>
+              <div style="flex:1">
+                <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:2px">الوحدة</label>
+                <input id="hUnit" value="${esc(curUnit)}" placeholder="مثال: صفحات" style="height:36px">
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              ${['صفحة', 'كوب', 'خطوة', 'مرة', 'حزب', 'جزء'].map(u => `
+                <button type="button" class="chip mini" data-set-unit="${u}" style="font-size:10.5px;padding:2px 8px">${u}</button>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      ` : ''}
+
+      <!-- 7. الدائرة ومن يراها -->
+      <div class="field"><label>الدائرة</label><div class="chips" id="hCircle">
+        <button class="chip ${window._hCircle==='personal'?'on':''}" data-c="personal">مساحتي الخاصة</button>
+        ${s?`<button class="chip ${window._hCircle===s.circle.id?'on':''}" data-c="${s.circle.id}">${esc(s.circle.name)}</button>`:''}</div></div>
+      <div class="field"><label>من يراها؟</label>${visWrap('hVis',window._visSel,window._hCircle==='personal'?null:s)}</div>
+
+      <button class="btn" data-act="saveHabit" style="margin-top:10px">إضافة العادة</button>
+    `;
+  }
+
+  openSheet(sheetHead('🌱 عادة / هدف جديد') + `<div id="habitSheetBody">${renderSheetContent()}</div>`);
+
+  function bindEvents(){
+    const body = $('#habitSheetBody');
+    if(!body) return;
+
+    body.addEventListener('click', e => {
+      // تغيير القسم
+      const catBtn = e.target.closest('[data-cat]');
+      if(catBtn){
+        window._hCat = catBtn.dataset.cat;
+        const nc = HABIT_CATEGORIES[window._hCat] || HABIT_CATEGORIES.CUSTOM;
+        window._hType = nc.type;
+        window._hMode = nc.defaultMode;
+        curTarget = nc.defaultTarget;
+        curUnit = nc.defaultUnit;
+        body.innerHTML = renderSheetContent();
+        bindEvents();
+        return;
+      }
+
+      // اختيار نموذج سريع
+      const prBtn = e.target.closest('[data-preset]');
+      if(prBtn){
+        const pr = curCat.presets[parseInt(prBtn.dataset.preset, 10)];
+        if(pr){
+          const titleInp = $('#hTitle');
+          if(titleInp) titleInp.value = pr.t;
+          window._hMode = pr.m;
+          curTarget = pr.v;
+          curUnit = pr.u;
+          body.innerHTML = renderSheetContent();
+          bindEvents();
+        }
+        return;
+      }
+
+      // نمط التتبع
+      const modeBtn = e.target.closest('[data-mode]');
+      if(modeBtn){
+        window._hMode = modeBtn.dataset.mode;
+        if(window._hMode === 'TIME'){ curUnit = 'دقيقة'; if(!curTarget || curTarget < 5) curTarget = 15; }
+        else if(window._hMode === 'BINARY'){ curTarget = 1; curUnit = ''; }
+        else if(window._hMode === 'QUANTITY'){ if(!curTarget || curTarget === 1) curTarget = curCat.defaultTarget || 10; if(!curUnit) curUnit = curCat.defaultUnit || 'مرة'; }
+        body.innerHTML = renderSheetContent();
+        bindEvents();
+        return;
+      }
+
+      // Stepper الوقت
+      const timeStep = e.target.closest('[data-time-step]');
+      if(timeStep){
+        const step = parseInt(timeStep.dataset.timeStep, 10);
+        curTarget = Math.max(5, (curTarget || 15) + step);
+        const td = $('#timeValDisplay');
+        if(td) td.textContent = curTarget + ' د';
+        return;
+      }
+      const setTimeBtn = e.target.closest('[data-set-time]');
+      if(setTimeBtn){
+        curTarget = parseInt(setTimeBtn.dataset.setTime, 10);
+        body.innerHTML = renderSheetContent();
+        bindEvents();
+        return;
+      }
+
+      // Stepper الكمية
+      const quantStep = e.target.closest('[data-quant-step]');
+      if(quantStep){
+        const step = parseInt(quantStep.dataset.quantStep, 10);
+        const inp = $('#hTarget');
+        if(inp){
+          curTarget = Math.max(1, (parseInt(inp.value, 10) || 1) + step);
+          inp.value = curTarget;
+        }
+        return;
+      }
+      const setUnitBtn = e.target.closest('[data-set-unit]');
+      if(setUnitBtn){
+        curUnit = setUnitBtn.dataset.setUnit;
+        const inp = $('#hUnit');
+        if(inp) inp.value = curUnit;
+        return;
+      }
+
+      // الدائرة
+      const circBtn = e.target.closest('[data-c]');
+      if(circBtn && circBtn.closest('#hCircle')){
+        window._hCircle = circBtn.dataset.c;
+        $('#hCircle').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === circBtn));
+        $('#hVis').innerHTML = visOptions(window._visSel, window._hCircle === 'personal' ? null : s);
+        return;
+      }
+
+      // الرؤية
+      const visBtn = e.target.closest('[data-act=pickVis]');
+      if(visBtn && visBtn.closest('#hVis')){
+        window._visSel = visBtn.dataset.v;
+        $('#hVis').innerHTML = visOptions(window._visSel, window._hCircle === 'personal' ? null : s);
+        return;
+      }
+    });
+
+    const titleInp = $('#hTitle');
+    if(titleInp){
+      titleInp.addEventListener('input', () => {
+        // live preview title
+      });
+    }
+  }
+
+  bindEvents();
 }
+
 async function saveHabit(){
-  const title=$('#hTitle').value.trim(); if(!title){ toast('اكتب الاسم'); return; }
+  const title = ($('#hTitle') ? $('#hTitle').value : '').trim();
+  if(!title){ toast('اكتب اسم العادة أو الهدف أولاً'); return; }
   try{
-    const me=meId();
-    let circleId=window._hCircle;
-    if(circleId==='personal'){ const p=circlesOf().find(c=>c.circle.type==='PERSONAL'); circleId=p?p.circle.id:null; }
+    const me = meId();
+    let circleId = window._hCircle;
+    if(circleId === 'personal'){ const p = circlesOf().find(c => c.circle.type === 'PERSONAL'); circleId = p ? p.circle.id : null; }
     if(!circleId){ toast('لا توجد دائرة متاحة'); return; }
-    const recips=[...document.querySelectorAll('.memcb:checked')].map(c=>c.value);
-    const isBin=false; // v1: كل العادات بهدف كمي (تم/لم يتم = هدف 1)
-    const row={id:uuid(),owner_id:me,circle_id:circleId,type:window._hType,title,
-      visibility:window._visSel,unit:$('#hUnit')?$('#hUnit').value:'مرات',
-      target_value:Math.max(1,parseFloat($('#hTarget')?$('#hTarget').value:'1')||1),frequency:'DAILY',status:'ACTIVE',created_at:nowIso()};
-    await rest('POST','items',row,'return=minimal');
-    if(window._visSel==='SELECTED_MEMBERS'&&recips.length){ for(const r of recips)
-      await rest('POST','item_recipients',{id:uuid(),item_id:row.id,user_id:r},'return=minimal'); }
-    closeSheet(); await refreshAll(); renderApp(); toast('أُضيفت ✓');
-  }catch(e){ toast(friendly(e)); }
+    const recips = [...document.querySelectorAll('.memcb:checked')].map(c => c.value);
+    const isBin = window._hMode === 'BINARY';
+    const isTime = window._hMode === 'TIME';
+    const targetVal = isBin ? 1 : Math.max(1, parseFloat($('#hTarget') ? $('#hTarget').value : (isTime ? '15' : '10')) || 1);
+    const unitVal = isBin ? null : (isTime ? 'دقيقة' : (($('#hUnit') ? $('#hUnit').value.trim() : '') || 'مرات'));
+
+    const row = {
+      id: uuid(),
+      owner_id: me,
+      circle_id: circleId,
+      type: window._hType || 'HABIT',
+      title: title,
+      visibility: window._visSel,
+      unit: unitVal,
+      target_value: targetVal,
+      frequency: 'DAILY',
+      status: 'ACTIVE',
+      created_at: nowIso()
+    };
+    await rest('POST', 'items', row, 'return=minimal');
+    if(window._visSel === 'SELECTED_MEMBERS' && recips.length){
+      for(const r of recips){
+        await rest('POST', 'item_recipients', { id: uuid(), item_id: row.id, user_id: r }, 'return=minimal');
+      }
+    }
+    closeSheet();
+    await refreshAll();
+    renderApp();
+    toast('أُضيفت بنجاح ✓');
+  } catch(e){ toast(friendly(e)); }
 }
 async function incHabit(id){
   const item=data.items.find(i=>i.id===id); if(!item) return;
@@ -8623,6 +9058,7 @@ function renderMedia(){
                 <!-- تفاصيل المقطع -->
                 <div style="flex:1;min-width:0">
                   <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                    ${spaceDot(sp)}
                     <b class="htitle" style="font-size:14.5px;color:var(--text-1);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" data-act="playMedia" data-u="${esc(it.note||'')}" data-t="${esc(it.title)}" data-id="${it.id}">${esc(it.title)}</b>
                     <span class="${sm.badgeCls}">${sm.emoji}</span>
                   </div>
@@ -8815,7 +9251,7 @@ function renderPlaces(){
                 <span style="font-size:26px;line-height:1;margin-top:2px">📍</span>
                 <div style="flex:1;min-width:0">
                   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-                    <b style="font-size:15.5px;font-weight:700;color:var(--text-1)">${esc(it.title)}</b>
+                    <b style="font-size:15.5px;font-weight:700;color:var(--text-1);display:inline-flex;align-items:center;gap:4px">${spaceDot(sp)}<span>${esc(it.title)}</span></b>
                     <span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-size:11px;font-weight:700">${esc(parsed.cat)}</span>
                     <span class="${sm.badgeCls}">${sm.emoji}</span>
                   </div>
@@ -8947,6 +9383,7 @@ function renderBookmarks(){
               <!-- الجزء الأوسط 30% — العنوان والأيقونة -->
               <a href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:8px 8px 6px;text-decoration:none;min-width:0">
                 <img src="${fav}" alt="" style="width:16px;height:16px;flex-shrink:0" onerror="this.style.opacity='0.4'">
+                ${spaceDot(sp)}
                 <span style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${esc(b.title || domain)}</span>
                 <span class="${sm.badgeCls}">${sm.emoji}</span>
               </a>
@@ -9124,7 +9561,7 @@ function openSchedDay(iso){
   const list=eventsOf().filter(t=>evDate(t)&&evDate(t).toDateString()===day.toDateString());
   openSheet(sheetHead('مواعيد '+day.toLocaleDateString('ar'))+(list.length?list.sort((a,b)=>new Date(a.due_at)-new Date(b.due_at)).map(t=>`
     <div class="row"><b style="min-width:52px;color:var(--accent-dark)">${evTimeText(t)}</b>
-      <div style="flex:1;min-width:0"><div class="htitle">${esc(t.title)}</div>
+      <div style="flex:1;min-width:0"><div class="htitle">${spaceDot(getItemSpace('task', t))}${esc(t.title)}</div>
       <div class="shop-meta">${esc(nameOf(t.owner_id))} • ${t.visibility==='PRIVATE'?'🔒 خاص':t.visibility==='CIRCLE'?'👥 الدائرة':'@ محددون'}</div></div>
       ${t.owner_id===meId()?`<button class="link" style="color:var(--error)" data-act="delEvent" data-id="${t.id}">حذف</button>`:''}</div>`).join('')
    :'<div class="empty"><span class="e">📅</span>لا مواعيد في هذا اليوم.</div>')+
@@ -9345,7 +9782,29 @@ document.addEventListener('click', async e=>{
   const act=el.dataset.act, v=el.dataset.v;
   try{
     switch(act){
-      case 'tab': view=v; renderApp(); break;
+      case 'tab':
+        if(v === 'more' && view === 'more'){
+          window._navRevealed = !window._navRevealed;
+          renderNav();
+          break;
+        }
+        view = v;
+        window._navRevealed = false;
+        renderApp();
+        break;
+      case 'revealNav':
+        e.stopPropagation();
+        window._navRevealed = true;
+        renderNav();
+        break;
+      case 'closeNavReveal':
+        window._navRevealed = false;
+        renderNav();
+        break;
+      case 'openSecFromNav':
+        window._navRevealed = false;
+        pickSec(el.dataset.sec);
+        break;
       case 'homeSpaceFilter': window._homeSpaceFilter=el.dataset.f; renderHome(); break;
       case 'activitySubTab': window._activitySubTab=el.dataset.tab; renderActivity(); break;
       case 'openSpaceMenu': openItemSpaceMenu(el.dataset.type, el.dataset.id); break;
@@ -9353,6 +9812,21 @@ document.addEventListener('click', async e=>{
       case 'openCompPicker': openCompanionPickerSheet(el.dataset.type, el.dataset.id); break;
       case 'setSpaceDrilldown': window._activeSpaceDrilldown=el.dataset.space; renderSpaces(); break;
       case 'clearSpaceDrilldown': window._activeSpaceDrilldown=null; renderSpaces(); break;
+      case 'toggleSpaceSec': {
+        const sec = el.dataset.sec;
+        window._spacesCollapsed = window._spacesCollapsed || {};
+        window._spacesCollapsed[sec] = !window._spacesCollapsed[sec];
+        renderSpaces();
+        break;
+      }
+      case 'toggleAllSpaceSecs': {
+        window._spacesCollapsed = window._spacesCollapsed || {};
+        const secs = ['tasks', 'habits', 'meds', 'shopping', 'food', 'bookmarks', 'places', 'media'];
+        const allCol = secs.every(s => !!window._spacesCollapsed[s]);
+        secs.forEach(s => { window._spacesCollapsed[s] = !allCol; });
+        renderSpaces();
+        break;
+      }
       case 'toggleCompIntegration': toggleCompIntegration(); break;
       case 'quickAddTask': await quickAddTask(); break;
       case 'editItemFromSpace': {
