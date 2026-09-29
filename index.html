@@ -1614,8 +1614,8 @@ function getItemSpace(type, item){
     return 'me';
   }
 
-  if(type==='shopping' || type==='food' || type==='dish' || type==='place' || type==='media' || type==='shared_list_item'){
-    if(item.assigned_to){
+  if(type==='shopping' || type==='food' || type==='dish' || type==='place' || type==='media' || type==='bookmark' || type==='shared_list_item'){
+    if(type!=='bookmark' && item.assigned_to){
       return item.assigned_to===me? 'me' : 'companion';
     }
     const note=item.note||'';
@@ -1668,7 +1668,10 @@ function renderApp(){
     schedule: renderSchedule,
     food: renderFood,
     shopping: renderShopping,
-    meds: renderMeds
+    meds: renderMeds,
+    media: renderMedia,
+    places: renderPlaces,
+    bookmarks: renderBookmarks
   };
   (routes[view] || renderHome)();
 }
@@ -1969,6 +1972,24 @@ const DASH_TILES = {
         <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">المشي، الماء، النوم، الأدوية</div>
       `;
     }
+  },
+  bookmarks: {
+    key: 'bookmarks',
+    emoji: '🔖',
+    title: 'الإشارات',
+    desc: 'الروابط والمواقع ومصادر الويب المفضلة',
+    light: { bg: '#EFF6FF', border: '#BFDBFE', accent: '#2563EB' },
+    dark:  { bg: '#172554', border: '#1E3A8A', accent: '#3B82F6' },
+    actionLabel: '+ إشارة جديدة 🔖',
+    actionAct: 'openAddBookmarkModal',
+    renderBody: function(){
+      const bm = bookmarksOf();
+      const n = (bm && bm.items) ? bm.items.length : 0;
+      return `
+        <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">${n} إشارة محفوظة</div>
+        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">الروابط والمواقع والمقالات</div>
+      `;
+    }
   }
 };
 
@@ -2109,6 +2130,9 @@ function onDashboardCardClick(key){
   else if(key === 'shopping') { view = 'shopping'; renderApp(); }
   else if(key === 'meds') { view = 'meds'; renderApp(); }
   else if(key === 'lifetracker') { view = 'lifetracker'; renderApp(); }
+  else if(key === 'media') { view = 'media'; renderApp(); }
+  else if(key === 'places') { view = 'places'; renderApp(); }
+  else if(key === 'bookmarks') { view = 'bookmarks'; renderApp(); }
   else { pickSec(key); }
 }
 
@@ -2128,6 +2152,7 @@ function onDashboardCardAction(key, ev){
     case 'openAddMood': openAddMood(); break;
     case 'openAddPlace': openAddPlace(); break;
     case 'openAddMedia': openAddMedia(); break;
+    case 'openAddBookmarkModal': openAddBookmarkModal(); break;
     case 'pickSecOverdue': pickSec('overdue'); break;
     case 'openReviewSheet': openReview(); break;
     case 'openLifeTracker': openLifeTracker(); break;
@@ -2462,7 +2487,10 @@ function renderHome(){
       <div class="shop-meta">${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
         const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
         return its.length? (its.length+' مقطع/رابط محفوظ') : 'احفظ روابط يوتيوب/إنستغرام الجميلة'; })()}</div></div>
-      <button class="mini" data-act="openSmartAddLink" data-kind="MEDIA" style="font-size:12px;padding:4px 10px">🔗 إضافة رابط</button></div>
+      <div style="display:flex;gap:6px">
+        <button class="mini" onclick="view='media';renderApp();" style="font-size:12px;padding:4px 10px;font-weight:700">افتح القسم ➜</button>
+        <button class="mini" data-act="openSmartAddLink" data-kind="MEDIA" style="font-size:12px;padding:4px 10px">🔗 إضافة</button>
+      </div></div>
       ${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
         const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
         return its.map(i=>{ const th=ytThumb(i.note||'');
@@ -2476,7 +2504,13 @@ function renderHome(){
           ${spaceMenuBtn('media', i.id)}
           <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`; }).join(''); })()}
     </div>
-    <div class="sec" data-sec="places"><h2>📍 أماكننا المحفوظة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2><button class="mini" data-act="openSmartAddLink" data-kind="PLACE" style="font-size:12px;padding:4px 10px">🔗 إضافة مكان</button></div>
+    <div class="sec" data-sec="places">
+      <h2>📍 أماكننا المحفوظة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2>
+      <div style="display:flex;gap:6px">
+        <button class="mini" onclick="view='places';renderApp();" style="font-size:12px;padding:4px 10px;font-weight:700">افتح القسم ➜</button>
+        <button class="mini" data-act="openSmartAddLink" data-kind="PLACE" style="font-size:12px;padding:4px 10px">🔗 إضافة</button>
+      </div>
+    </div>
     <div class="card">${(()=>{ const pl=placesOf();
       const filteredPl = pl.items.filter(pp => spF==='all' || getItemSpace('place', pp)===spF);
       return filteredPl.length? filteredPl.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
@@ -2494,7 +2528,10 @@ function renderHome(){
         <button class="btn ghost" data-act="openSmartAddLink" data-kind="PLACE" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
       </div>
     </div>
-    <div class="sec" data-sec="bookmarks"><h2>🔖 الإشارات المرجعية</h2></div>
+    <div class="sec" data-sec="bookmarks">
+      <h2>🔖 الإشارات المرجعية</h2>
+      <button class="mini" onclick="view='bookmarks';renderApp();" style="font-size:12px;padding:4px 10px;font-weight:700">افتح القسم ➜</button>
+    </div>
     <div class="card" data-sec="bookmarks">
       ${(()=>{
         const bm = bookmarksOf();
@@ -7060,6 +7097,18 @@ function renderMore(){
           <button class="link" data-act="openLifeTracker">افتح</button>
         </div>
         <div class="setrow">
+          <span class="st">🎬 المقاطع والروابط الجميلة</span>
+          <button class="link" onclick="view='media';renderApp();">افتح</button>
+        </div>
+        <div class="setrow">
+          <span class="st">📍 أماكننا المحفوظة (الخريطة)</span>
+          <button class="link" onclick="view='places';renderApp();">افتح</button>
+        </div>
+        <div class="setrow">
+          <span class="st">🔖 الإشارات المرجعية</span>
+          <button class="link" onclick="view='bookmarks';renderApp();">افتح</button>
+        </div>
+        <div class="setrow">
           <span class="st">📊 الإحصائيات العامة</span>
           <button class="link" data-act="tab" data-v="stats">عرض</button>
         </div>
@@ -7232,8 +7281,8 @@ function openItemSpaceMenu(type, itemId){
   if(!rawItem){ toast('تعذر العثور على العنصر'); return; }
 
   const curMeta = spaceMeta(curSpace);
-  const typeIcons = { task:'✅', habit:'🌱', med:'💊', shopping:'🛒', food:'🍽️', dish:'🍲', place:'📍', media:'🎬' };
-  const typeLabels = { task:'مهمة', habit:'عادة / هدف', med:'دواء', shopping:'سلعة تسوق', food:'وجبة طعام', dish:'طبق مفضل', place:'مكان محفوظ', media:'مقطع / رابط' };
+  const typeIcons = { task:'✅', habit:'🌱', med:'💊', shopping:'🛒', food:'🍽️', dish:'🍲', place:'📍', media:'🎬', bookmark:'🔖' };
+  const typeLabels = { task:'مهمة', habit:'عادة / هدف', med:'دواء', shopping:'سلعة تسوق', food:'وجبة طعام', dish:'طبق مفضل', place:'مكان محفوظ', media:'مقطع / رابط', bookmark:'إشارة مرجعية' };
   const icon = typeIcons[type] || '📌';
   const typeLbl = typeLabels[type] || 'عنصر';
 
@@ -8413,6 +8462,519 @@ function openEditBookmarkModal(id, curTitle, curUrl, curCat){
   };
 }
 
+/* ============================================================
+   الأقسام الخاصة: المقاطع، الأماكن، الإشارات (Standalone Sections)
+   متطابقة 100% مع تطبيق Android وتدعم iPad و Mac وشاشات اللمس
+   ============================================================ */
+
+/* ---------- المقاطع والروابط (Media Screen) ---------- */
+function mediaOf(){
+  if(!data || !data.sharedLists) return { list:null, items:[] };
+  const l = data.sharedLists.find(x => x.title === MEDIA_TITLE);
+  const items = l ? (data.shopping || []).filter(i => i.list_id === l.id) : [];
+  return { list:l, items };
+}
+
+function detectMediaPlatform(url){
+  const u = (url || '').toLowerCase();
+  if(u.includes('youtube.com') || u.includes('youtu.be')) return { id:'youtube', name:'يوتيوب', icon:'▶️', color:'#EF4444' };
+  if(u.includes('twitter.com') || u.includes('x.com') || u.includes('fxtwitter.com') || u.includes('vxtwitter.com')) return { id:'twitter', name:'إكس 𝕏', icon:'𝕏', color:'var(--text-1)' };
+  if(u.includes('instagram.com')) return { id:'instagram', name:'إنستغرام', icon:'📸', color:'#E1306C' };
+  if(u.includes('tiktok.com')) return { id:'tiktok', name:'تيك توك', icon:'🎵', color:'#00F2FE' };
+  if(u.includes('facebook.com') || u.includes('fb.watch')) return { id:'facebook', name:'فيسبوك', icon:'👤', color:'#1877F2' };
+  if(u.includes('spotify.com')) return { id:'spotify', name:'سبوتيفاي', icon:'🎧', color:'#1DB954' };
+  if(u.includes('soundcloud.com')) return { id:'soundcloud', name:'ساوندكلاود', icon:'☁️', color:'#FF5500' };
+  return { id:'other', name:'أخرى', icon:'🔗', color:'var(--accent)' };
+}
+
+function renderMedia(){
+  const med = mediaOf();
+  const allItems = med.items;
+  const list = med.list;
+  const q = (window._mediaSearch || '').trim().toLowerCase();
+  const selCat = window._mediaCat || 'الكل';
+
+  const ytList = allItems.filter(it => detectMediaPlatform(it.note).id === 'youtube');
+  const twList = allItems.filter(it => detectMediaPlatform(it.note).id === 'twitter');
+  const igList = allItems.filter(it => detectMediaPlatform(it.note).id === 'instagram');
+  const ttList = allItems.filter(it => detectMediaPlatform(it.note).id === 'tiktok');
+  const otherList = allItems.filter(it => {
+    const pid = detectMediaPlatform(it.note).id;
+    return pid !== 'youtube' && pid !== 'twitter' && pid !== 'instagram' && pid !== 'tiktok';
+  });
+
+  const categories = [
+    { id: 'الكل', label: `الكل (${allItems.length})` },
+    { id: 'youtube', label: `يوتيوب ▶️ (${ytList.length})` },
+    { id: 'twitter', label: `إكس 𝕏 (${twList.length})` },
+    { id: 'instagram', label: `إنستغرام 📸 (${igList.length})` },
+    { id: 'tiktok', label: `تيك توك 🎵 (${ttList.length})` },
+    { id: 'other', label: `أخرى 🔗 (${otherList.length})` }
+  ];
+
+  let filtered = allItems;
+  if(selCat !== 'الكل'){
+    filtered = filtered.filter(it => detectMediaPlatform(it.note).id === selCat);
+  }
+  if(q){
+    filtered = filtered.filter(it => (it.title || '').toLowerCase().includes(q) || (it.note || '').toLowerCase().includes(q));
+  }
+
+  $('#view').innerHTML = `<div class="screen">
+    <!-- الشريط العلوي والتنقل -->
+    <div class="row" style="min-height:46px;border-top:none;padding:0;margin-bottom:8px">
+      <button class="link" data-act="goHome" style="font-size:14px;font-weight:700">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">🎬 مقاطعنا الجميلة</b>
+      <button class="mini" data-act="openSmartAddLink" data-kind="MEDIA" style="font-size:12px;font-weight:700;padding:5px 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);border-radius:10px">＋ إضافة رابط</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-3);margin-bottom:12px">احفظ وشارك مقاطع يوتيوب، إكس، إنستغرام، تيك توك، وغيرها لتعود إليها في أي وقت وتراها مع رفيقك.</p>
+
+    <!-- صف إحصائيات المنصات المطابق لأندرويد -->
+    <div class="card" style="padding:12px 6px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-around;text-align:center">
+        <div style="cursor:pointer;flex:1" onclick="window._mediaCat='الكل';renderMedia()">
+          <div style="font-size:20px;font-weight:800;color:var(--accent)">${allItems.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">الإجمالي</div>
+        </div>
+        <div style="width:1px;height:24px;background:var(--divider)"></div>
+        <div style="cursor:pointer;flex:1" onclick="window._mediaCat='youtube';renderMedia()">
+          <div style="font-size:20px;font-weight:800;color:#EF4444">${ytList.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">يوتيوب ▶️</div>
+        </div>
+        <div style="width:1px;height:24px;background:var(--divider)"></div>
+        <div style="cursor:pointer;flex:1" onclick="window._mediaCat='twitter';renderMedia()">
+          <div style="font-size:20px;font-weight:800;color:var(--text-1)">${twList.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">إكس 𝕏</div>
+        </div>
+        <div style="width:1px;height:24px;background:var(--divider)"></div>
+        <div style="cursor:pointer;flex:1" onclick="window._mediaCat='instagram';renderMedia()">
+          <div style="font-size:20px;font-weight:800;color:var(--companion)">${igList.length + ttList.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">سوشيال 📸</div>
+        </div>
+        <div style="width:1px;height:24px;background:var(--divider)"></div>
+        <div style="cursor:pointer;flex:1" onclick="window._mediaCat='other';renderMedia()">
+          <div style="font-size:20px;font-weight:800;color:var(--text-3)">${otherList.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">أخرى 🔗</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- صف البحث والفلترة -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <input type="text" id="mediaSearchInput" value="${esc(window._mediaSearch || '')}" placeholder="ابحث في المقاطع... 🔍"
+        style="flex:1;height:42px;border-radius:12px;border:1.5px solid var(--border);padding:0 12px;background:var(--surface);color:var(--text-1);font-family:inherit;font-size:13px;box-sizing:border-box"
+        oninput="window._mediaSearch=this.value;renderMedia();const el=document.getElementById('mediaSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
+      <button class="mini" data-act="openSmartAddLink" data-kind="MEDIA" style="height:42px;padding:0 14px;border-radius:12px;white-space:nowrap;font-weight:700">
+        🔗 إضافة ذكية
+      </button>
+    </div>
+
+    <!-- شرائح المنصات -->
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+      ${categories.map(c => `
+        <button onclick="window._mediaCat='${c.id}';renderMedia()"
+          style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid ${selCat===c.id?'var(--accent)':'var(--border)'};background:${selCat===c.id?'var(--accent)':'var(--surface)'};color:${selCat===c.id?'#fff':'var(--text-2)'};font-size:12.5px;font-weight:${selCat===c.id?'700':'500'};cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s">
+          ${c.label}
+        </button>
+      `).join('')}
+    </div>
+
+    <!-- قائمة المقاطع -->
+    ${!allItems.length ? `
+      <div class="card" style="padding:36px 16px;text-align:center">
+        <div style="font-size:42px;margin-bottom:10px">🎬</div>
+        <b style="font-size:16px;color:var(--text-1)">لا توجد مقاطع بعد</b>
+        <p style="font-size:13px;color:var(--text-3);margin:6px 0 16px">أضف رابط مقطع من يوتيوب، تويتر/إكس، إنستغرام أو تيك توك لمشاهدته ومشاركته فورًا مع رفيقك.</p>
+        <button class="btn" data-act="openSmartAddLink" data-kind="MEDIA" style="max-width:240px;margin:0 auto">＋ إضافة أول مقطع</button>
+      </div>
+    ` : !filtered.length ? `
+      <div class="card" style="padding:28px;text-align:center">
+        <div style="font-size:34px;margin-bottom:8px">🔍</div>
+        <b style="font-size:15px;color:var(--text-1)">لم يتم العثور على نتائج</b>
+        <p style="font-size:12.5px;color:var(--text-3);margin-top:4px">لا توجد مقاطع تطابق بحثك الحالي.</p>
+        <button class="mini" onclick="window._mediaSearch='';window._mediaCat='الكل';renderMedia()" style="margin-top:10px">عرض الكل</button>
+      </div>
+    ` : `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${filtered.map(it => {
+          const th = ytThumb(it.note || '');
+          const pf = detectMediaPlatform(it.note);
+          const sp = getItemSpace('media', it);
+          const sm = spaceMeta(sp);
+          const cc = commentCount(it.id);
+          const cleanNote = (it.note || '').replace(/^https?:\/\//i, '').slice(0, 52);
+
+          return `
+            <div class="card ${sm.stripe}" style="padding:12px;margin:0">
+              <div style="display:flex;gap:12px;align-items:center">
+                <!-- صورة المقطع المصغرة أو أيقونة المنصة -->
+                <div style="position:relative;width:86px;height:56px;flex-shrink:0;border-radius:10px;overflow:hidden;background:var(--surface-2);display:flex;align-items:center;justify-content:center;cursor:pointer" data-act="playMedia" data-u="${esc(it.note||'')}" data-t="${esc(it.title)}" data-id="${it.id}">
+                  ${th ? `
+                    <img src="${th}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+                    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center">
+                      <span style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px">▶</span>
+                    </div>
+                  ` : `
+                    <span style="font-size:26px">${pf.icon}</span>
+                  `}
+                  <span style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.75);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px">${pf.name}</span>
+                </div>
+
+                <!-- تفاصيل المقطع -->
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                    <b class="htitle" style="font-size:14.5px;color:var(--text-1);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" data-act="playMedia" data-u="${esc(it.note||'')}" data-t="${esc(it.title)}" data-id="${it.id}">${esc(it.title)}</b>
+                    <span class="${sm.badgeCls}">${sm.emoji}</span>
+                  </div>
+                  <div class="shop-meta" style="direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                    ${esc(cleanNote)}
+                  </div>
+                </div>
+              </div>
+
+              <!-- أزرار الإجراءات المتطابقة مع Android -->
+              <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--divider);margin-top:10px;padding-top:8px;gap:6px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <button class="mini" data-act="playMedia" data-u="${esc(it.note||'')}" data-t="${esc(it.title)}" data-id="${it.id}" style="font-size:12px;padding:4px 10px;font-weight:700">
+                    ▶ تشغيل
+                  </button>
+                  <a href="${esc(it.note||'#')}" target="_blank" rel="noopener" class="mini ghost" style="text-decoration:none;font-size:12px;padding:4px 10px;display:inline-flex;align-items:center;gap:3px">
+                    <span>فتح</span><span style="font-size:12px">↗</span>
+                  </a>
+                  <button class="mini ghost" data-act="openItemComments" data-type="MEDIA" data-id="${it.id}" data-t="${esc(it.title)}" data-cid="${list?list.circle_id:''}" style="font-size:12px;padding:4px 10px">
+                    💬 ${cc ? `<b>${cc}</b>` : 'تعليق'}
+                  </button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button class="link" data-act="renameItem" data-id="${it.id}" data-t="${esc(it.title)}" style="font-size:12.5px">تسمية</button>
+                  ${spaceMenuBtn('media', it.id)}
+                  <button class="link" data-act="delMedia" data-id="${it.id}" style="color:var(--error);font-size:12.5px">حذف</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+
+    <div class="foot" style="margin-top:18px">مقاطعنا مشتركة مع رفيقك لحظيًا 🎬</div>
+  </div>`;
+}
+
+/* ---------- قسم الأماكن المحفوظة (Places Screen) ---------- */
+function parsePlace(p){
+  const raw = p.note || '';
+  const parts = raw.split('|');
+  if(parts.length >= 3){
+    return { addr: parts[0], link: parts[1], cat: parts[2] || 'عام' };
+  } else if(parts.length === 2){
+    return { addr: parts[0], link: parts[1], cat: 'عام' };
+  } else {
+    return { addr: '', link: raw || ('https://maps.google.com/?q=' + encodeURIComponent(p.title)), cat: 'عام' };
+  }
+}
+
+function sharePlaceLink(title, addr, url){
+  const msg = '📍 ' + title + (addr ? ('\n🏢 العنوان: ' + addr) : '') + '\n🔗 الخريطة: ' + url;
+  if(navigator.share){
+    navigator.share({ title: title, text: msg, url: url }).catch(()=>{});
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg);
+    toast('تم نسخ تفاصيل المكان للمشاركة 📋');
+  } else {
+    toast(url);
+  }
+}
+
+function openEditPlaceModal(id, curTitle, curNote){
+  const parsed = parsePlace({ note: curNote, title: curTitle });
+  const defaultCats = ['منازل', 'مطاعم', 'كافيهات', 'طبي', 'تسوق', 'عام'];
+  openSheet(sheetHead('✏️ تعديل المكان المحفوظ') + `
+    <div class="field"><label>اسم المكان</label><input id="plEditName" value="${esc(curTitle||'')}"></div>
+    <div class="field"><label>العنوان أو الوصف (اختياري)</label><input id="plEditAddr" value="${esc(parsed.addr||'')}" placeholder="مثال: شارع العليا، الرياض"></div>
+    <div class="field"><label>رابط خرائط Google</label><input id="plEditLink" value="${esc(parsed.link||'')}" style="direction:ltr"></div>
+    <div class="field"><label>الفئة</label>
+      <div style="display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none">
+        ${defaultCats.map(cat => `
+          <button type="button" onclick="document.getElementById('plEditCat').value='${cat}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.background=b===this?'var(--accent)':'var(--surface)');this.parentElement.querySelectorAll('button').forEach(b=>b.style.color=b===this?'#fff':'var(--text-2)');"
+            style="flex-shrink:0;padding:4px 10px;border-radius:16px;border:1px solid ${parsed.cat===cat?'var(--accent)':'var(--border)'};background:${parsed.cat===cat?'var(--accent)':'var(--surface)'};color:${parsed.cat===cat?'#fff':'var(--text-2)'};font-size:12px;cursor:pointer">${cat}</button>
+        `).join('')}
+      </div>
+      <input id="plEditCat" value="${esc(parsed.cat||'عام')}" placeholder="أو اكتب فئة مخصصة..." style="margin-top:4px">
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn" id="saveEditPlaceBtn">حفظ تعديلات المكان ✓</button>
+  `);
+  const btn = $('#saveEditPlaceBtn');
+  if(btn) btn.onclick = async ()=>{
+    const name = ($('#plEditName') ? $('#plEditName').value : '').trim();
+    const addr = ($('#plEditAddr') ? $('#plEditAddr').value : '').trim();
+    let link = ($('#plEditLink') ? $('#plEditLink').value : '').trim();
+    const cat = ($('#plEditCat') ? $('#plEditCat').value : '').trim() || 'عام';
+    if(!name){ toast('اكتب اسم المكان'); return; }
+    if(!link) link = 'https://maps.google.com/?q=' + encodeURIComponent(name);
+    const newNote = addr + '|' + link + '|' + cat;
+    await rest('PATCH', 'shared_list_items?id=eq.' + id, { title: name, note: newNote }, 'return=minimal');
+    await refreshAll(); closeSheet(); renderApp();
+    toast('تم تحديث المكان بنجاح ✓');
+  };
+}
+
+function renderPlaces(){
+  const pl = placesOf();
+  const allItems = pl.items;
+  const list = pl.list;
+  const q = (window._placesSearch || '').trim().toLowerCase();
+  const selCat = window._placesCat || 'الكل';
+
+  const defaultCats = ['منازل', 'مطاعم', 'كافيهات', 'طبي', 'تسوق', 'عام'];
+  const customCats = [...new Set(allItems.map(it => parsePlace(it).cat).filter(Boolean))];
+  const allCats = ['الكل', ...new Set([...defaultCats, ...customCats])];
+
+  let filtered = allItems;
+  if(selCat !== 'الكل'){
+    filtered = filtered.filter(it => parsePlace(it).cat === selCat);
+  }
+  if(q){
+    filtered = filtered.filter(it => {
+      const parsed = parsePlace(it);
+      return (it.title || '').toLowerCase().includes(q) ||
+             (parsed.addr || '').toLowerCase().includes(q) ||
+             (parsed.cat || '').toLowerCase().includes(q);
+    });
+  }
+
+  $('#view').innerHTML = `<div class="screen">
+    <!-- الشريط العلوي والتنقل -->
+    <div class="row" style="min-height:46px;border-top:none;padding:0;margin-bottom:8px">
+      <button class="link" data-act="goHome" style="font-size:14px;font-weight:700">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">📍 أماكننا المحفوظة (${allItems.length})</b>
+      <button class="mini" data-act="openAddPlace" style="font-size:12px;font-weight:700;padding:5px 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);border-radius:10px">＋ إضافة مكان</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-3);margin-bottom:12px">خريطتكم المشتركة — احفظوا المطاعم والكافيهات ومواقع الزيارات لتصلوا إليها في أي وقت وتفتح مباشرة في الخرائط.</p>
+
+    <!-- زرا الإجراءات السريعة المتطابقة مع Android -->
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn" data-act="addCurrentPlace" style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700">
+        <span style="font-size:16px">📍</span>
+        <span style="font-size:12.5px">إضافة موقعي الحالي</span>
+      </button>
+      <button class="btn ghost" data-act="openAddPlace" style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700">
+        <span style="font-size:15px">➕</span>
+        <span style="font-size:12.5px">إضافة مكان مخصص</span>
+      </button>
+    </div>
+
+    <!-- صف البحث -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <input type="text" id="placesSearchInput" value="${esc(window._placesSearch || '')}" placeholder="ابحث في الأماكن أو العناوين... 🔍"
+        style="flex:1;height:42px;border-radius:12px;border:1.5px solid var(--border);padding:0 12px;background:var(--surface);color:var(--text-1);font-family:inherit;font-size:13px;box-sizing:border-box"
+        oninput="window._placesSearch=this.value;renderPlaces();const el=document.getElementById('placesSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
+      <button class="mini" data-act="openSmartAddLink" data-kind="PLACE" style="height:42px;padding:0 12px;border-radius:12px;white-space:nowrap;font-weight:700">
+        🔗 رابط سريع
+      </button>
+    </div>
+
+    <!-- شرائح تصنيفات الأماكن -->
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center">
+      ${allCats.map(cat => `
+        <button onclick="window._placesCat='${cat}';renderPlaces()"
+          style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid ${selCat===cat?'var(--accent)':'var(--border)'};background:${selCat===cat?'var(--accent)':'var(--surface)'};color:${selCat===cat?'#fff':'var(--text-2)'};font-size:12.5px;font-weight:${selCat===cat?'700':'500'};cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s">
+          ${esc(cat)} ${cat==='الكل'?`(${allItems.length})`:''}
+        </button>
+      `).join('')}
+    </div>
+
+    <!-- قائمة الأماكن المحفوظة -->
+    ${!allItems.length ? `
+      <div class="card" style="padding:36px 16px;text-align:center">
+        <div style="font-size:42px;margin-bottom:10px">📍</div>
+        <b style="font-size:16px;color:var(--text-1)">لا توجد أماكن محفوظة بعد</b>
+        <p style="font-size:13px;color:var(--text-3);margin:6px 0 16px">احفظ موقعك الحالي أو أي مطعم أو كافيه لتظهر فورًا في خريطتكم المشتركة وتفتح في خرائط Google.</p>
+        <button class="btn" data-act="addCurrentPlace" style="max-width:240px;margin:0 auto">📍 أضف موقعك الحالي الآن</button>
+      </div>
+    ` : !filtered.length ? `
+      <div class="card" style="padding:28px;text-align:center">
+        <div style="font-size:34px;margin-bottom:8px">🔍</div>
+        <b style="font-size:15px;color:var(--text-1)">لم يتم العثور على أماكن</b>
+        <p style="font-size:12.5px;color:var(--text-3);margin-top:4px">لا توجد أماكن تطابق الفئة أو البحث الحالي.</p>
+        <button class="mini" onclick="window._placesSearch='';window._placesCat='الكل';renderPlaces()" style="margin-top:10px">عرض الكل</button>
+      </div>
+    ` : `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${filtered.map(it => {
+          const parsed = parsePlace(it);
+          const sp = getItemSpace('place', it);
+          const sm = spaceMeta(sp);
+          const cc = commentCount(it.id);
+          const mapUrl = parsed.link || ('https://maps.google.com/?q=' + encodeURIComponent(it.title));
+
+          return `
+            <div class="card ${sm.stripe}" style="padding:12px;margin:0">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <span style="font-size:26px;line-height:1;margin-top:2px">📍</span>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <b style="font-size:15.5px;font-weight:700;color:var(--text-1)">${esc(it.title)}</b>
+                    <span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-size:11px;font-weight:700">${esc(parsed.cat)}</span>
+                    <span class="${sm.badgeCls}">${sm.emoji}</span>
+                  </div>
+                  ${parsed.addr ? `<div style="font-size:12.5px;color:var(--text-2);margin-top:4px;display:flex;align-items:center;gap:4px">🏢 <span>${esc(parsed.addr)}</span></div>` : ''}
+                  <div class="shop-meta" style="direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px">
+                    ${esc(mapUrl)}
+                  </div>
+                </div>
+              </div>
+
+              <!-- أزرار الإجراءات المتطابقة مع أندرويد -->
+              <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--divider);margin-top:10px;padding-top:8px;gap:6px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <a href="${esc(mapUrl)}" target="_blank" rel="noopener" class="mini" style="text-decoration:none;font-size:12px;padding:4px 10px;font-weight:700;background:var(--accent);color:#fff;display:inline-flex;align-items:center;gap:4px;border-radius:8px">
+                    <span>🗺️ فتح في الخرائط</span><span>➜</span>
+                  </a>
+                  <button class="mini ghost" data-act="openItemComments" data-type="PLACE" data-id="${it.id}" data-t="${esc(it.title)}" data-cid="${list?list.circle_id:''}" style="font-size:12px;padding:4px 10px">
+                    💬 ${cc ? `<b>${cc}</b>` : 'تعليق'}
+                  </button>
+                  <button class="mini ghost" onclick="sharePlaceLink('${esc(it.title)}','${esc(parsed.addr)}','${esc(mapUrl)}')" style="font-size:12px;padding:4px 10px">
+                    📤 مشاركة
+                  </button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button class="link" onclick="openEditPlaceModal('${it.id}', '${esc(it.title)}', '${esc(it.note||'')}')" style="font-size:12.5px">تعديل</button>
+                  ${spaceMenuBtn('place', it.id)}
+                  <button class="link" data-act="delPlace" data-id="${it.id}" style="color:var(--error);font-size:12.5px">حذف</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+
+    <div class="foot" style="margin-top:18px">كل الأماكن محفوظة ومزامنة في خريطتكم لحظيًا 📍</div>
+  </div>`;
+}
+
+/* ---------- قسم الإشارات المرجعية (Bookmarks Screen) ---------- */
+function renderBookmarks(){
+  const bm = bookmarksOf();
+  const allItems = bm.items;
+  const list = bm.list;
+  const q = (window._bmSearch || '').trim().toLowerCase();
+  const selCat = window._bmCat || 'الكل';
+
+  const defaultCats = ['تقنية', 'أعمال', 'أخبار', 'تعليم', 'صحة', 'تسوق', 'ترفيه', 'أخرى'];
+  const itemCats = [...new Set(allItems.map(it => (it.assigned_to || '').trim()).filter(Boolean))];
+  const allCats = ['الكل', ...new Set([...itemCats, ...defaultCats])];
+
+  let filtered = allItems;
+  if(selCat !== 'الكل'){
+    filtered = filtered.filter(it => (it.assigned_to || '').trim() === selCat);
+  }
+  if(q){
+    filtered = filtered.filter(it => (it.title || '').toLowerCase().includes(q) || (it.note || '').toLowerCase().includes(q));
+  }
+
+  $('#view').innerHTML = `<div class="screen">
+    <!-- الشريط العلوي والتنقل -->
+    <div class="row" style="min-height:46px;border-top:none;padding:0;margin-bottom:8px">
+      <button class="link" data-act="goHome" style="font-size:14px;font-weight:700">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">🔖 الإشارات المرجعية (${allItems.length})</b>
+      <button class="mini" data-act="openAddBookmarkModal" style="font-size:12px;font-weight:700;padding:5px 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);border-radius:10px">＋ إضافة إشارة</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-3);margin-bottom:12px">احفظ روابط المواقع والمقالات المفضلة لتصل إليها وتشاركها وتفتحها بلمسة واحدة في أي وقت.</p>
+
+    <!-- صف البحث والإضافة الذكية -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <input type="text" id="bmScreenSearchInput" value="${esc(window._bmSearch || '')}" placeholder="ابحث بين ${allItems.length} إشارة... 🔍"
+        style="flex:1;height:42px;border-radius:12px;border:1.5px solid var(--border);padding:0 12px;background:var(--surface);color:var(--text-1);font-family:inherit;font-size:13px;box-sizing:border-box"
+        oninput="window._bmSearch=this.value;renderBookmarks();const el=document.getElementById('bmScreenSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
+      <button class="mini" data-act="smartAddBookmark" style="height:42px;padding:0 12px;border-radius:12px;white-space:nowrap;font-weight:700;display:flex;align-items:center;gap:4px">
+        <span>📋</span><span>من الحافظة</span>
+      </button>
+    </div>
+
+    <!-- شرائح الفئات -->
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center">
+      ${allCats.map(cat => `
+        <button onclick="window._bmCat='${cat}';renderBookmarks()"
+          style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid ${selCat===cat?'var(--accent)':'var(--border)'};background:${selCat===cat?'var(--accent)':'var(--surface)'};color:${selCat===cat?'#fff':'var(--text-2)'};font-size:12.5px;font-weight:${selCat===cat?'700':'500'};cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s">
+          ${esc(cat)} ${cat==='الكل'?`(${allItems.length})`:''}
+        </button>
+      `).join('')}
+    </div>
+
+    <!-- شبكة الإشارات المرجعية المتطابقة مع Android (تصميم 70/30) -->
+    ${!allItems.length ? `
+      <div class="card" style="padding:36px 16px;text-align:center">
+        <div style="font-size:42px;margin-bottom:10px">🔖</div>
+        <b style="font-size:16px;color:var(--text-1)">لا توجد إشارات مرجعية بعد</b>
+        <p style="font-size:13px;color:var(--text-3);margin:6px 0 16px">احفظ روابط المواقع المهمة لتصل إليها أنت ورفيقك فورًا من أي جهاز.</p>
+        <button class="btn" data-act="openAddBookmarkModal" style="max-width:240px;margin:0 auto">＋ إضافة أول إشارة مرجعية</button>
+      </div>
+    ` : !filtered.length ? `
+      <div class="card" style="padding:28px;text-align:center">
+        <div style="font-size:34px;margin-bottom:8px">🔍</div>
+        <b style="font-size:15px;color:var(--text-1)">لم يتم العثور على إشارات</b>
+        <p style="font-size:12.5px;color:var(--text-3);margin-top:4px">لا توجد روابط تطابق الفئة أو البحث الحالي.</p>
+        <button class="mini" onclick="window._bmSearch='';window._bmCat='الكل';renderBookmarks()" style="margin-top:10px">عرض الكل</button>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:12px">
+        ${filtered.map(b => {
+          const url = b.note || '#';
+          const domain = getWebDomain(url);
+          const grad = getWebDomainGrad(domain);
+          const screenshot = 'https://linkdr.com/api/screenshot/' + encodeURIComponent(domain);
+          const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
+          const category = (b.assigned_to || '').trim();
+          const sp = getItemSpace('bookmark', b);
+          const sm = spaceMeta(sp);
+          const cc = commentCount(b.id);
+
+          return `
+            <div style="background:var(--surface);border:1.2px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform .15s">
+              <!-- الجزء العلوي 70% مع التدرج والأيقونة والصورة المصغرة -->
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:block;aspect-ratio:1.4/1;position:relative;text-decoration:none;overflow:hidden;background:linear-gradient(135deg, ${grad[0]}, ${grad[1]})">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;z-index:1">
+                  <img src="${fav}" alt="" style="width:26px;height:26px;border-radius:6px" onerror="this.style.opacity='0.5'">
+                </div>
+                <img src="${screenshot}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:2" onerror="this.style.display='none'">
+                ${category ? `<div style="position:absolute;top:6px;left:6px;background:var(--accent);border-radius:6px;padding:2px 7px;z-index:3;font-size:9.5px;color:#fff;font-weight:700;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(category)}</div>` : ''}
+                <div style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,0.55);border-radius:4px;padding:1px 5px;z-index:3;font-size:9px;color:#fff;direction:ltr">${esc(domain)}</div>
+              </a>
+
+              <!-- الجزء الأوسط 30% — العنوان والأيقونة -->
+              <a href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:8px 8px 6px;text-decoration:none;min-width:0">
+                <img src="${fav}" alt="" style="width:16px;height:16px;flex-shrink:0" onerror="this.style.opacity='0.4'">
+                <span style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${esc(b.title || domain)}</span>
+                <span class="${sm.badgeCls}">${sm.emoji}</span>
+              </a>
+
+              <!-- شريط الإجراءات السفلي المتطابق مع Android -->
+              <div style="height:1px;background:var(--divider)"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px;background:var(--surface)">
+                <div style="display:flex;align-items:center;gap:2px">
+                  <a href="${esc(url)}" target="_blank" rel="noopener" title="فتح الرابط" style="text-decoration:none;padding:4px 6px;font-size:12px;color:var(--accent);font-weight:700">↗</a>
+                  <button type="button" data-act="openItemComments" data-type="BOOKMARK" data-id="${b.id}" data-t="${esc(b.title || domain)}" data-cid="${list?list.circle_id:''}" title="تعليقات" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px 5px;color:var(--text-2)">💬${cc?`<b>${cc}</b>`:''}</button>
+                  <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة ونسخ" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px 5px;color:var(--text-2)">📋</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:2px">
+                  <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" data-cat="${esc(category)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px 5px;color:var(--text-2)">✏️</button>
+                  ${spaceMenuBtn('bookmark', b.id)}
+                  <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px 5px;color:var(--error)">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+
+    <div class="foot" style="margin-top:18px">إشاراتك المرجعية محفوظة ومتاحة على جميع أجهزتك 🔖</div>
+  </div>`;
+}
+
 /* ---------- المراجعة الأسبوعية ---------- */
 function openReview(){
   const w=weekStats();
@@ -8797,6 +9359,10 @@ document.addEventListener('click', async e=>{
         closeSheet();
         const t=el.dataset.type, id=el.dataset.id;
         if(t==='med') openEditMedSheet(id);
+        else if(t==='bookmark'){
+          const raw=(data.shopping||[]).find(x=>x.id===id);
+          if(raw) openEditBookmarkModal(raw.id, raw.title, raw.note, raw.assigned_to);
+        }
         else if(t==='shopping'||t==='food'||t==='dish'||t==='place'||t==='media'){
           const raw=(data.shopping||[]).find(x=>x.id===id);
           if(raw) openRename(id, raw.title);
@@ -9423,6 +9989,9 @@ function pickSec(k){
   if(k==='food'){ view='food'; renderApp(); return; }
   if(k==='meds'){ view='meds'; renderApp(); return; }
   if(k==='schedule'){ view='schedule'; renderApp(); return; }
+  if(k==='media'){ view='media'; renderApp(); return; }
+  if(k==='places'){ view='places'; renderApp(); return; }
+  if(k==='bookmarks'){ view='bookmarks'; renderApp(); return; }
   const wasOn=activeSec===k;
   activeSec = wasOn ? null : k;
   applyCollapse();
