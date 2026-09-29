@@ -59,9 +59,28 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
 input,select,textarea{font-family:inherit;font-size:15px;color:var(--text-1)}
 a{color:var(--accent)}
 .hidden{display:none!important}
-#shell{max-width:520px;margin:0 auto;min-height:100dvh;background:var(--bg-app);position:relative}
-@media(min-width:800px){#shell{max-width:760px;box-shadow:0 0 0 1px var(--border)}}
-.screen{padding:14px 16px calc(var(--nav-h) + 26px);animation:fadeIn .18s ease}
+#shell{width:100%;max-width:540px;margin:0 auto;min-height:100dvh;background:var(--bg-app);position:relative;box-sizing:border-box}
+@media(min-width:680px){
+  #shell{max-width:760px;box-shadow:0 0 0 1px var(--border),0 12px 36px rgba(0,0,0,.06)}
+  .screen{padding:18px 24px calc(var(--nav-h) + 36px)}
+  .card{padding:18px 20px;border-radius:18px}
+  .greet-side .g h1{font-size:18px}
+  .greet-side .g p{font-size:13px}
+  .tile-grid{gap:12px}
+  .tile{padding:16px 10px}
+  .tile .tl{font-size:12.5px}
+  .btn{font-size:15.5px;min-height:50px}
+  .mini{font-size:13px;padding:7px 14px}
+  .chip{min-height:42px;font-size:13.5px;padding:0 14px}
+}
+@media(min-width:920px){
+  #shell{max-width:880px;box-shadow:0 0 0 1px var(--border),0 16px 44px rgba(0,0,0,.08)}
+  .screen{padding:22px 28px calc(var(--nav-h) + 40px)}
+}
+@media(min-width:1150px){
+  #shell{max-width:980px}
+}
+.screen{padding:14px 16px calc(var(--nav-h) + 32px);animation:fadeIn .18s ease;box-sizing:border-box;width:100%}
 @keyframes fadeIn{from{opacity:.35}to{opacity:1}}
 h1{font-size:21px;font-weight:700}
 h2{font-size:16px;font-weight:600}
@@ -72,6 +91,7 @@ h2{font-size:16px;font-weight:600}
 .link{font-size:13px;font-weight:500;color:var(--accent);min-height:32px;padding:0 4px}
 .sec{display:flex;align-items:center;gap:8px;margin:18px 2px 10px}
 .sec h2{font-size:18px;font-weight:700;flex:1}
+.sec > button, .sec > .link, .sec > .mini{flex-shrink:0}
 .greet{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;width:100%;box-sizing:border-box}
 .greet-side{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-width:0}
 .greet-side .g h1{font-size:16px;font-weight:700;line-height:1.2;white-space:nowrap}
@@ -100,8 +120,9 @@ h2{font-size:16px;font-weight:600}
 .bar.solo{width:80px;flex:0 0 auto}
 .row{display:flex;align-items:center;gap:10px;min-height:48px}
 .row+.row{border-top:1px solid var(--divider)}
+.row > button, .row > span.badge, .row > .check, .row > a.badge, .row > .link, .row > .mini{flex-shrink:0}
 .hicon{width:34px;height:34px;border-radius:var(--r-chip);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
-.htitle{flex:1;min-width:0;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htitle{flex:1;min-width:0;font-size:15px;font-weight:500;word-break:break-word;overflow-wrap:break-word;line-height:1.35}
 .hval{font-size:12px;color:var(--text-2);font-weight:500;white-space:nowrap}
 .hval.ok{color:var(--accent);font-weight:600}
 .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:transparent;background:transparent;transition:all .18s ease}
@@ -134,24 +155,37 @@ h2{font-size:16px;font-weight:600}
 .tile .tl{font-size:11.5px;color:var(--text-2)}
 .tile .ts{font-size:10px;color:var(--text-3)}
 .rafiq-chev{cursor:pointer;color:var(--text-3);font-size:13px;padding:2px 6px;user-select:none}
-.mini{font-size:13px;font-weight:700;color:var(--accent-dark);background:var(--accent-soft);border-radius:10px;padding:6px 12px}
+.mini{font-size:12.5px;font-weight:700;color:var(--accent-dark);background:var(--accent-soft);border-radius:10px;padding:6px 12px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;min-height:32px;box-sizing:border-box}
 .shop-meta{font-size:11px;color:var(--text-3)}
 .done-t{font-size:12px;font-weight:600;color:var(--text-3);padding:10px 0 2px}
 .add-item{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider)}
 .add-item input{flex:1;min-height:44px;border:1px solid var(--field-border);border-radius:var(--r-btn);background:var(--field-bg);padding:0 14px;outline:none}
 .add-item input:focus{border-color:var(--accent-2)}
 .add-item button{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;font-size:22px;flex:0 0 auto}
-#nav{position:fixed;bottom:0;left:0;right:0;z-index:55;display:flex;justify-content:center;pointer-events:none}
-#nav .in{pointer-events:auto;width:100%;max-width:520px;height:var(--nav-h);background:var(--surface);
-  border-top:1px solid var(--nav-border);display:flex}
-@media(min-width:800px){#nav .in{max-width:760px}}
-#nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#777873;font-size:11.5px;font-weight:600;padding:6px 0;position:relative;transition:color .12s}
+#nav{position:fixed;bottom:0;left:0;right:0;z-index:55;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom,0px)}
+#nav .in{pointer-events:auto;width:100%;max-width:540px;height:var(--nav-h);background:var(--surface);
+  border-top:1px solid var(--nav-border);display:flex;box-shadow:0 -4px 16px rgba(0,0,0,.04);box-sizing:border-box}
+@media(min-width:680px){#nav .in{max-width:760px}}
+@media(min-width:920px){#nav .in{max-width:880px}}
+@media(min-width:1150px){#nav .in{max-width:960px}}
+#nav button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:12px;font-weight:600;padding:6px 2px;position:relative;transition:color .12s;white-space:nowrap}
 #nav button.on{color:var(--accent);font-weight:700}
+#nav button span:not(.ic){font-size:11.5px;line-height:1.2;white-space:nowrap;overflow:visible}
+@media(min-width:680px){
+  #nav button span:not(.ic){font-size:13px}
+  #nav button{gap:4px;padding:8px 4px}
+}
 #nav .ic{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
-.overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease}
-.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;
-  padding:16px 16px calc(22px + env(safe-area-inset-bottom));max-height:86dvh;overflow-y:auto;animation:slideUp .22s ease}
-@keyframes slideUp{from{transform:translateY(40px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet{width:100%;max-width:540px;background:var(--surface);border-radius:22px 22px 0 0;
+  padding:18px 18px calc(24px + env(safe-area-inset-bottom));max-height:88dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:slideUp .22s ease;box-sizing:border-box}
+@media(min-width:680px){
+  .overlay{align-items:center;padding:24px}
+  .sheet{max-width:640px;border-radius:24px;max-height:84dvh;box-shadow:0 24px 60px rgba(0,0,0,.22)}
+}
+@media(min-width:920px){
+  .sheet{max-width:720px}
+}
 .sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .sheet-head h3{flex:1;font-size:17px;font-weight:700}
 .sheet-x{width:36px;height:36px;border-radius:12px;background:var(--surface-2);font-size:15px;color:var(--text-2)}
@@ -169,9 +203,9 @@ h2{font-size:16px;font-weight:600}
 .vis-opt.on{border-color:var(--accent);background:var(--accent-verysoft)}
 .vis-opt .vt{font-size:14px;font-weight:600}
 .vis-opt .vd{font-size:12px;color:var(--text-3)}
-.btn{width:100%;min-height:48px;border-radius:var(--r-btn);background:var(--accent);color:#fff;font-size:15px;font-weight:600}
+.btn{width:100%;min-height:48px;border-radius:var(--r-btn);background:var(--accent);color:#fff;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;white-space:normal;text-align:center;line-height:1.35;box-sizing:border-box}
 .btn:active{opacity:.85}
-.btn.ghost{background:none;border:1px solid var(--border);color:var(--text-2);font-weight:500;font-size:14px;min-height:44px}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--text-2);font-weight:600;font-size:13.5px;min-height:44px}
 .btn.danger{color:var(--error);background:none;border:1px solid var(--border)}
 .badge{font-size:11px;color:var(--text-2);background:var(--surface-2);border:1px solid var(--divider);border-radius:999px;padding:2px 8px;display:inline-block}
 .status{min-width:60px;height:28px;border-radius:999px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
@@ -793,12 +827,12 @@ async function refreshAll(){
   ]);
   const profile=profileArr[0]||null;
   const myCircleIds=memberships.map(m=>m.circle_id);
-  if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[]}; saveSnap(); return; }
+  if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[],comments:[]}; saveSnap(); return; }
   const inC='circle_id=in.('+myCircleIds.join(',')+')';
   const inC2='id=in.('+myCircleIds.join(',')+')';
   const owned=[]; // تُحسب بعد جلب الدوائر
   // جولة 2: كل الجداول الرئيسية بالتوازي (لا تعتمد على بعضها)
-  const [circles,allMembers,items,tasks,sharedLists,activity,recycleBin]=await Promise.all([
+  const [circles,allMembers,items,tasks,sharedLists,activity,recycleBin,comments]=await Promise.all([
     rest('GET','circles',inC2+'&select=*'),
     rest('GET','circle_members',inC+'&select=*'),
     rest('GET','items',inC+'&order=created_at.desc&select=*'),
@@ -806,6 +840,7 @@ async function refreshAll(){
     rest('GET','shared_lists',inC+'&select=*'),
     rest('GET','activity_events',inC+'&order=created_at.desc&limit=40&select=*'),
     rest('GET','recycle_bin',inC+'&order=deleted_at.desc&select=*').catch(()=>[]),
+    rest('GET','comments',inC+'&order=created_at.asc&limit=300&select=*').catch(()=>[]),
   ]);
   const memberIds=[...new Set(allMembers.map(m=>m.user_id).filter(u=>u!==me))];
   const itemIds=items.map(i=>i.id), listIds=sharedLists.map(l=>l.id), evIds=activity.map(a=>a.id);
@@ -834,7 +869,7 @@ async function refreshAll(){
   }
   if(!profile){ const prev=loadSnap(); if(prev&&prev.profile) profile=prev.profile; }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
-    items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites,recycleBin:recycleBin||[]};
+    items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites,recycleBin:recycleBin||[],comments:comments||[]};
   saveSnap();
   try{ syncTrackerFromCloud(); }catch(e){}
 }
@@ -1104,6 +1139,22 @@ function dailyPct(uid){
   const done=hs.filter(i=>habitProg(uid,i).done).length;
   return Math.round(done/hs.length*100);
 }
+function isHabitDoneToday(itemId){
+  try{
+    if(!data || !data.items || !data.entries) return false;
+    const it = data.items.find(x => x.id === itemId);
+    if(!it) return false;
+    return habitProg(meId(), it).done;
+  }catch(e){ return false; }
+}
+window.isHabitDoneToday = isHabitDoneToday;
+function commentCount(itemId){
+  try{
+    if(!data || !data.comments) return 0;
+    return data.comments.filter(c => c.parent_id === itemId).length;
+  }catch(e){ return 0; }
+}
+window.commentCount = commentCount;
 function visibleTasks(){
   const me=meId();
   return (data?data.tasks:[]).filter(t=>{
@@ -1462,7 +1513,10 @@ function renderHome(){
         <div class="avatar">${esc((me.display_name||'؟')[0])}</div>
         <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       </div>
-      <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button class="mini" data-act="openSmartAddLink" title="إضافة رابط ذكي بالحافظة" style="background:var(--accent-verysoft);color:var(--accent-dark);border:1.2px solid var(--accent);border-radius:12px;padding:6px 12px;font-weight:700">🔗 إضافة رابط</button>
+        <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+      </div>
     </div>
     ${(!isPwaInstalled && (window._canInstallPwa || (window._isIosSafari && window._isIosSafari())) && !sessionStorage.getItem('rafiq_pwa_banner_dismissed')) ? `
     <div class="card" style="background:var(--accent-verysoft);border:1.5px solid var(--accent-2);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:12px">
@@ -1832,7 +1886,7 @@ function renderHome(){
       <div class="shop-meta">${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
         const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
         return its.length? (its.length+' مقطع/رابط محفوظ') : 'احفظ روابط يوتيوب/إنستغرام الجميلة'; })()}</div></div>
-      <button class="link" data-act="addMedia">＋ رابط</button></div>
+      <button class="mini" data-act="openSmartAddLink" data-kind="MEDIA" style="font-size:12px;padding:4px 10px">🔗 إضافة رابط</button></div>
       ${(()=>{ const l=(data.sharedLists||[]).find(x=>x.title==='مقاطعنا الجميلة');
         const its=l? (data.shopping||[]).filter(i=>i.list_id===l.id && (spF==='all'||getItemSpace('media',i)===spF)) : [];
         return its.map(i=>{ const th=ytThumb(i.note||'');
@@ -1841,11 +1895,12 @@ function renderHome(){
           <a href="javascript:void(0)" data-act="playMedia" data-u="${esc(i.note||'')}" data-t="${esc(i.title)}" data-id="${i.id}" style="flex:1;min-width:0;text-decoration:none">
             <div class="htitle" style="color:var(--text-1)">${esc(i.title)}</div>
             <div class="shop-meta">${esc((i.note||'').slice(0,50))}</div></a>
+          <button class="link" data-act="openItemComments" data-type="MEDIA" data-id="${i.id}" data-t="${esc(i.title)}" data-cid="${l?l.circle_id:''}" style="font-size:12px;padding:0 4px">💬 ${commentCount(i.id)?commentCount(i.id):''}</button>
           <button class="link" data-act="renameItem" data-id="${i.id}" data-t="${esc(i.title)}">تسمية</button>
           ${spaceMenuBtn('media', i.id)}
           <button class="link" style="color:var(--error)" data-act="delMedia" data-id="${i.id}">حذف</button></div>`; }).join(''); })()}
     </div>
-    <div class="sec" data-sec="places"><h2>📍 أماكننا المحفوظة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2><button class="link" data-act="addPlace">+ إضافة مكان</button></div>
+    <div class="sec" data-sec="places"><h2>📍 أماكننا المحفوظة ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2><button class="mini" data-act="openSmartAddLink" data-kind="PLACE" style="font-size:12px;padding:4px 10px">🔗 إضافة مكان</button></div>
     <div class="card">${(()=>{ const pl=placesOf();
       const filteredPl = pl.items.filter(pp => spF==='all' || getItemSpace('place', pp)===spF);
       return filteredPl.length? filteredPl.map(pp=>`<div class="row"><span style="font-size:17px">📍</span>
@@ -1853,13 +1908,14 @@ function renderHome(){
           <div class="htitle" style="color:var(--text-1)">${esc(pp.title)}</div>
           <div class="shop-meta">${esc((pp.note||'').slice(0,52))}</div>
         </a><span class="badge">فتح ➜</span>
+        <button class="link" data-act="openItemComments" data-type="PLACE" data-id="${pp.id}" data-t="${esc(pp.title)}" data-cid="${pl.list?pl.list.circle_id:''}" style="font-size:12px;padding:0 4px">💬 ${commentCount(pp.id)?commentCount(pp.id):''}</button>
         <button class="link" style="padding:0 6px" data-act="renameItem" data-id="${pp.id}" data-t="${esc(pp.title)}">تسمية</button>
         ${spaceMenuBtn('place', pp.id)}
         <button class="link" style="color:var(--error);padding:0 6px;font-size:16px" data-act="delPlace" data-id="${pp.id}">✕</button></div>`).join('')
       : '<div class="empty"><span class="e">📍</span>لا أماكن محفوظة في هذا النطاق بعد.<br>احفظ أي مكان باسم — ويفتح مباشرة في خرائط Google.</div>'; })()}
       <div style="display:flex;gap:8px;padding-top:10px">
         <button class="btn ghost" data-act="addCurrentPlace" style="flex:1">📍 أضف مكاني الحالي</button>
-        <button class="btn ghost" data-act="addPlace" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
+        <button class="btn ghost" data-act="openSmartAddLink" data-kind="PLACE" style="flex:1">＋ إضافة مكان (اسم + رابط)</button>
       </div>
     </div>
     <div class="sec" data-sec="bookmarks"><h2>🔖 الإشارات المرجعية</h2></div>
@@ -1879,8 +1935,8 @@ function renderHome(){
           <input type="text" id="bmSearchInput" value="${esc(window._bmSearch || '')}" placeholder="ابحث بين ${allItems.length} إشارة... 🔍"
             style="flex:1;height:40px;border-radius:10px;border:1px solid var(--border);padding:0 12px;background:var(--surface-2);color:var(--text-1);font-family:inherit;font-size:12.5px;box-sizing:border-box"
             oninput="window._bmSearch=this.value;renderApp();const el=document.getElementById('bmSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
-          <button class="btn" data-act="smartAddBookmark" style="height:40px;padding:0 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:12px;font-weight:700;border-radius:10px;white-space:nowrap;display:flex;align-items:center;gap:4px">
-            <span style="font-size:15px;font-weight:800">+</span><span>إضافة رابط</span>
+          <button class="btn" data-act="openSmartAddLink" data-kind="BOOKMARK" style="height:40px;padding:0 12px;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-size:12px;font-weight:700;border-radius:10px;white-space:nowrap;display:flex;align-items:center;gap:4px">
+            <span style="font-size:15px;font-weight:800">＋</span><span>إضافة رابط</span>
           </button>
         </div>
         <!-- شريط الفئات -->
@@ -1891,7 +1947,7 @@ function renderHome(){
           allItems.length ? `<div class="empty" style="padding:16px"><span class="e">🔍</span>لا توجد نتائج${q?` لـ «${esc(q)}»`:''}${selCat!=='الكل'?` في فئة «${esc(selCat)}»`:''}</div>`
           : `<div class="empty"><span class="e">🔖</span>لا توجد إشارات مرجعية بعد.<br>احفظ روابطك المفضلة للوصول إليها بلمسة واحدة.</div>`
         ) : `
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px">
           ${items.map(b=>{
             const url = b.note || '#';
             const domain = getWebDomain(url);
@@ -1918,6 +1974,7 @@ function renderHome(){
               <div style="display:flex;align-items:center;justify-content:space-evenly;height:26px;background:var(--surface)">
                 <button type="button" data-act="delBookmark" data-id="${b.id}" title="حذف" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">🗑️</button>
                 <button type="button" data-act="editBookmark" data-id="${b.id}" data-t="${esc(b.title)}" data-u="${esc(url)}" data-cat="${esc(category)}" title="تعديل" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">✏️</button>
+                <button type="button" data-act="openItemComments" data-type="BOOKMARK" data-id="${b.id}" data-t="${esc(b.title || domain)}" data-cid="${bm.list?bm.list.circle_id:''}" title="تعليقات" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">💬 ${commentCount(b.id)?commentCount(b.id):''}</button>
                 <button type="button" data-act="shareBookmark" data-t="${esc(b.title)}" data-u="${esc(url)}" title="مشاركة" style="background:none;border:none;cursor:pointer;font-size:11px;padding:3px 6px">↗️</button>
               </div>
             </div>`;
@@ -5925,6 +5982,7 @@ function renderSpaces(){
     </div>
 
     <!-- 1. بطاقة مساحتي الخاصة (🟢) -->
+    ${(!window._homeSpaceFilter || window._homeSpaceFilter==='all' || window._homeSpaceFilter==='me') ? `
     <div class="space-realm-card space-realm-me">
       <div class="space-card-head">
         <div class="space-card-title-group">
@@ -5965,9 +6023,10 @@ function renderSpaces(){
           <span>＋ إضافة عنصر لمساحتي</span>
         </button>
       </div>
-    </div>
+    </div>` : ''}
 
     <!-- 2. بطاقة مساحتنا المشتركة (🔵) -->
+    ${(!window._homeSpaceFilter || window._homeSpaceFilter==='all' || window._homeSpaceFilter==='shared') ? `
     <div class="space-realm-card space-realm-shared">
       <div class="space-card-head">
         <div class="space-card-title-group">
@@ -6008,9 +6067,10 @@ function renderSpaces(){
           <span>＋ إضافة عنصر للمساحة المشتركة</span>
         </button>
       </div>
-    </div>
+    </div>` : ''}
 
     <!-- 3. بطاقة مساحة رفيقي (🟠) -->
+    ${(!window._homeSpaceFilter || window._homeSpaceFilter==='all' || window._homeSpaceFilter==='companion') ? `
     <div class="space-realm-card space-realm-comp">
       <div class="space-card-head">
         <div class="space-card-title-group">
@@ -6067,7 +6127,7 @@ function renderSpaces(){
           <button class="mini" style="margin-top:8px" data-act="tab" data-v="more">انضم لدائرة مشتركة أو ادعُ رفيقك</button>
         </div>
       `}
-    </div>
+    </div>` : ''}
 
     <div class="foot" style="margin-top:16px">
       تحكم في كل عنصر بلمسة واحدة عبر زر الثلاث نقاط (⋯) في أي مكان.
@@ -6997,6 +7057,335 @@ function openRename(id,cur){
     <div class="field"><label>الاسم</label><input id="rnTitle" value="${esc(cur||'')}"></div>
     <button class="btn" data-act="saveRename" data-id="${id}">حفظ التسمية</button>`);
 }
+
+/* ---------- نافذة إضافة رابط الذكية (SmartAddLinkSheet) ---------- */
+window._salKind = 'MEDIA';
+window._salCategory = 'عامة';
+
+function isMapsUrl(u){
+  const s = (u||'').toLowerCase();
+  return ['google.com/maps', 'maps.app.goo.gl', 'goo.gl/maps', 'maps.google', 'geo:', 'osm.org', 'waze.com'].some(x => s.includes(x));
+}
+function isVideoUrl(u){
+  const s = (u||'').toLowerCase();
+  return ['youtube.com', 'youtu.be', 'tiktok.com', 'instagram.com/reel', 'instagram.com/p', 'facebook.com/reel', 'twitter.com', 'x.com'].some(x => s.includes(x));
+}
+function smartAutoName(u){
+  if(isMapsUrl(u)) return 'موقع على الخريطة';
+  if(isVideoUrl(u)) return smartLinkName(u);
+  try{
+    const clean = u.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+    const host = clean.split('/')[0].split('?')[0];
+    if(host) return host.charAt(0).toUpperCase() + host.slice(1);
+  }catch(e){}
+  return 'رابط محفوظ';
+}
+
+async function openSmartAddLink(initialKind, initialUrl, initialTitle){
+  let url = (initialUrl || '').trim();
+  let title = (initialTitle || '').trim();
+  let kind = initialKind || 'MEDIA';
+  let fromClip = false;
+
+  if(!url){
+    try{
+      if(navigator.clipboard && navigator.clipboard.readText){
+        const clip = (await navigator.clipboard.readText()) || '';
+        const detected = extractWebUrl(clip);
+        if(detected){
+          url = detected;
+          fromClip = true;
+          if(!title) title = smartAutoName(url);
+          if(!initialKind){
+            if(isMapsUrl(url)) kind = 'PLACE';
+            else if(isVideoUrl(url)) kind = 'MEDIA';
+            else kind = 'BOOKMARK';
+          }
+        }
+      }
+    }catch(e){}
+  } else if(!title){
+    title = smartAutoName(url);
+  }
+
+  window._salKind = kind;
+  window._salCategory = 'عامة';
+
+  const renderSheetHtml = () => {
+    const k = window._salKind;
+    const isBookmark = k === 'BOOKMARK';
+    const categories = ['عامة', 'تقنية', 'تسوق', 'أخبار', 'تعليم', 'ترفيه', 'طبخ', 'عمل'];
+    const curCat = window._salCategory || 'عامة';
+
+    return sheetHead(k === 'PLACE' ? '📍 إضافة موقع / مكان' : (k === 'BOOKMARK' ? '🔖 إضافة إشارة مرجعية' : '🎬 إضافة مقطع / فيديو')) + `
+      ${fromClip ? `
+        <div style="background:var(--accent-verysoft);border:1px solid var(--accent-2);border-radius:10px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">📋</span>
+          <span style="font-size:12px;font-weight:600;color:var(--accent-dark)">تم التعرف تلقائيًا على الرابط من الحافظة!</span>
+        </div>` : ''}
+
+      <!-- أزرار التبديل الثلاثية: مقاطعنا / إشاراتنا / أماكننا -->
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        ${[
+          ['MEDIA', '🎬 مقاطعنا'],
+          ['BOOKMARK', '🔖 إشاراتنا'],
+          ['PLACE', '📍 أماكننا']
+        ].map(([val, lbl]) => `
+          <button type="button" class="sal-kind-btn" data-k="${val}" style="flex:1;padding:10px 4px;border-radius:12px;font-size:13px;font-weight:${k===val?'700':'500'};background:${k===val?'var(--accent-soft)':'var(--surface-2)'};color:${k===val?'var(--accent-dark)':'var(--text-2)'};border:1.5px solid ${k===val?'var(--accent)':'transparent'};cursor:pointer;font-family:inherit;text-align:center;transition:all .15s">
+            ${lbl}
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="field">
+        <label>رابط المحتوى (URL)</label>
+        <input id="salUrl" value="${esc(url)}" placeholder="الصق الرابط (يوتيوب، إنستغرام، موقع ويب، خريطة...)" style="direction:ltr">
+      </div>
+
+      <div class="field">
+        <label>اسم الرابط أو المقطع (يمكنك تعديله كما تحب)</label>
+        <input id="salTitle" value="${esc(title)}" placeholder="اكتب اسمًا معبرًا...">
+      </div>
+
+      ${isBookmark ? `
+        <div class="field" style="margin-top:6px">
+          <label>اختر التصنيف:</label>
+          <div id="salCatChips" style="display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none">
+            ${categories.map(cat => `
+              <button type="button" class="sal-cat-btn" data-cat="${cat}" style="flex-shrink:0;padding:5px 12px;border-radius:18px;border:1px solid ${curCat===cat?'var(--accent)':'var(--border)'};background:${curCat===cat?'var(--accent)':'var(--surface-2)'};color:${curCat===cat?'#fff':'var(--text-2)'};font-size:12px;font-weight:${curCat===cat?'700':'500'};cursor:pointer;font-family:inherit">${esc(cat)}</button>
+            `).join('')}
+          </div>
+          <input id="salCustomCat" value="${categories.includes(curCat)?'':curCat}" placeholder="أو تصنيف مخصص..." style="margin-top:4px">
+        </div>
+      ` : ''}
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn" data-act="saveSmartAddLink" style="flex:1.5;font-weight:700">حفظ في رفيق ✓</button>
+        <button class="btn ghost" data-act="shareSmartAddLink" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span style="font-size:16px">↗</span><span>مشاركة</span>
+        </button>
+      </div>
+    `;
+  };
+
+  openSheet(renderSheetHtml());
+
+  const bindEvents = () => {
+    const sheetEl = $('#sheet');
+    if(!sheetEl) return;
+
+    sheetEl.querySelectorAll('.sal-kind-btn').forEach(btn => {
+      btn.onclick = () => {
+        window._salKind = btn.dataset.k;
+        const uEl = $('#salUrl'), tEl = $('#salTitle');
+        if(uEl) url = uEl.value;
+        if(tEl) title = tEl.value;
+        openSheet(renderSheetHtml());
+        bindEvents();
+      };
+    });
+
+    sheetEl.querySelectorAll('.sal-cat-btn').forEach(btn => {
+      btn.onclick = () => {
+        window._salCategory = btn.dataset.cat;
+        const custEl = $('#salCustomCat');
+        if(custEl) custEl.value = '';
+        sheetEl.querySelectorAll('.sal-cat-btn').forEach(b => {
+          const isSel = b.dataset.cat === window._salCategory;
+          b.style.background = isSel ? 'var(--accent)' : 'var(--surface-2)';
+          b.style.color = isSel ? '#fff' : 'var(--text-2)';
+          b.style.borderColor = isSel ? 'var(--accent)' : 'var(--border)';
+        });
+      };
+    });
+
+    const urlInput = $('#salUrl');
+    if(urlInput){
+      urlInput.oninput = () => {
+        const val = urlInput.value.trim();
+        const titleInput = $('#salTitle');
+        if(titleInput && (!titleInput.value.trim() || titleInput.value === smartAutoName(url))){
+          titleInput.value = smartAutoName(val);
+        }
+        url = val;
+      };
+    }
+  };
+
+  bindEvents();
+}
+
+async function saveSmartAddLink(){
+  const urlEl = $('#salUrl');
+  const titleEl = $('#salTitle');
+  const rawUrl = (urlEl ? urlEl.value : '').trim();
+  let cleanUrl = rawUrl;
+  if(!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')){
+    cleanUrl = 'https://' + cleanUrl;
+  }
+  if(!/^https?:\/\/[^\s]+$/i.test(cleanUrl)){
+    toast('يرجى إدخال أو لصق رابط صالح يبدأ بـ http');
+    return;
+  }
+  const cleanTitle = (titleEl && titleEl.value.trim()) ? titleEl.value.trim() : smartAutoName(cleanUrl);
+  const kind = window._salKind || 'MEDIA';
+
+  try{
+    if(kind === 'PLACE'){
+      await addPlace(cleanTitle, cleanUrl);
+      toast('حُفظ في أماكننا المحفوظة ✓');
+    } else if(kind === 'BOOKMARK'){
+      const customCat = ($('#salCustomCat') ? $('#salCustomCat').value : '').trim();
+      const cat = customCat || window._salCategory || 'عامة';
+      await addBookmarkItem(cleanTitle, cleanUrl, cat);
+      toast('حُفظ في الإشارات المرجعية (' + cat + ') ✓');
+    } else {
+      const sh = sharedFirst();
+      const cid = sh ? sh.circle.id : ((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
+      if(!cid){ toast('لا توجد دائرة متاحة'); return; }
+      const l = await ensureList(MEDIA_TITLE, cid);
+      await rest('POST', 'shared_list_items', {
+        id: uuid(),
+        list_id: l.id,
+        title: cleanTitle,
+        note: cleanUrl,
+        completed: false,
+        position: 0
+      }, 'return=minimal');
+      await refreshAll();
+      toast('حُفظ في مقاطعنا الجميلة ✓');
+    }
+    closeSheet();
+    renderApp();
+  }catch(e){
+    toast('تعذر الحفظ: ' + (e && e.message ? e.message : ''));
+  }
+}
+
+async function shareSmartAddLink(){
+  const urlEl = $('#salUrl');
+  const titleEl = $('#salTitle');
+  const cleanUrl = (urlEl ? urlEl.value : '').trim();
+  if(!cleanUrl){
+    toast('الصق الرابط أولاً لمشاركته');
+    return;
+  }
+  const cleanTitle = (titleEl && titleEl.value.trim()) ? titleEl.value.trim() : smartAutoName(cleanUrl);
+  if(navigator.share){
+    try{
+      await navigator.share({ title: cleanTitle, text: cleanTitle + '\n' + cleanUrl, url: cleanUrl });
+    }catch(err){}
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    await navigator.clipboard.writeText(cleanTitle + '\n' + cleanUrl);
+    toast('تم نسخ الرابط للمشاركة 📋');
+  } else {
+    toast('المشاركة غير مدعومة في هذا المتصفح');
+  }
+}
+
+/* ---------- نظام التعليقات الموحد (ItemCommentsSheet) ---------- */
+async function openItemCommentsSheet(parentType, itemId, itemTitle, circleId){
+  const titleShort = (itemTitle || '').length > 24 ? (itemTitle.slice(0, 24) + '…') : (itemTitle || 'عنصر');
+  const partner = companionOf();
+  const partnerName = partner ? (partner.display_name || 'الرفيق') : 'الرفيق';
+
+  openSheet(sheetHead('💬 تعليقات: ' + esc(titleShort)) + `
+    <div id="commentsSheetContent">
+      <div style="text-align:center;padding:24px;color:var(--text-3)">جارٍ تحميل التعليقات…</div>
+    </div>
+  `);
+
+  await loadCommentsIntoSheet(parentType, itemId, itemTitle, circleId, partnerName);
+}
+
+async function loadCommentsIntoSheet(parentType, itemId, itemTitle, circleId, partnerName){
+  const container = $('#commentsSheetContent');
+  if(!container) return;
+
+  let comments = [];
+  try{
+    comments = await rest('GET', 'comments', 'parent_id=eq.' + itemId + '&order=created_at.asc&select=*');
+    if(!Array.isArray(comments)) comments = [];
+  }catch(e){
+    comments = [];
+  }
+
+  // Update cached data.comments
+  if(data){
+    if(!data.comments) data.comments = [];
+    data.comments = data.comments.filter(c => c.parent_id !== itemId).concat(comments);
+  }
+
+  const me = meId();
+
+  container.innerHTML = `
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px;font-weight:600">
+      التعليقات والملاحظات المشتركة بينكما (${comments.length}):
+    </div>
+
+    <div id="commentsList" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:12px;-webkit-overflow-scrolling:touch">
+      ${!comments.length ? `
+        <div style="background:var(--surface-2);border-radius:12px;padding:16px;text-align:center;color:var(--text-3);font-size:12.5px">
+          لا توجد تعليقات بعد. اكتب أول تعليق أو فكرة حول هذا العنصر! 🌱
+        </div>
+      ` : comments.map(cm => {
+        const isMe = cm.user_id === me;
+        const authorName = isMe ? 'أنت' : partnerName;
+        return `
+          <div style="background:${isMe ? 'var(--accent-verysoft)' : 'var(--surface-2)'};border:1px solid ${isMe ? 'var(--accent-2)' : 'var(--border)'};border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:12px;font-weight:700;color:${isMe ? 'var(--accent-dark)' : 'var(--text-1)'}">${esc(authorName)}</span>
+              <span style="font-size:10.5px;color:var(--text-3)">${relAr(cm.created_at)}</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--text-1);line-height:1.4;word-break:break-word">${esc(cm.body || cm.content || '')}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <!-- حقل إضافة تعليق -->
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <input id="newCommentInput" placeholder="اكتب تعليقاً أو رأياً..." style="flex:1;min-height:44px;border:1.5px solid var(--border);border-radius:12px;padding:0 12px;background:var(--field-bg);font-family:inherit;font-size:13.5px;box-sizing:border-box" onkeydown="if(event.key==='Enter')document.getElementById('sendCommentBtn').click()">
+      <button type="button" class="btn" id="sendCommentBtn" style="width:auto;min-width:76px;min-height:44px;padding:0 14px;font-size:13px;font-weight:700;border-radius:12px;flex-shrink:0">إرسال</button>
+    </div>
+  `;
+
+  // Focus input and bind send button
+  const input = $('#newCommentInput');
+  const sendBtn = $('#sendCommentBtn');
+  if(input) setTimeout(() => input.focus(), 100);
+
+  if(sendBtn){
+    sendBtn.onclick = async () => {
+      const text = (input ? input.value : '').trim();
+      if(!text) return;
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'جارٍ...';
+
+      try{
+        const cid = circleId || curCircleId();
+        const pType = ['TASK','ITEM','ACTIVITY'].includes(parentType) ? parentType : 'ITEM';
+        await rest('POST', 'comments', {
+          id: uuid(),
+          parent_type: pType,
+          parent_id: itemId,
+          circle_id: cid,
+          user_id: me,
+          body: text,
+          created_at: new Date().toISOString()
+        }, 'return=minimal');
+
+        await loadCommentsIntoSheet(parentType, itemId, itemTitle, circleId, partnerName);
+        toast('أُضيف التعليق ✓');
+      }catch(e){
+        toast('تعذر إضافة التعليق: ' + (e && e.message ? e.message : ''));
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'إرسال';
+      }
+    };
+  }
+}
+
 /* ---------- الإشارات المرجعية ---------- */
 const BOOKMARKS_TITLE = 'الإشارات المرجعية';
 
@@ -7167,6 +7556,7 @@ function openAddMenu(anchorBtn, targetSpace){
   const old=document.getElementById('addPop'); if(old){ old.remove(); return; }
   const today=new Date().toISOString().slice(0,10);
   const items=[
+    ['🔗','إضافة رابط ذكي','openSmartAddLink',''],
     ['✅','مهمة جديدة','openAddTask',''],
     ['🌱','عادة / هدف','openAddHabit',''],
     ['🛒','عنصر تسوق','shopAll',''],
@@ -7225,9 +7615,9 @@ function openMealSheet(initialMeal){
     </div>
     <div style="height:10px"></div>
     <div class="field"><label>ماذا تناولتم؟</label><input id="qmText" placeholder="مثال: فول وبيض"></div>
-    ${dishes.length?`<div class="shop-meta" style="margin-bottom:10px">من أطباقكم المفضلة (اضغط للاختيار):<br>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-        ${dishes.slice(0,8).map(d=>`<button type="button" class="mini" data-act="pickMealSuggestion" data-t="${esc(d.title)}">${esc(d.title)}</button>`).join('')}
+    ${dishes.length?`<div class="shop-meta" style="margin-bottom:6px;font-size:12.5px;font-weight:600;color:var(--text-2)">من أطباقكم المفضلة (${dishes.length} أطباق — اضغط للاختيار):<br>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;max-height:180px;overflow-y:auto;padding:4px 0 10px;margin-top:6px;-webkit-overflow-scrolling:touch">
+        ${dishes.map(d=>`<button type="button" class="mini" data-act="pickMealSuggestion" data-t="${esc(d.title)}" style="cursor:pointer;font-family:inherit">${esc(d.title)}</button>`).join('')}
       </div></div>`:''}
     <button class="btn" data-act="saveMeal">تسجيل الوجبة</button>`);
   const w=$('#qmMeal');
@@ -7328,7 +7718,8 @@ async function sendEvent(dayIso,title,time,circleId,visibility,recipients){
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
 }
 /* ---------- ذكّرني ---------- */
-async function sendReminder(text,due){
+/* ---------- ذكّرني ---------- */
+async function sendReminder(text,due,prio,mode){
   try{
     const sh=sharedFirst(); if(!sh){ toast('أنشئ دائرة مشتركة أولًا'); return; }
     const other=(sh.members.find(x=>x.m.user_id!==meId())||{}).m;
@@ -7338,25 +7729,111 @@ async function sendReminder(text,due){
       due_at:due||null,recipients:null};
     await rest('POST','tasks',row,'return=minimal');
     try{ await rest('POST','activity_events',{id:uuid(),circle_id:sh.circle.id,user_id:meId(),kind:'REMINDER',payload:text}); }catch(e){}
-    await refreshAll(); renderApp(); toast('أُرسل التذكير 🔔');
+    await refreshAll(); renderApp();
+    const otherName = (sh.members.find(x=>x.m.user_id!==meId())||{}).p?.display_name || 'رفيقك';
+    toast(mode === 'ask_him' ? `أُرسل طلب التذكير لـ ${otherName} 🙋‍♂️` : `أُرسل التذكير لـ ${otherName} 🔔`);
   }catch(e){ toast('تعذر الإرسال: '+(e&&e.message?e.message:'')); }
 }
+
 function openRemind(){
   const sh=sharedFirst();
   const other=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).p : null;
   if(!sh||!other){ toast('تحتاج دائرة مشتركة مع رفيقك أولًا'); return; }
-  openSheet(sheetHead('🔔 ذكرني — تذكير بارز')+`
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:10px">سيصل لـ ${esc(other.display_name||'رفيقك')} كتذكير بارز في الأعلى + إشعار في رحلتكما.</p>
-    <div class="field"><label>بماذا أذكّرك؟</label><input id="rmText" placeholder="مثال: موعد الطبيب غدًا 5 مساءً"></div>
-    <div class="field"><label>الموعد</label><div class="chips" id="rmDue">
-      <button class="chip on" data-d="none">بدون</button>
-      <button class="chip" data-d="today">اليوم</button>
-      <button class="chip" data-d="tomorrow">غدًا</button>
-      <button class="chip" data-d="week">بعد أسبوع</button></div></div>
-    <button class="btn" data-act="saveRemind">أرسل التذكير لـ ${esc(other.display_name||'رفيقك')}</button>`);
-  window._rmDue='none';
-  const w=$('#rmDue'); w.addEventListener('click',e=>{ const b=e.target.closest('[data-d]'); if(!b) return;
-    window._rmDue=b.dataset.d; w.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); });
+  const otherName = esc(other.display_name || 'رفيقك');
+
+  window._rmMode = 'remind_him';
+  window._rmDue = 'none';
+  window._rmPrio = 'med';
+
+  const renderRemindHtml = () => {
+    const isRemindHim = window._rmMode === 'remind_him';
+    const prio = window._rmPrio || 'med';
+    const due = window._rmDue || 'none';
+
+    return sheetHead(isRemindHim ? '🔔 أذكّره بشيء' : '🙋‍♂️ اطلب منه أن يذكّرني') + `
+      <!-- تبديل الوضع: تذكير للرفيق vs طلب تذكير مني -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button type="button" class="rm-mode-btn" data-m="remind_him" style="flex:1;padding:10px 6px;border-radius:12px;font-size:13px;font-weight:${isRemindHim?'700':'500'};background:${isRemindHim?'var(--accent-soft)':'var(--surface-2)'};color:${isRemindHim?'var(--accent-dark)':'var(--text-2)'};border:1.5px solid ${isRemindHim?'var(--accent)':'transparent'};cursor:pointer;font-family:inherit;text-align:center">
+          🔔 أذكّره بشيء
+        </button>
+        <button type="button" class="rm-mode-btn" data-m="ask_him" style="flex:1;padding:10px 6px;border-radius:12px;font-size:13px;font-weight:${!isRemindHim?'700':'500'};background:${!isRemindHim?'var(--accent-soft)':'var(--surface-2)'};color:${!isRemindHim?'var(--accent-dark)':'var(--text-2)'};border:1.5px solid ${!isRemindHim?'var(--accent)':'transparent'};cursor:pointer;font-family:inherit;text-align:center">
+          🙋‍♂️ اطلب منه أن يذكّرني
+        </button>
+      </div>
+
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">
+        ${isRemindHim ? `سيصل لـ ${otherName} كتذكير بارز في هاتفه.` : `سيصل إشعار لـ ${otherName} يطلب منه أن يذكّرك بهذا الأمر.`}
+      </p>
+
+      <div class="field">
+        <label>${isRemindHim ? `بماذا تريد تذكير ${otherName}؟` : `بماذا تطلب من ${otherName} أن يذكّرك؟`}</label>
+        <input id="rmText" placeholder="${isRemindHim ? 'مثال: موعد الطبيب غدًا 5 مساءً' : 'مثال: أخذ الدواء، الاتصال بأمي...'}">
+      </div>
+
+      <div class="field">
+        <label>الموعد</label>
+        <div class="chips" id="rmDue">
+          <button type="button" class="chip ${due==='none'?'on':''}" data-d="none">بدون</button>
+          <button type="button" class="chip ${due==='today'?'on':''}" data-d="today">اليوم</button>
+          <button type="button" class="chip ${due==='tomorrow'?'on':''}" data-d="tomorrow">غدًا</button>
+          <button type="button" class="chip ${due==='week'?'on':''}" data-d="week">بعد أسبوع</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>اختر الأولوية</label>
+        <div class="chips" id="rmPrio">
+          <button type="button" class="chip ${prio==='high'?'on':''}" data-p="high">🔴 عالية</button>
+          <button type="button" class="chip ${prio==='med'?'on':''}" data-p="med">🟠 متوسطة</button>
+          <button type="button" class="chip ${prio==='low'?'on':''}" data-p="low">⚪ منخفضة</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px">
+          ${prio==='high' ? '🔊 نغمة «رفيق» المسجلة' : (prio==='med' ? '🔉 نغمة عادية' : '🔇 بلا صوت')}
+        </div>
+      </div>
+
+      <button class="btn" data-act="saveRemind" style="margin-top:10px">
+        ${isRemindHim ? `أرسل التذكير لـ ${otherName} 🔔` : `اطلب من ${otherName} تذكيري 🙋‍♂️`}
+      </button>
+    `;
+  };
+
+  openSheet(renderRemindHtml());
+
+  const bindRemindEvents = () => {
+    const sheetEl = $('#sheet');
+    if(!sheetEl) return;
+    sheetEl.querySelectorAll('.rm-mode-btn').forEach(btn => {
+      btn.onclick = () => {
+        window._rmMode = btn.dataset.m;
+        const curText = $('#rmText') ? $('#rmText').value : '';
+        openSheet(renderRemindHtml());
+        const inp = $('#rmText'); if(inp) inp.value = curText;
+        bindRemindEvents();
+      };
+    });
+    const dueChips = sheetEl.querySelector('#rmDue');
+    if(dueChips){
+      dueChips.onclick = (e) => {
+        const b = e.target.closest('[data-d]'); if(!b) return;
+        window._rmDue = b.dataset.d;
+        dueChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+      };
+    }
+    const prioChips = sheetEl.querySelector('#rmPrio');
+    if(prioChips){
+      prioChips.onclick = (e) => {
+        const b = e.target.closest('[data-p]'); if(!b) return;
+        window._rmPrio = b.dataset.p;
+        const curText = $('#rmText') ? $('#rmText').value : '';
+        openSheet(renderRemindHtml());
+        const inp = $('#rmText'); if(inp) inp.value = curText;
+        bindRemindEvents();
+      };
+    }
+  };
+
+  bindRemindEvents();
 }
 /* ---------- الإشعارات + الإعدادات ---------- */
 function openNotifs(){
@@ -7554,6 +8031,10 @@ document.addEventListener('click', async e=>{
         await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذفت الرسالة'); break; }
       case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
       case 'playMedia': { openPlayer(el.dataset.u, el.dataset.t, el.dataset.id); break; }
+      case 'openSmartAddLink': await openSmartAddLink(el.dataset.kind, el.dataset.url, el.dataset.title); break;
+      case 'saveSmartAddLink': await saveSmartAddLink(); break;
+      case 'shareSmartAddLink': await shareSmartAddLink(); break;
+      case 'openItemComments': await openItemCommentsSheet(el.dataset.type, el.dataset.id, el.dataset.title, el.dataset.cid); break;
       case 'addMedia': openAddMedia(); break;
       case 'saveMedia': await saveMedia(); break;
       case 'renameItem': openRename(el.dataset.id, el.dataset.t); break;
@@ -7670,7 +8151,10 @@ document.addEventListener('click', async e=>{
       case 'saveRemind': { const t=($('#rmText')||{}).value||''; if(!t.trim()){ toast('اكتب نص التذكير'); break; }
         const d=window._rmDue||'none'; let due=null;
         if(d!=='none'){ const dt=new Date(); if(d==='tomorrow') dt.setDate(dt.getDate()+1); if(d==='week') dt.setDate(dt.getDate()+7); dt.setHours(12,0,0,0); due=dt.toISOString(); }
-        closeSheet(); await sendReminder(t.trim(),due); break; }
+        const mode = window._rmMode || 'remind_him';
+        const prio = window._rmPrio || 'med';
+        const finalTitle = mode === 'remind_him' ? t.trim() : ('طلب تذكير لي: ' + t.trim());
+        closeSheet(); await sendReminder(finalTitle, due, prio, mode); break; }
       case 'doneReminder': { const t=(data.tasks||[]).find(x=>x.id===el.dataset.id); if(t){ await rest('PATCH','tasks',{status:'DONE',completed_at:nowIso(),completed_by:meId()},'id=eq.'+t.id); await refreshAll(); renderHome(); toast('✓'); } break; }
       case 'openCreateCircle': openCreateCircle(); break;
       case 'doCreateCircle': await doCreateCircle(); break;
