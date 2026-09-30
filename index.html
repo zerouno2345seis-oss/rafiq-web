@@ -774,7 +774,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.14';
+const APP_VERSION = '1.4.15';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -3024,8 +3024,8 @@ function renderHome(){
         const q = (window._bmSearch || '').trim().toLowerCase();
         const selCat = window._bmCat || 'الكل';
         // الفئات المتاحة
-        const cats = ['الكل', ...new Set(allItems.map(b=>b.assigned_to||'').filter(c=>c.trim()))].sort((a,b)=>a==='الكل'?-1:b==='الكل'?1:a.localeCompare(b,'ar'));
-        let items = selCat==='الكل' ? allItems : allItems.filter(b=>(b.assigned_to||'').trim()===selCat);
+        const cats = ['الكل', ...new Set(allItems.map(b=>getBookmarkCategory(b)).filter(c=>c.trim()))].sort((a,b)=>a==='الكل'?-1:b==='الكل'?1:a.localeCompare(b,'ar'));
+        let items = selCat==='الكل' ? allItems : allItems.filter(b=>getBookmarkCategory(b)===selCat);
         if(q) items = items.filter(b=>(b.title||'').toLowerCase().includes(q)||(b.note||'').toLowerCase().includes(q));
         return `
         <!-- صف البحث + زر الإضافة -->
@@ -3052,7 +3052,7 @@ function renderHome(){
             const grad = getWebDomainGrad(domain);
             const screenshot = 'https://linkdr.com/api/screenshot/' + encodeURIComponent(domain);
             const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
-            const category = (b.assigned_to||'').trim();
+            const category = getBookmarkCategory(b);
             return `
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
               <!-- الصورة المصغرة 70% -->
@@ -9573,6 +9573,11 @@ async function loadCommentsIntoSheet(parentType, itemId, itemTitle, circleId, pa
 /* ---------- الإشارات المرجعية ---------- */
 const BOOKMARKS_TITLE = 'الإشارات المرجعية';
 
+function getBookmarkCategory(b){
+  if(!b) return '';
+  return ((b.unit || b.assigned_to) || '').trim();
+}
+
 function bookmarksOf(){
   if(!data||!data.sharedLists) return { list:null, items:[] };
   let l=data.sharedLists.find(x=>x.title===BOOKMARKS_TITLE);
@@ -9627,7 +9632,7 @@ async function addBookmarkItem(title, link, category){
     const domain = getWebDomain(rawUrl);
     const finalTitle = (title || '').trim() || (domain.charAt(0).toUpperCase() + domain.slice(1));
     const body = { id: uuid(), list_id: l.id, title: finalTitle, note: rawUrl, completed: false, position: 0 };
-    if(category && category.trim()) body.assigned_to = category.trim();
+    if(category && category.trim()) body.unit = category.trim();
     await rest('POST', 'shared_list_items', body, 'return=minimal');
     await refreshAll(); renderApp();
   } catch(e){
@@ -9657,7 +9662,7 @@ const BM_CAT_SUGGESTED = ['أعمال','تقنية','ترفيه','أخبار','�
 
 function bmCatChips(selCat, inputId){
   const bm = bookmarksOf();
-  const existing = [...new Set(bm.items.map(b=>b.assigned_to||'').filter(c=>c.trim()))];
+  const existing = [...new Set(bm.items.map(b=>getBookmarkCategory(b)).filter(c=>c.trim()))];
   const cats = ['بلا فئة', ...BM_CAT_SUGGESTED, ...existing].filter((v,i,a)=>a.indexOf(v)===i);
   return cats.map(cat=>`<button type="button" onclick="document.getElementById('${inputId}').value='${cat==='بلا فئة'?'':cat}';this.parentElement.querySelectorAll('button').forEach(b=>b.style.background=b===this?'var(--accent)':'var(--surface)');this.parentElement.querySelectorAll('button').forEach(b=>b.style.color=b===this?'#fff':'var(--text-2)');this.parentElement.querySelectorAll('button').forEach(b=>b.style.borderColor=b===this?'var(--accent)':'var(--border)');"
     style="flex-shrink:0;padding:4px 10px;border-radius:16px;border:1px solid ${(!selCat&&cat==='بلا فئة')||selCat===cat?'var(--accent)':'var(--border)'};background:${(!selCat&&cat==='بلا فئة')||selCat===cat?'var(--accent)':'var(--surface)'};color:${(!selCat&&cat==='بلا فئة')||selCat===cat?'#fff':'var(--text-2)'};font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">${esc(cat)}</button>`).join('');
@@ -9704,7 +9709,7 @@ function openEditBookmarkModal(id, curTitle, curUrl, curCat){
     const t = ($('#bmEditTitle') ? $('#bmEditTitle').value : '').trim();
     const cat = ($('#bmEditCatInput') ? $('#bmEditCatInput').value : '').trim();
     if(!u){ toast('يرجى كتابة الرابط'); return; }
-    const body = { title: t || getWebDomain(u), note: u, assigned_to: cat || null };
+    const body = { title: t || getWebDomain(u), note: u, unit: cat || null };
     await rest('PATCH', 'shared_list_items?id=eq.' + id, body, 'return=minimal');
     await refreshAll(); renderApp(); closeSheet();
     toast('تم تحديث الإشارة بنجاح ✓');
@@ -10177,7 +10182,7 @@ function renderBookmarks(){
           const grad = getWebDomainGrad(domain);
           const screenshot = 'https://linkdr.com/api/screenshot/' + encodeURIComponent(domain);
           const fav = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=128';
-          const category = (b.assigned_to || '').trim();
+          const category = getBookmarkCategory(b);
           const sp = getItemSpace('bookmark', b);
           const sm = spaceMeta(sp);
           const cc = commentCount(b.id);
