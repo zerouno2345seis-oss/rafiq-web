@@ -774,7 +774,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.13';
+const APP_VERSION = '1.4.14';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -2591,7 +2591,7 @@ function onDashboardCardClick(key){
   else if(key === 'lifetracker') { view = 'lifetracker'; renderApp(); }
   else if(key === 'media') { view = 'media'; renderApp(); }
   else if(key === 'places') { view = 'places'; renderApp(); }
-  else if(key === 'bookmarks') { view = 'bookmarks'; renderApp(); }
+  else if(key === 'bookmarks' || key === 'bookmark') { view = 'bookmarks'; renderApp(); }
   else if(key === 'proactive') { openProactiveCard(); }
   else { pickSec(key); }
 }
@@ -11428,7 +11428,8 @@ function pickSec(k){
   if(k==='schedule'){ view='schedule'; renderApp(); return; }
   if(k==='media'){ view='media'; renderApp(); return; }
   if(k==='places'){ view='places'; renderApp(); return; }
-  if(k==='bookmarks'){ view='bookmarks'; renderApp(); return; }
+  if(k==='bookmarks' || k==='bookmark'){ view='bookmarks'; renderApp(); return; }
+  if(k==='voice_urgent' || k==='urgent_partner'){ pickSec('urgent'); return; }
   const wasOn=activeSec===k;
   activeSec = wasOn ? null : k;
   applyCollapse();
