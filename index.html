@@ -592,6 +592,16 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .dash-card:active {
   transform: scale(0.985);
 }
+.dash-card.dash-dragging {
+  opacity: 0.55;
+  transform: scale(1.03);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+  border-style: dashed !important;
+  cursor: grabbing !important;
+}
+.dash-card[draggable="true"] {
+  cursor: grab;
+}
 .dash-card-head {
   display: flex;
   align-items: center;
@@ -1719,6 +1729,105 @@ function ringSVG(pct,cls){
 }
 
 /* ============================================================
+   نظام بطاقة إنجاز الذكية ومقترحات اليوم الغنية
+   ============================================================ */
+const PROACTIVE_PHASE_SUGGESTIONS = {
+  dawn: [
+    { emoji: '🕌', catEmoji: '🕌', catName: 'عبادة', title: 'صلاة الفجر وسنتها والأذكار', sub: 'ركعتا الفجر خير من الدنيا وما فيها، ابدأ يومك بنور الفريضة وأذكار الصباح.', quote: '«من صلى الصبح فهو في ذمة الله»', actionLabel: 'تسجيل الصلاة ✓', act: 'gotoHabits' },
+    { emoji: '💧', catEmoji: '💧', catName: 'صحة', title: 'شرب كأس ماء وتمرين صباحي', sub: 'رطّب جسدك بكأس ماء منعش ومارس إطالة خفيفة لتنشيط الدورة الدموية.', quote: '«وجعلنا من الماء كل شيء حي»', actionLabel: 'شربت الماء 💧', act: 'gotoHabits' },
+    { emoji: '🎯', catEmoji: '🎯', catName: 'إنجاز', title: 'ترتيب أولويات اليوم الثلاث', sub: 'حدد أهم ثلاث مهام ترغب بإنجازها اليوم قبل بدء الانشغالات الصباحية.', quote: '«بورك لأمتي في بكورها»', actionLabel: 'عرض المهام ←', act: 'openSchedule' }
+  ],
+  forenoon: [
+    { emoji: '☀️', catEmoji: '🕌', catName: 'عبادة', title: 'صلاة الضحى والترطيب', sub: 'صلاة الأوابين ركعتان تجزئ عن صدقة كل مفصل من مفاصلك، واشرب ماءً منعشاً.', quote: '«ويجزئ من ذلك ركعتان يركعهما من الضحى»', actionLabel: 'صلّيت الضحى ✓', act: 'gotoHabits' },
+    { emoji: '👀', catEmoji: '💧', catName: 'صحة', title: 'استراحة شاشة وعينين (20-20-20)', sub: 'أرح عينيك بالنظر لمسافة بعيدة لمدة 20 ثانية، واشرب جرعة ماء.', quote: 'صحة عينيك ونقاء ذهنك أولاً', actionLabel: 'أخذت استراحة 🧘', act: 'gotoHabits' },
+    { emoji: '🌱', catEmoji: '🎯', catName: 'إنجاز', title: 'تفقّد عادات اليوم', sub: 'راجع تقدم عاداتك اليومية وسجّل ما أتممته منها قبل الظهيرة.', quote: 'أحب الأعمال إلى الله أدومها وإن قل', actionLabel: 'فتح العادات 🌱', act: 'gotoHabits' }
+  ],
+  noon: [
+    { emoji: '☀️', catEmoji: '🕌', catName: 'عبادة', title: 'صلاة الظهر وسننها الراتبة', sub: 'أربع ركعات قبل الظهر وركعتان بعدها، ومراجعة مهام منتصف اليوم.', quote: '«ساعة تفتح فيها أبواب السماء»', actionLabel: 'صلاة الظهر ✓', act: 'gotoHabits' },
+    { emoji: '🍽', catEmoji: '🍽', catName: 'غذاء', title: 'وجبة غداء متوازنة وشرب ماء', sub: 'تناول طعاماً صحياً يمنحك طاقة دون خمول، ودوّن وجبتك في رفيق.', quote: 'ثلث لطعامه وثلث لشرابه', actionLabel: '+ تسجيل الوجبة 🍽', act: 'openMealSheet' },
+    { emoji: '📊', catEmoji: '🎯', catName: 'إنجاز', title: 'جرد منتصف اليوم', sub: 'قيّم ما تم إنجازه منذ الصباح وأعد جدولة ما تبقى من يومك بمرونة.', quote: 'حسن الإدارة يوفر نصف الوقت', actionLabel: 'جدولي 📅', act: 'openSchedule' }
+  ],
+  afternoon: [
+    { emoji: '⛅', catEmoji: '🕌', catName: 'عبادة', title: 'صلاة العصر وأذكار المساء', sub: 'حافظ على الصلاة الوسطى وحصّن يومك بأذكار المساء المباركة.', quote: '«حافظوا على الصلوات والصلاة الوسطى»', actionLabel: 'صلاة العصر ✓', act: 'gotoHabits' },
+    { emoji: '🚶', catEmoji: '💧', catName: 'صحة', title: 'استراحة مشي وحركة خفيفة', sub: 'تحرك لمدة 5 إلى 10 دقائق لتنشيط دورتك الدموية وتصفية الذهن.', quote: 'في الحركة بركة ونشاط متجدد', actionLabel: 'أتممت المشي 👟', act: 'gotoHabits' },
+    { emoji: '🔔', catEmoji: '🎯', catName: 'إنجاز', title: 'تنسيق التزامات المساء', sub: 'أرسل تذكيراتك العائلية ونسّق ما تحتاجه للبيت قبل العودة.', quote: 'الترتيب المسبق راحة للبال', actionLabel: 'أرسل تذكير 🔔', act: 'openRemindSheet' }
+  ],
+  evening: [
+    { emoji: '🌆', catEmoji: '🕌', catName: 'عبادة', title: 'صلاتا المغرب والعشاء وسننهما', sub: 'أدّ الفريضتين وسننهما واختم أوراد الصلاة بالاستغفار والسكينة.', quote: 'نور وطمأنينة للقلب والروح', actionLabel: 'سجّل الصلوات ✓', act: 'gotoHabits' },
+    { emoji: '👥', catEmoji: '👥', catName: 'عائلة', title: 'جلسة أسرية وعشاء دافئ', sub: 'استمتع بوقت نوعي مع عائلتك بعيداً عن الشاشات وضغوط العمل.', quote: 'خيركم خيركم لأهله', actionLabel: 'طعامنا 🍽', act: 'openMealSheet' },
+    { emoji: '🗓', catEmoji: '🎯', catName: 'إنجاز', title: 'جرد إنجازات اليوم', sub: 'استعرض ما أتممته اليوم من عادات ومهام مع رفيق واحمد الله على التمام.', quote: '«لئن شكرتم لأزيدنكم»', actionLabel: 'فتح المراجعة 🗓', act: 'openReviewSheet' }
+  ],
+  night: [
+    { emoji: '🌙', catEmoji: '🕌', catName: 'عبادة', title: 'ركعة الوتر وسورة الملك', sub: 'اجعل آخر صلاتك وتراً، واقرأ سورة الملك المانعة من عذاب القبر.', quote: '«اجعلوا آخر صلاتكم بالليل وتراً»', actionLabel: 'صلّيت الوتر ✓', act: 'gotoHabits' },
+    { emoji: '😴', catEmoji: '🌙', catName: 'نوم', title: 'أذكار النوم والراحة الهانئة', sub: 'توضأ وردد أذكار النوم مستشعراً حفظ الله ورعايته، ونم على طهارة.', quote: '«باسمك ربي وضعت جنبي وبك أرفعه»', actionLabel: 'أذكار النوم 🌙', act: 'gotoHabits' },
+    { emoji: '📝', catEmoji: '🎯', catName: 'إنجاز', title: 'تخطيط سريع لصباح الغد', sub: 'دوّن موعداً أو فكرة لصباح الغد لتستيقظ بذهن صافٍ وهدف واضح.', quote: 'بداية الغد تُصنع الليلة', actionLabel: '+ موعد جديد 📅', act: 'openAddEvent' }
+  ]
+};
+
+let proactiveCycleIndex = 0;
+function resolveProactiveInfo(){
+  const h = new Date().getHours() + new Date().getMinutes()/60;
+  let phaseKey = 'dawn';
+  let phaseTitle = 'الفجر والبكور';
+  let phaseEmoji = '🌅';
+  if(h >= 10.5 && h < 12.5){
+    phaseKey = 'forenoon';
+    phaseTitle = 'الضحى والصباح';
+    phaseEmoji = '☀️';
+  } else if(h >= 12.5 && h < 15.5){
+    phaseKey = 'noon';
+    phaseTitle = 'الظهيرة والمنتصف';
+    phaseEmoji = '☀️';
+  } else if(h >= 15.5 && h < 17.75){
+    phaseKey = 'afternoon';
+    phaseTitle = 'العصر وبداية المساء';
+    phaseEmoji = '⛅';
+  } else if(h >= 17.75 && h < 21.5){
+    phaseKey = 'evening';
+    phaseTitle = 'المساء والمغرب والعشاء';
+    phaseEmoji = '🌆';
+  } else if(h >= 21.5 || h < 4){
+    phaseKey = 'night';
+    phaseTitle = 'الليل والوتر والنوم';
+    phaseEmoji = '🌙';
+  }
+  const list = PROACTIVE_PHASE_SUGGESTIONS[phaseKey] || PROACTIVE_PHASE_SUGGESTIONS.dawn;
+  const total = list.length;
+  const idx = ((proactiveCycleIndex % total) + total) % total;
+  return {
+    phaseKey,
+    phaseTitle,
+    phaseEmoji,
+    suggestion: list[idx],
+    currentIndex: idx,
+    total
+  };
+}
+
+function proactiveCycle(dir, ev){
+  if(ev) ev.stopPropagation();
+  proactiveCycleIndex += dir;
+  if(view === 'home') renderHome();
+}
+
+let proactiveTouchStartX = 0;
+function onProactiveTouchStart(ev){
+  if(ev.touches && ev.touches[0]){
+    proactiveTouchStartX = ev.touches[0].clientX;
+  }
+}
+function onProactiveTouchEnd(ev){
+  if(ev.changedTouches && ev.changedTouches[0]){
+    const deltaX = ev.changedTouches[0].clientX - proactiveTouchStartX;
+    if(deltaX > 35){
+      proactiveCycle(-1);
+    } else if(deltaX < -35){
+      proactiveCycle(1);
+    }
+  }
+}
+
+/* ============================================================
    نظام بطاقات الشاشة الرئيسية (Home Dashboard Cards System)
    متطابق 100% مع تطبيق Android مع دعم الإضافة والحذف والتخصيص
    ============================================================ */
@@ -1800,44 +1909,30 @@ const DASH_TILES = {
   proactive: {
     key: 'proactive',
     emoji: '⚡',
-    title: 'الاستباقي',
-    desc: 'مقترحات وتوجيهات ذكية متبدلة حسب الوقت',
+    title: 'إنجاز',
+    desc: 'مقترحات وتوجيهات إنجاز ذكية متبدلة حسب الوقت',
     light: { bg: '#FAF7FF', border: '#E9D5FF', accent: '#7E22CE' },
     dark:  { bg: '#201633', border: '#432A66', accent: '#A855F7' },
     actionLabel: 'تنفيذ المقترح ✓',
     actionAct: 'openProactiveCard',
     renderBody: function(){
-      const h = new Date().getHours() + new Date().getMinutes()/60;
-      let phaseTitle = 'الفجر والبكور 🌅';
-      let title = 'صلاة الفجر وأذكار الصباح';
-      let sub = 'ركعتا الفجر خير من الدنيا وما فيها، ابدأ يومك بنور الفريضة.';
-      if(h >= 10.5 && h < 12.5){
-        phaseTitle = 'الضحى والصباح ☀️';
-        title = 'صلاة الضحى والترطيب';
-        sub = 'صلاة الأوابين ركعتان تجزئ عن صدقة مفاصلك، واشرب ماءً منعشاً.';
-      } else if(h >= 12.5 && h < 15.5){
-        phaseTitle = 'الظهيرة والمنتصف ☀️';
-        title = 'صلاة الظهر والغداء';
-        sub = 'السنن الرواتب، وجبة الغداء العائلية، ومراجعة مهام منتصف اليوم.';
-      } else if(h >= 15.5 && h < 17.75){
-        phaseTitle = 'العصر وبداية المساء ⛅';
-        title = 'صلاة العصر وأذكار المساء';
-        sub = 'حافظ على الصلاة الوسطى وحصن نفسك بأذكار المساء المباركة.';
-      } else if(h >= 17.75 && h < 21.5){
-        phaseTitle = 'المساء والمغرب والعشاء 🌆';
-        title = 'صلاة المغرب والعشاء وجرد اليوم';
-        sub = 'أدّ الفريضتين وسننهما واختم يومك بجرد إنجازاتك مع رفيق.';
-      } else if(h >= 21.5 || h < 4){
-        phaseTitle = 'الليل والوتر والنوم 🌙';
-        title = 'ركعة الوتر وسورة الملك';
-        sub = 'اختم صلاتك بالوتر، واقرأ سورة الملك، واستعد لنوم هانئ.';
-      }
+      const info = resolveProactiveInfo();
+      const s = info.suggestion;
       return `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-          <span style="font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-verysoft);padding:1px 6px;border-radius:6px">${phaseTitle}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-verysoft);padding:1.5px 7px;border-radius:6px;border:1px solid var(--accent-2)">${info.phaseEmoji} ${info.phaseTitle}</span>
+            <span style="font-size:10.5px;font-weight:600;color:var(--text-2);background:var(--surface-2);padding:1.5px 7px;border-radius:6px">${s.catEmoji} ${s.catName}</span>
+          </div>
+          <span style="font-size:10.5px;font-weight:700;color:var(--accent)">${info.currentIndex + 1}/${info.total}</span>
         </div>
-        <div style="font-size:12.5px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
-        <div style="font-size:10.5px;color:var(--text-3);margin-top:2px;line-height:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${sub}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <span style="font-size:17px;line-height:1">${s.emoji}</span>
+          <b style="font-size:13.5px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</b>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:3px;line-height:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+          ${esc(s.quote ? s.quote : s.sub)}
+        </div>
       `;
     }
   },
@@ -2116,19 +2211,89 @@ function toggleDashReorderMode(){
   if(view === 'home') renderHome();
 }
 
-function moveDashboardCard(key, dir, ev){
-  if(ev) ev.stopPropagation();
+function reorderDashboardCards(fromKey, toKey){
+  if(fromKey === 'proactive' || toKey === 'proactive' || fromKey === toKey) return;
   const keys = [...getDashboardKeys()];
   const hasProactive = keys[0] === 'proactive';
-  const startIdx = hasProactive ? 1 : 0;
-  const curIdx = keys.indexOf(key);
-  if(curIdx < startIdx) return;
-  const targetIdx = curIdx + dir;
-  if(targetIdx < startIdx || targetIdx >= keys.length) return;
-  const temp = keys[curIdx];
-  keys[curIdx] = keys[targetIdx];
-  keys[targetIdx] = temp;
-  setDashboardKeys(keys);
+  const others = keys.filter(k => k !== 'proactive');
+  const fromIdx = others.indexOf(fromKey);
+  const toIdx = others.indexOf(toKey);
+  if(fromIdx >= 0 && toIdx >= 0){
+    const item = others.splice(fromIdx, 1)[0];
+    others.splice(toIdx, 0, item);
+    const result = hasProactive ? ['proactive', ...others] : others;
+    setDashboardKeys(result);
+  }
+}
+
+let dashDraggedKey = null;
+function handleDashDragStart(ev, key){
+  if(key === 'proactive') { ev.preventDefault(); return; }
+  dashDraggedKey = key;
+  ev.dataTransfer.effectAllowed = 'move';
+  ev.dataTransfer.setData('text/plain', key);
+  setTimeout(() => { if(ev.target) ev.target.classList.add('dash-dragging'); }, 0);
+}
+function handleDashDragOver(ev, key){
+  if(dashDraggedKey && dashDraggedKey !== key && key !== 'proactive'){
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+  }
+}
+function handleDashDrop(ev, targetKey){
+  ev.preventDefault();
+  if(dashDraggedKey && dashDraggedKey !== targetKey && targetKey !== 'proactive'){
+    reorderDashboardCards(dashDraggedKey, targetKey);
+  }
+  dashDraggedKey = null;
+}
+function handleDashDragEnd(ev){
+  if(ev.target) ev.target.classList.remove('dash-dragging');
+  dashDraggedKey = null;
+}
+
+let touchDragCardKey = null;
+let touchDragTargetKey = null;
+function handleDashTouchStart(ev, key){
+  if(!isDashReorderMode || key === 'proactive') return;
+  touchDragCardKey = key;
+}
+function handleDashTouchMove(ev, key){
+  if(!touchDragCardKey) return;
+  const touch = ev.touches[0];
+  const elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+  const cardUnder = elUnder ? elUnder.closest('[data-dash-card]') : null;
+  if(cardUnder){
+    const targetKey = cardUnder.getAttribute('data-dash-card');
+    if(targetKey && targetKey !== touchDragCardKey && targetKey !== 'proactive'){
+      touchDragTargetKey = targetKey;
+    }
+  }
+}
+function handleDashTouchEnd(ev, key){
+  if(touchDragCardKey && touchDragTargetKey && touchDragCardKey !== touchDragTargetKey){
+    reorderDashboardCards(touchDragCardKey, touchDragTargetKey);
+  }
+  touchDragCardKey = null;
+  touchDragTargetKey = null;
+}
+
+let cardHoldTimer = null;
+let cardHoldTriggered = false;
+function onCardTouchStart(key, ev){
+  if(isDashReorderMode) return;
+  cardHoldTriggered = false;
+  cardHoldTimer = setTimeout(() => {
+    cardHoldTriggered = true;
+    if(navigator.vibrate) try { navigator.vibrate(50); } catch(e){}
+    unpinFromDashboard(key);
+  }, 650);
+}
+function onCardTouchMove(){
+  if(cardHoldTimer){ clearTimeout(cardHoldTimer); cardHoldTimer = null; }
+}
+function onCardTouchEnd(){
+  if(cardHoldTimer){ clearTimeout(cardHoldTimer); cardHoldTimer = null; }
 }
 
 function openCustomizeDashboardSheet(){
@@ -2194,10 +2359,13 @@ function renderHomeDashboard(){
   const keys = getDashboardKeys();
   return `
     <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 2px 8px">
-      <h2 style="font-size:16px;font-weight:700">لوحة المهام السريعة</h2>
+      <div style="display:flex;align-items:center;gap:6px">
+        <h2 style="font-size:16px;font-weight:700">لوحة المهام السريعة</h2>
+        ${isDashReorderMode ? '<span class="badge" style="background:var(--accent-verysoft);color:var(--accent);border:1px solid var(--accent-2);font-size:10.5px">نمط الترتيب ⇄</span>' : ''}
+      </div>
       <div style="display:flex;gap:6px">
-        <button class="mini" onclick="toggleDashReorderMode()" style="font-size:11.5px;padding:4px 9px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
-          ${isDashReorderMode ? '✓ تم التعديل' : 'تعديل التموضع ⚙️'}
+        <button class="mini" onclick="toggleDashReorderMode()" style="font-size:11.5px;padding:4px 9px;border-radius:10px;background:${isDashReorderMode ? 'var(--accent)' : 'var(--surface-2)'};color:${isDashReorderMode ? '#fff' : 'var(--text-2)'};border:1px solid ${isDashReorderMode ? 'var(--accent)' : 'var(--border)'};cursor:pointer;font-weight:700">
+          ${isDashReorderMode ? '✓ تم الترتيب' : 'إعادة التموضع ⚙️'}
         </button>
         <button class="mini" data-act="openCustomizeDashboard" style="font-size:11.5px;padding:4px 9px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
           تخصيص (${keys.length})
@@ -2211,15 +2379,35 @@ function renderHomeDashboard(){
         const theme = isDark ? item.dark : item.light;
         const isProactive = k === 'proactive';
         const fullStyle = isProactive ? 'grid-column: 1 / -1; min-height: 156px;' : '';
+        const dragAttrs = (isDashReorderMode && !isProactive) ? `
+          draggable="true"
+          ondragstart="handleDashDragStart(event, '${k}')"
+          ondragover="handleDashDragOver(event, '${k}')"
+          ondrop="handleDashDrop(event, '${k}')"
+          ondragend="handleDashDragEnd(event)"
+          ontouchstart="handleDashTouchStart(event, '${k}')"
+          ontouchmove="handleDashTouchMove(event, '${k}')"
+          ontouchend="handleDashTouchEnd(event, '${k}')"
+        ` : (isProactive ? `
+          ontouchstart="onProactiveTouchStart(event)"
+          ontouchend="onProactiveTouchEnd(event)"
+        ` : `
+          ontouchstart="onCardTouchStart('${k}', event)"
+          ontouchmove="onCardTouchMove(event)"
+          ontouchend="onCardTouchEnd(event)"
+          onmousedown="onCardTouchStart('${k}', event)"
+          onmouseup="onCardTouchEnd(event)"
+          onmouseleave="onCardTouchEnd(event)"
+        `);
         return `
-          <div class="dash-card ${isProactive ? 'dash-card-full' : ''}" onclick="onDashboardCardClick('${k}')" style="${fullStyle}background:${theme.bg};border:1.3px solid ${theme.border}">
+          <div class="dash-card ${isProactive ? 'dash-card-full' : ''}" data-dash-card="${k}" onclick="onDashboardCardClick('${k}')" ${dragAttrs} style="${fullStyle}background:${theme.bg};border:1.3px solid ${theme.border}">
             <div class="dash-card-head">
               <div class="dash-card-title">
                 <span class="dash-card-emoji">${item.emoji}</span>
                 <span class="dash-card-name">${esc(item.title)}</span>
                 ${isProactive ? '<span class="badge" style="font-size:10.5px;margin-inline-start:4px">صف كامل ⚡</span>' : ''}
               </div>
-              <button type="button" class="dash-unpin-btn" onclick="unpinFromDashboard('${k}', event)" title="إزالة من اللوحة" aria-label="إزالة">✕</button>
+              <button type="button" class="dash-unpin-btn" onclick="unpinFromDashboard('${k}', event)" title="إزالة من اللوحة (أو اضغط باستمرار)" aria-label="إزالة">✕</button>
             </div>
             <div class="dash-card-body">
               ${item.renderBody()}
@@ -2228,12 +2416,15 @@ function renderHomeDashboard(){
               <button type="button" class="dash-action-pill" onclick="onDashboardCardAction('${k}', event)" style="background:${theme.accent}1f;color:${theme.accent}">
                 ${esc(item.actionLabel)}
               </button>
-              ${isDashReorderMode && !isProactive ? `
-                <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
-                  <button type="button" class="mini" onclick="moveDashboardCard('${k}', -1, event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1)" title="تقديم">◀</button>
-                  <button type="button" class="mini" onclick="unpinFromDashboard('${k}', event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--error)" title="إزالة">✕</button>
-                  <button type="button" class="mini" onclick="moveDashboardCard('${k}', 1, event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1)" title="تأخير">▶</button>
+              ${isProactive ? `
+                <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
+                  <button type="button" class="mini" onclick="proactiveCycle(-1, event)" style="padding:2px 7px;font-size:12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);cursor:pointer" title="السابق">‹</button>
+                  <span style="font-size:10px;color:var(--text-3);font-weight:600;padding:0 2px">⟵ اسحب ⟶</span>
+                  <button type="button" class="mini" onclick="proactiveCycle(1, event)" style="padding:2px 7px;font-size:12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);cursor:pointer" title="التالي">›</button>
                 </div>
+              ` : ''}
+              ${isDashReorderMode && !isProactive ? `
+                <div class="dash-drag-bar" style="padding:3px 8px;border-radius:6px;background:var(--accent-verysoft);color:var(--accent);font-size:10.5px;font-weight:700">⠿ اضغط واسحب للتحريك</div>
               ` : ''}
             </div>
           </div>
@@ -2244,6 +2435,8 @@ function renderHomeDashboard(){
 }
 
 function onDashboardCardClick(key){
+  if(cardHoldTriggered) { cardHoldTriggered = false; return; }
+  if(isDashReorderMode) return;
   if(key === 'food') { view = 'food'; renderApp(); }
   else if(key === 'schedule') { view = 'schedule'; renderApp(); }
   else if(key === 'habits') { view = 'habits'; renderApp(); }
@@ -2283,46 +2476,20 @@ function onDashboardCardAction(key, ev){
 }
 
 function openProactiveCard(){
-  const h = new Date().getHours() + new Date().getMinutes()/60;
-  let phaseTitle = 'الفجر والبكور 🌅';
-  let title = 'صلاة الفجر وسنتها والأذكار';
-  let sub = 'ركعتا الفجر خير من الدنيا وما فيها، ابدأ يومك بنور الفريضة وأذكار الصباح وشرب كأس ماء.';
-  let quote = '«من صلى الصبح فهو في ذمة الله»';
-  if(h >= 10.5 && h < 12.5){
-    phaseTitle = 'الضحى والصباح ☀️';
-    title = 'صلاة الضحى واستراحة الترطيب';
-    sub = 'صلاة الأوابين ركعتان تجزئ عن صدقة كل مفصل، واشرب ماءً منعشاً لتجديد النشاط.';
-    quote = '«يصبح على كل سلامى من أحدكم صدقة.. ويجزئ ركعتان من الضحى»';
-  } else if(h >= 12.5 && h < 15.5){
-    phaseTitle = 'الظهيرة والمنتصف ☀️';
-    title = 'صلاة الظهر وسننها والغداء';
-    sub = 'السنن الرواتب الأربع قبل الظهر واثنتان بعدها، ووجبة الغداء ومراجعة منتصف اليوم.';
-    quote = '«ساعة تفتح فيها أبواب السماء، فأحب أن يصعد لي فيها عمل صالح»';
-  } else if(h >= 15.5 && h < 17.75){
-    phaseTitle = 'العصر وبداية المساء ⛅';
-    title = 'صلاة العصر وأذكار المساء';
-    sub = 'الصلاة الوسطى، وحصن نفسك بأذكار المساء وخذ استراحة قصيرة من الشاشات.';
-    quote = '«حافظوا على الصلوات والصلاة الوسطى وقوموا لله قانتين»';
-  } else if(h >= 17.75 && h < 21.5){
-    phaseTitle = 'المساء والمغرب والعشاء 🌆';
-    title = 'صلاة المغرب والعشاء وجرد إنجازات اليوم';
-    sub = 'أدّ صلاتي المغرب والعشاء وسننهما، واستعرض ما أنجزته من عادات اليوم مع رفيق.';
-    quote = 'الحمد لله على ما تم، وما نقص نستدركه غداً بإذن الله';
-  } else if(h >= 21.5 || h < 4){
-    phaseTitle = 'الليل والوتر والنوم 🌙';
-    title = 'ركعة الوتر وسورة الملك وأذكار النوم';
-    sub = 'اجعل آخر صلاتك وتراً، واقرأ سورة الملك المانعة من عذاب القبر ونم على طهارة.';
-    quote = '«اجعلوا آخر صلاتكم بالليل وتراً»';
-  }
-  openSheet(sheetHead('⚡ البطاقات الاستباقية الذكية') + `
+  const info = resolveProactiveInfo();
+  const s = info.suggestion;
+  openSheet(sheetHead('⚡ بطاقة إنجاز الذكية') + `
     <div style="background:var(--accent-verysoft);border:1.5px solid var(--accent);border-radius:16px;padding:14px;margin-bottom:14px;text-align:center">
-      <span style="font-size:11px;font-weight:700;color:var(--accent);background:var(--surface);padding:3px 10px;border-radius:12px;border:1px solid var(--border)">${phaseTitle}</span>
-      <h3 style="font-size:16px;color:var(--text-1);margin:10px 0 6px">${title}</h3>
-      <p style="font-size:12.5px;color:var(--text-2);line-height:1.5;margin:0 0 10px">${sub}</p>
-      <div style="font-size:12px;color:var(--accent);font-style:italic;background:var(--surface);padding:8px 12px;border-radius:10px">${quote}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--accent);background:var(--surface);padding:3px 10px;border-radius:12px;border:1px solid var(--border)">${info.phaseEmoji} ${info.phaseTitle}</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-2);background:var(--surface);padding:3px 10px;border-radius:12px;border:1px solid var(--border)">${s.catEmoji} ${s.catName}</span>
+      </div>
+      <h3 style="font-size:16px;color:var(--text-1);margin:6px 0">${s.emoji} ${esc(s.title)}</h3>
+      <p style="font-size:12.5px;color:var(--text-2);line-height:1.5;margin:0 0 10px">${esc(s.sub)}</p>
+      <div style="font-size:12px;color:var(--accent);font-style:italic;background:var(--surface);padding:8px 12px;border-radius:10px">${esc(s.quote)}</div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn full" onclick="closeSheet();toast('أحسنت! تم الإنجاز بنجاح ✓')" style="font-weight:700">تم الإنجاز بنجاح ✓</button>
+      <button class="btn full" onclick="closeSheet();toast('أحسنت! تم إنجاز المقترح بنجاح ✓')" style="font-weight:700">تم الإنجاز بنجاح ✓</button>
       <button class="btn ghost" onclick="closeSheet()">إغلاق</button>
     </div>
   `);
@@ -10550,7 +10717,7 @@ const SEC_META=[
   ['schedule','📅','جدولي'],
   ['remind','🔔','ذكّرني'],
   ['habits','🌱','عاداتي'],
-  ['proactive','⚡','الاستباقي'],
+  ['proactive','⚡','إنجاز'],
   ['overdue','⏰','المتأخرة'],
   ['reminders','📨','التذكيرات'],
   ['shopping','🛒','التسوق'],
