@@ -2071,14 +2071,20 @@ const DASH_TILES = {
   }
 };
 
+function normalizeDashboardKeys(list){
+  const valid = (list||[]).filter(k => DASH_TILES[k]);
+  const hasProactive = valid.includes('proactive');
+  const others = valid.filter(k => k !== 'proactive');
+  return hasProactive ? ['proactive', ...others] : (others.length ? others : ['food', 'schedule', 'habits', 'urgent']);
+}
+
 function getDashboardKeys(){
   try {
     const raw = localStorage.getItem('rafiq_dashboard_keys');
     if(raw){
       const parsed = JSON.parse(raw);
       if(Array.isArray(parsed) && parsed.length > 0){
-        const valid = parsed.filter(k => DASH_TILES[k]);
-        if(valid.length) return valid;
+        return normalizeDashboardKeys(parsed);
       }
     }
   }catch(e){}
@@ -2086,8 +2092,7 @@ function getDashboardKeys(){
 }
 
 function setDashboardKeys(keys){
-  const valid = (keys||[]).filter(k => DASH_TILES[k]);
-  const finalKeys = valid.length ? valid : ['food', 'schedule', 'habits', 'urgent'];
+  const finalKeys = normalizeDashboardKeys(keys);
   localStorage.setItem('rafiq_dashboard_keys', JSON.stringify(finalKeys));
   if(view === 'home') renderHome();
 }
@@ -2103,6 +2108,27 @@ function unpinFromDashboard(key, ev){
   setDashboardKeys(next);
   const meta = DASH_TILES[key];
   toast(`أُزيلت «${meta ? meta.title : key}» من لوحتك ✓`);
+}
+
+let isDashReorderMode = false;
+function toggleDashReorderMode(){
+  isDashReorderMode = !isDashReorderMode;
+  if(view === 'home') renderHome();
+}
+
+function moveDashboardCard(key, dir, ev){
+  if(ev) ev.stopPropagation();
+  const keys = [...getDashboardKeys()];
+  const hasProactive = keys[0] === 'proactive';
+  const startIdx = hasProactive ? 1 : 0;
+  const curIdx = keys.indexOf(key);
+  if(curIdx < startIdx) return;
+  const targetIdx = curIdx + dir;
+  if(targetIdx < startIdx || targetIdx >= keys.length) return;
+  const temp = keys[curIdx];
+  keys[curIdx] = keys[targetIdx];
+  keys[targetIdx] = temp;
+  setDashboardKeys(keys);
 }
 
 function openCustomizeDashboardSheet(){
@@ -2150,7 +2176,8 @@ function toggleDashboardCard(k){
     }
     keys.splice(idx, 1);
   } else {
-    keys.push(k);
+    if(k === 'proactive') keys.unshift(k);
+    else keys.push(k);
   }
   setDashboardKeys(keys);
   openCustomizeDashboardSheet();
@@ -2168,31 +2195,46 @@ function renderHomeDashboard(){
   return `
     <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 2px 8px">
       <h2 style="font-size:16px;font-weight:700">لوحة المهام السريعة</h2>
-      <button class="mini" data-act="openCustomizeDashboard" style="font-size:11.5px;padding:4px 10px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
-        ⚙️ تخصيص (${keys.length})
-      </button>
+      <div style="display:flex;gap:6px">
+        <button class="mini" onclick="toggleDashReorderMode()" style="font-size:11.5px;padding:4px 9px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
+          ${isDashReorderMode ? '✓ تم التعديل' : 'تعديل التموضع ⚙️'}
+        </button>
+        <button class="mini" data-act="openCustomizeDashboard" style="font-size:11.5px;padding:4px 9px;border-radius:10px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);cursor:pointer">
+          تخصيص (${keys.length})
+        </button>
+      </div>
     </div>
     <div id="homeDashGrid" class="home-dash-grid">
-      ${keys.map(k => {
+      ${keys.map((k, idx) => {
         const item = DASH_TILES[k];
         if(!item) return '';
         const theme = isDark ? item.dark : item.light;
+        const isProactive = k === 'proactive';
+        const fullStyle = isProactive ? 'grid-column: 1 / -1; min-height: 156px;' : '';
         return `
-          <div class="dash-card" onclick="onDashboardCardClick('${k}')" style="background:${theme.bg};border:1.3px solid ${theme.border}">
+          <div class="dash-card ${isProactive ? 'dash-card-full' : ''}" onclick="onDashboardCardClick('${k}')" style="${fullStyle}background:${theme.bg};border:1.3px solid ${theme.border}">
             <div class="dash-card-head">
               <div class="dash-card-title">
                 <span class="dash-card-emoji">${item.emoji}</span>
                 <span class="dash-card-name">${esc(item.title)}</span>
+                ${isProactive ? '<span class="badge" style="font-size:10.5px;margin-inline-start:4px">صف كامل ⚡</span>' : ''}
               </div>
               <button type="button" class="dash-unpin-btn" onclick="unpinFromDashboard('${k}', event)" title="إزالة من اللوحة" aria-label="إزالة">✕</button>
             </div>
             <div class="dash-card-body">
               ${item.renderBody()}
             </div>
-            <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
               <button type="button" class="dash-action-pill" onclick="onDashboardCardAction('${k}', event)" style="background:${theme.accent}1f;color:${theme.accent}">
                 ${esc(item.actionLabel)}
               </button>
+              ${isDashReorderMode && !isProactive ? `
+                <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+                  <button type="button" class="mini" onclick="moveDashboardCard('${k}', -1, event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1)" title="تقديم">◀</button>
+                  <button type="button" class="mini" onclick="unpinFromDashboard('${k}', event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--error)" title="إزالة">✕</button>
+                  <button type="button" class="mini" onclick="moveDashboardCard('${k}', 1, event)" style="padding:2px 7px;font-size:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-1)" title="تأخير">▶</button>
+                </div>
+              ` : ''}
             </div>
           </div>
         `;
