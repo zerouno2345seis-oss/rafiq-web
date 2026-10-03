@@ -774,7 +774,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.15';
+const APP_VERSION = '1.4.16';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1023,13 +1023,22 @@ function trimN(v){ v=Number(v)||0; return Number.isInteger(v)?String(v):String(M
 /* ================= جلب اللقطة (نفس استعلامات تطبيق Android) ================= */
 async function refreshAll(){
   const me=meId();
-  // جولة 1: الملف + العضويات بالتوازي
-  const [profileArr, memberships]=await Promise.all([
+  // جولة 1: الملف + العضويات + الدوائر المملوكة بالتوازي (لحماية المالك من عدم المزامنة)
+  const [profileArr, memberships, myOwnedCircles]=await Promise.all([
     rest('GET','profiles','id=eq.'+me+'&select=*'),
     rest('GET','circle_members','user_id=eq.'+me+'&select=*'),
+    rest('GET','circles','owner_id=eq.'+me+'&select=*').catch(()=>[]),
   ]);
   const profile=profileArr[0]||null;
-  const myCircleIds=memberships.map(m=>m.circle_id);
+  const myCircleIds=[...new Set([...memberships.map(m=>m.circle_id), ...(myOwnedCircles||[]).map(c=>c.id)])];
+  // المعالجة الذاتية: تسجيل المالك في circle_members فورًا إذا كان مفقودًا
+  if(myOwnedCircles && myOwnedCircles.length){
+    for(const oc of myOwnedCircles){
+      if(!memberships.some(m=>m.circle_id===oc.id)){
+        rest('POST','circle_members',{circle_id:oc.id,user_id:me,role:'OWNER'},'return=minimal').catch(()=>{});
+      }
+    }
+  }
   if(!myCircleIds.length){ data={profile,circles:[],items:[],recipients:[],entries:[],tasks:[],sharedLists:[],shopping:[],activity:[],reactions:[],invites:[],comments:[]}; saveSnap(); return; }
   const inC='circle_id=in.('+myCircleIds.join(',')+')';
   const inC2='id=in.('+myCircleIds.join(',')+')';
@@ -1073,17 +1082,151 @@ async function refreshAll(){
   if(!profile){ const prev=loadSnap(); if(prev&&prev.profile) profile=prev.profile; }
   data={profile,circles:circles.map(c=>({circle:c,members:allMembers.filter(m=>m.circle_id===c.id).map(m=>({m,p:pById[m.user_id]||{id:m.user_id,display_name:'عضو',accent_theme:'green'}}))})),
     items,recipients,entries,tasks,sharedLists,shopping,activity,reactions,invites,recycleBin:recycleBin||[],comments:comments||[]};
+
+  // تنظيف تلقائي للرسائل المستعجلة المنتهية (قاعدة الـ 3 أيام)
+  const expiredUrgent = (tasks||[]).filter(t => t.priority === 'URGENT' && t.status !== 'DONE' && t.created_at && (Date.now() - new Date(t.created_at).getTime() >= URGENT_EXPIRY_MS));
+  for(const eu of expiredUrgent){
+    rest('PATCH','tasks',{status:'DONE'},'id=eq.'+eu.id).catch(()=>{});
+  }
+
   saveSnap();
   try{ syncTrackerFromCloud(); }catch(e){}
+  try{ checkWebIncomingArrivals(); }catch(e){}
 }
 let dataSig='';
 function dataSignature(){ try{ return JSON.stringify(data).length + '|' + (data.items?data.items.length:0) + '|' + (data.tasks?data.tasks.length:0) + '|' + (data.shopping?data.shopping.length:0) + '|' + (data.entries?data.entries.length:0) + '|' + (data.activity?data.activity.length:0); }catch(e){ return String(Math.random()); } }
 function saveSnap(){ try{ localStorage.setItem('rafiq_snap', JSON.stringify({t:Date.now(),d:data})); }catch(e){} }
 function loadSnap(){ try{ const s=JSON.parse(localStorage.getItem('rafiq_snap')||'null'); if(s&&s.d) return s.d; }catch(e){} return null; }
 const circlesOf=()=>data?data.circles:[];
-const sharedFirst=()=>circlesOf().find(c=>c.circle.type==='SHARED')||null;
+const sharedFirst=()=>{
+  const all = circlesOf();
+  return all.find(c=>c.circle.type==='SHARED' && (c.members||[]).length > 1)
+      || all.find(c=>c.circle.type==='SHARED')
+      || all[0] || null;
+};
 const companionOf=()=>{ const s=sharedFirst(); return s? (s.members.find(x=>x.m.user_id!==meId())||{}).p : null; };
 const curCircleId = () => (sharedFirst() ? sharedFirst().circle.id : (circlesOf()[0] ? circlesOf()[0].circle.id : null));
+
+const URGENT_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
+function isUrgentActive(t){
+  if(!t || t.priority !== 'URGENT' || t.status === 'DONE') return false;
+  if(!t.created_at) return true;
+  const age = Date.now() - new Date(t.created_at).getTime();
+  return age < URGENT_EXPIRY_MS;
+}
+
+/* ================= نظام الوارد حديثاً والإشعارات ================= */
+function getWebIncomingArrivals(){
+  if(!data) return [];
+  const me = meId();
+  const lastSeen = localStorage.getItem('rafiq_last_seen_incoming') || '';
+  const twoDaysAgo = new Date(Date.now() - 48*3600*1000).toISOString();
+  const cutoff = (!lastSeen) ? new Date(Date.now() - 24*3600*1000).toISOString() : (lastSeen > twoDaysAgo ? lastSeen : twoDaysAgo);
+
+  const list = [];
+  // 1) رسائل مستعجلة من الرفيق
+  (data.tasks || []).filter(t => t.priority === 'URGENT' && t.owner_id !== me && isUrgentActive(t) && (t.created_at || '') > cutoff)
+    .forEach(t => {
+      list.push({ id: t.id, type: 'urgent', emoji: '🚨', title: t.title, subtitle: 'رسالة مستعجلة من ' + (nameOf(t.owner_id)||'رفيقك'), time: relAr(t.created_at), act: 'openUrgent' });
+    });
+
+  // 2) تذكيرات موجهة لي
+  (data.tasks || []).filter(t => t.priority === 'REMINDER' && (t.assigned_to === me || t.visibility === 'CIRCLE') && t.owner_id !== me && t.status !== 'DONE' && (t.created_at || '') > cutoff)
+    .forEach(t => {
+      list.push({ id: t.id, type: 'remind', emoji: '🔔', title: t.title, subtitle: 'تذكير موجه إليك من ' + (nameOf(t.owner_id)||'رفيقك'), time: relAr(t.created_at), act: 'openReminders' });
+    });
+
+  // 3) أماكن جديدة محفوظة
+  const pl = (typeof placesOf === 'function') ? placesOf() : {items:[]};
+  (pl.items || []).filter(p => (p.owner_id && p.owner_id !== me) && (p.created_at || '') > cutoff)
+    .forEach(p => {
+      list.push({ id: p.id, type: 'places', emoji: '📍', title: p.title, subtitle: 'مكان محفوظ جديد', time: relAr(p.created_at), act: 'openPlaces' });
+    });
+
+  // 4) مقاطع جديدة
+  const med = (typeof mediaOf === 'function') ? mediaOf() : {items:[]};
+  (med.items || []).filter(m => (m.owner_id && m.owner_id !== me) && (m.created_at || '') > cutoff)
+    .forEach(m => {
+      list.push({ id: m.id, type: 'media', emoji: '🎬', title: m.title, subtitle: 'مقطع أو رابط جديد', time: relAr(m.created_at), act: 'openMedia' });
+    });
+
+  // 5) إشارات مرجعية جديدة
+  const bm = (typeof bookmarksOf === 'function') ? bookmarksOf() : {items:[]};
+  (bm.items || []).filter(b => (b.owner_id && b.owner_id !== me) && (b.created_at || '') > cutoff)
+    .forEach(b => {
+      list.push({ id: b.id, type: 'bookmarks', emoji: '🔖', title: b.title, subtitle: 'إشارة مرجعية جديدة', time: relAr(b.created_at), act: 'openBookmarks' });
+    });
+
+  // 6) عناصر تسوق جديدة
+  const shop = (typeof shoppingFor === 'function') ? shoppingFor() : null;
+  (shop ? shop.items : []).filter(s => (s.owner_id && s.owner_id !== me) && !s.completed && (s.created_at || '') > cutoff)
+    .slice(0, 3)
+    .forEach(s => {
+      list.push({ id: s.id, type: 'shopping', emoji: '🛒', title: s.title, subtitle: 'عنصر تسوق جديد', time: relAr(s.created_at), act: 'openShopping' });
+    });
+
+  return list;
+}
+
+window._dismissedIncomingSig = null;
+window._dismissedIncomingBanner = false;
+
+function checkWebIncomingArrivals(){
+  const arrivals = getWebIncomingArrivals();
+  if(!arrivals.length) return;
+  const sig = arrivals.map(a => a.id).sort().join(',');
+  if(window._dismissedIncomingSig === sig) return;
+  openIncomingArrivalsSheet(arrivals, sig);
+}
+
+function openIncomingArrivalsSheet(arrivals, sig){
+  arrivals = arrivals || getWebIncomingArrivals();
+  if(!arrivals.length){ toast('لا توجد عناصر جديدة حاليًا'); return; }
+  openSheet(sheetHead('📬 وصلك حديثاً')+`
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:12px;line-height:1.5">
+      إليك آخر ما أضافه أو شاركه رفيقك في الدائرة المشتركة:
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;padding:2px">
+      ${arrivals.map(a => `
+        <div class="row" style="background:var(--surface-2);border-radius:12px;padding:10px 12px;gap:10px;cursor:pointer;border:1px solid var(--border)" data-act="navIncoming" data-target="${a.act}" data-id="${a.id}">
+          <span style="font-size:22px">${a.emoji}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:14px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.title)}</div>
+            <div style="font-size:11.5px;color:var(--text-2);margin-top:2px">${esc(a.subtitle)} • ${a.time}</div>
+          </div>
+          <button class="mini" style="font-size:11.5px;padding:4px 8px">عرض ➜</button>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn" data-act="dismissIncoming" data-sig="${sig||''}">تم الاطلاع ✓</button>
+      <button class="btn ghost" data-act="closeSheet">إغلاق</button>
+    </div>
+  `);
+}
+
+function dismissIncomingArrivals(sig){
+  localStorage.setItem('rafiq_last_seen_incoming', new Date().toISOString());
+  if(sig) window._dismissedIncomingSig = sig;
+  closeSheet();
+  toast('تم حفظ المشاهدة ✓');
+}
+
+function updateUrgentSelectionState(){
+  const allCbs = document.querySelectorAll('.urgent-cb');
+  const checkedCbs = document.querySelectorAll('.urgent-cb:checked');
+  const selectAll = document.querySelector('#urgentSelectAll');
+  const lbl = document.querySelector('#urgentSelectAllLabel');
+  const btn = document.querySelector('#urgentDeleteSelected');
+  if(selectAll){
+    selectAll.checked = (allCbs.length > 0 && checkedCbs.length === allCbs.length);
+    if(lbl) lbl.textContent = selectAll.checked ? 'إلغاء التحديد' : 'تحديد الكل';
+  }
+  if(btn){
+    btn.style.display = checkedCbs.length > 0 ? 'inline-block' : 'none';
+    btn.textContent = `حذف المحدد (${checkedCbs.length})`;
+  }
+}
 
 function getWebTrashItems(){
   const base = (data && data.recycleBin) ? [...data.recycleBin] : [];
@@ -1569,8 +1712,7 @@ function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null;
 </script>
 <script>
 'use strict';
-/* ================= الواجهة الرئيسية والتنقل ================= */
-const TABS=[['home','الرئيسية','🏠'],['activity','النشاط','⚡'],['lifetracker','متتبع العادات','📈'],['spaces','المساحات','🌐'],['more','المزيد','⋯']];
+const TABS=[['home','الرئيسية','🏠'],['activity','النشاط','⚡'],['lifetracker','متتبع العادات','📈'],['spaces','المساحات','🌐'],['more','الإعدادات','⚙️']];
 
 function allCompanions(){
   const me=meId();
@@ -2109,7 +2251,7 @@ const DASH_TILES = {
     actionLabel: 'أرسل رسالة 🚨',
     actionAct: 'openUrgentSheet',
     renderBody: function(){
-      const urg = (data.tasks||[]).filter(t => t.priority === 'URGENT' && t.status !== 'DONE');
+      const urg = (data.tasks||[]).filter(t => isUrgentActive(t));
       if(urg.length){
         return `
           <div style="display:flex;align-items:center;gap:4px">
@@ -2697,7 +2839,15 @@ function renderHome(){
   <div class="screen">
     <div class="greet">
       <div class="greet-side">
-        <button class="hicon-btn" data-act="openNotifs" aria-label="الإشعارات">🔔</button>
+        ${(()=>{
+          const arrivals = getWebIncomingArrivals();
+          return `
+            <button class="hicon-btn" data-act="openNotifs" aria-label="الإشعارات" style="position:relative">
+              🔔
+              ${arrivals.length ? `<span style="position:absolute;top:2px;right:2px;background:var(--error);color:#fff;border-radius:10px;font-size:9px;font-weight:800;padding:1px 4px;min-width:14px;text-align:center;line-height:1.2">${arrivals.length}</span>` : ''}
+            </button>
+          `;
+        })()}
         <div class="avatar">${esc((me.display_name||'؟')[0])}</div>
         <div class="g"><h1>مرحبًا يا ${esc(me.display_name||'صديقي')}</h1><p>معًا نحو حياة أفضل 🌱</p></div>
       </div>
@@ -2706,6 +2856,21 @@ function renderHome(){
         <button class="hicon-btn" data-act="addMenu" aria-label="إضافة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
       </div>
     </div>
+    ${(()=>{
+      const arrs = getWebIncomingArrivals();
+      if(!arrs.length || window._dismissedIncomingBanner) return '';
+      return `
+        <div class="card" style="background:var(--accent-verysoft);border:1.5px solid var(--accent);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:12px;border-radius:14px;cursor:pointer" data-act="openIncomingArrivals">
+          <span style="font-size:24px">📬</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13.5px;color:var(--text-1)">وصلك حديثاً (${arrs.length})</div>
+            <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${arrs[0].emoji} ${esc(arrs[0].title)}</div>
+          </div>
+          <button class="mini" style="font-size:11.5px;padding:5px 10px" data-act="openIncomingArrivals">عرض ➜</button>
+          <button data-act="dismissIncomingBanner" aria-label="إغلاق" style="font-size:16px;color:var(--text-3);padding:4px;background:none;border:none;cursor:pointer">✕</button>
+        </div>
+      `;
+    })()}
     ${(!isPwaInstalled && (window._canInstallPwa || (window._isIosSafari && window._isIosSafari())) && !sessionStorage.getItem('rafiq_pwa_banner_dismissed')) ? `
     <div class="card" style="background:var(--accent-verysoft);border:1.5px solid var(--accent-2);display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:12px">
       <img src="/icon-192.png" style="width:38px;height:38px;border-radius:10px;flex-shrink:0" alt="رفيق">
@@ -2846,15 +3011,37 @@ function renderHome(){
     <div class="card" data-sec="urgent">
       <div class="row" style="min-height:38px;border-top:none"><span style="font-size:21px">🚨</span>
       <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">رسائل مستعجلة</div>
-      <div class="shop-meta">تصل بصوت مميز مع أزرار: تم / اتصال</div></div></div>
+      <div class="shop-meta">رسائل مؤقتة تختفي تلقائيًا بعد 3 أيام ⏳</div></div></div>
       <div class="add-item"><input id="urgentIn" placeholder="اكتب رسالة مستعجلة لرفيقك..."><button data-act="sendUrgent">🚨</button></div>
-      ${(data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').map(u=>`<div class="row" style="min-height:42px;border-top:none">
-        <span style="font-size:17px">🚨</span>
-        <div style="flex:1;min-width:0"><div class="htitle">${esc(u.title)}</div>
-        <div class="shop-meta">من ${esc(nameOf(u.owner_id))} • ${relAr(u.created_at)}</div></div>
-        <button class="mini" data-act="doneUrgent" data-id="${u.id}">تم ✓</button>
-        <a class="link" href="tel:" style="margin-inline-start:6px">اتصال</a>
-        <button class="link" style="color:var(--error);margin-inline-start:6px" data-act="delUrgent" data-id="${u.id}">حذف</button></div>`).join('')}
+      ${(()=>{
+        const urgList = (data.tasks||[]).filter(t => isUrgentActive(t));
+        if(!urgList.length) return '';
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;margin-top:6px;border-bottom:1px solid var(--border);font-size:12px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="urgentSelectAll" data-act="toggleSelectAllUrgent">
+              <span id="urgentSelectAllLabel" style="font-weight:600;color:var(--text-2)">تحديد الكل</span>
+            </label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="mini" id="urgentDeleteSelected" data-act="deleteSelectedUrgent" style="display:none;background:var(--error);color:#fff;padding:3px 8px;font-size:11px">حذف المحدد</button>
+              <button class="mini" data-act="deleteAllUrgent" style="color:var(--error);background:rgba(239,68,68,0.1);padding:3px 8px;font-size:11px">حذف الكل ✕</button>
+            </div>
+          </div>
+          ${urgList.map(u=>`
+            <div class="row urgent-item-row" style="min-height:42px;border-top:none;gap:8px" data-id="${u.id}">
+              <input type="checkbox" class="urgent-cb" data-id="${u.id}" data-act="urgentCheckboxChange" style="cursor:pointer;width:16px;height:16px">
+              <span style="font-size:17px">🚨</span>
+              <div style="flex:1;min-width:0">
+                <div class="htitle">${esc(u.title)}</div>
+                <div class="shop-meta">من ${esc(nameOf(u.owner_id))} • ${relAr(u.created_at)}</div>
+              </div>
+              <button class="mini" data-act="doneUrgent" data-id="${u.id}">تم ✓</button>
+              <a class="link" href="tel:" style="margin-inline-start:4px">اتصال</a>
+              <button class="link" style="color:var(--error);margin-inline-start:4px" data-act="delUrgent" data-id="${u.id}">حذف</button>
+            </div>
+          `).join('')}
+        `;
+      })()}
     </div>
     <div class="sec" data-sec="shopping">
       <h2>🛒 قائمة التسوق ${spF!=='all'?`<span class="${spaceMeta(spF).badgeCls}">${spaceMeta(spF).label}</span>`:''}</h2>
@@ -7473,7 +7660,7 @@ function renderSpacesDrilldown(spaceKey){
     </div>
   </div>`;
 }
-/* ---------- المزيد (مطابق لتطبيق Android بنظام الشبكة والتصنيفات) ---------- */
+/* ---------- الإعدادات (مطابق لتطبيق Android بنظام الشبكة والتصنيفات) ---------- */
 window._activeMoreCategory = null;
 
 function playNotificationSound(type){
@@ -9157,11 +9344,18 @@ async function restoreBackup(text){
 }
 /* ---------- أماكننا المحفوظة ---------- */
 const PLACES_TITLE='أماكننا المحفوظة';
-function placesOf(){ const l=(data&&data.sharedLists||[]).find(x=>x.title===PLACES_TITLE);
-  if(!l) return {list:null,items:[]};
-  return {list:l,items:(data.shopping||[]).filter(i=>i.list_id===l.id)}; }
+function placesOf(){
+  if(!data || !data.sharedLists) return {list:null, items:[]};
+  const matching = data.sharedLists.filter(x=>x.title===PLACES_TITLE);
+  const mIds = new Set(matching.map(x=>x.id));
+  const items = (data.shopping||[]).filter(i=>mIds.has(i.list_id));
+  return { list: matching[0] || null, items };
+}
 async function ensurePlacesList(){
   const sh=sharedFirst(); if(!sh) return null;
+  const existing = (data && data.sharedLists || []).find(x => x.title === PLACES_TITLE && x.circle_id === sh.circle.id)
+                || (data && data.sharedLists || []).find(x => x.title === PLACES_TITLE);
+  if(existing) return existing;
   return ensureList(PLACES_TITLE, sh.circle.id);
 }
 async function addPlace(name,link){
@@ -9170,6 +9364,8 @@ async function addPlace(name,link){
     if(!l){ toast('أنشئ دائرة مشتركة أولًا'); return; }
     const url=(link||'').trim()||('https://maps.google.com/?q='+encodeURIComponent(name));
     await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:name,note:url,completed:false,position:0},'return=minimal');
+    const sh=sharedFirst();
+    if(sh && sh.circle) logAct(sh.circle.id, 'PLACE_ADDED', name);
     await refreshAll(); renderApp(); toast('حُفظ ✓ سيظهر عند رفيقك');
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
 }
@@ -9233,6 +9429,7 @@ async function saveMedia(){
     if(!cid){ toast('لا توجد دائرة متاحة'); return; }
     const l=await ensureList(MEDIA_TITLE,cid);
     await rest('POST','shared_list_items',{id:uuid(),list_id:l.id,title:(t.trim()||auto),note:u.trim(),completed:false,position:0},'return=minimal');
+    logAct(cid, 'MEDIA_ADDED', (t.trim()||auto));
     await refreshAll(); closeSheet(); renderApp(); toast('حُفظ ✓');
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
 }
@@ -9436,6 +9633,7 @@ async function saveSmartAddLink(){
         completed: false,
         position: 0
       }, 'return=minimal');
+      logAct(cid, 'MEDIA_ADDED', cleanTitle);
       await refreshAll();
       toast('حُفظ في مقاطعنا الجميلة ✓');
     }
@@ -9580,13 +9778,17 @@ function getBookmarkCategory(b){
 
 function bookmarksOf(){
   if(!data||!data.sharedLists) return { list:null, items:[] };
-  let l=data.sharedLists.find(x=>x.title===BOOKMARKS_TITLE);
-  const items=l? (data.shopping||[]).filter(i=>i.list_id===l.id) : [];
-  return { list:l, items };
+  const matching = data.sharedLists.filter(x=>x.title===BOOKMARKS_TITLE);
+  const mIds = new Set(matching.map(x=>x.id));
+  const items = (data.shopping||[]).filter(i=>mIds.has(i.list_id));
+  return { list: matching[0] || null, items };
 }
 
 async function ensureBookmarksList(){
   const sh=sharedFirst(); if(!sh) return null;
+  const existing = (data && data.sharedLists || []).find(x => x.title === BOOKMARKS_TITLE && x.circle_id === sh.circle.id)
+                || (data && data.sharedLists || []).find(x => x.title === BOOKMARKS_TITLE);
+  if(existing) return existing;
   return ensureList(BOOKMARKS_TITLE, sh.circle.id);
 }
 
@@ -9634,6 +9836,8 @@ async function addBookmarkItem(title, link, category){
     const body = { id: uuid(), list_id: l.id, title: finalTitle, note: rawUrl, completed: false, position: 0 };
     if(category && category.trim()) body.unit = category.trim();
     await rest('POST', 'shared_list_items', body, 'return=minimal');
+    const sh=sharedFirst();
+    if(sh && sh.circle) logAct(sh.circle.id, 'BOOKMARK_ADDED', finalTitle);
     await refreshAll(); renderApp();
   } catch(e){
     toast('تعذر الحفظ: ' + (e && e.message ? e.message : ''));
@@ -9724,9 +9928,10 @@ function openEditBookmarkModal(id, curTitle, curUrl, curCat){
 /* ---------- المقاطع والروابط (Media Screen) ---------- */
 function mediaOf(){
   if(!data || !data.sharedLists) return { list:null, items:[] };
-  const l = data.sharedLists.find(x => x.title === MEDIA_TITLE);
-  const items = l ? (data.shopping || []).filter(i => i.list_id === l.id) : [];
-  return { list:l, items };
+  const matching = data.sharedLists.filter(x => x.title === MEDIA_TITLE);
+  const mIds = new Set(matching.map(x => x.id));
+  const items = (data.shopping || []).filter(i => mIds.has(i.list_id));
+  return { list: matching[0] || null, items };
 }
 
 function detectMediaPlatform(url){
@@ -10672,12 +10877,70 @@ function openRemind(){
   bindRemindEvents();
 }
 /* ---------- الإشعارات + الإعدادات ---------- */
-function openNotifs(){
-  const evs=(data?data.activity:[]).slice(0,6);
-  openSheet(sheetHead('الإشعارات')+(evs.length?evs.map(ev=>`<div class="notif-row"><span class="nico">${evEmoji(ev.kind)}</span>
-    <div style="flex:1"><div style="font-size:13.5px">${evText(ev.kind,nameOf(ev.user_id),ev.payload)}</div>
-    <div class="shop-meta">${relAr(ev.created_at)}</div></div></div>`).join(''):
-    `<div class="empty"><span class="e">🌿</span>لا إشعارات بعد.</div>`)+`<p class="foot">تشجيع… تفاعل… رحلة مشتركة 💚</p>`);
+function openNotifs(activeTab = 'arrivals'){
+  const arrivals = getWebIncomingArrivals();
+  const evs = (data ? data.activity : []).slice(0, 20);
+
+  openSheet(sheetHead('الإشعارات والتنبيهات')+`
+    <div class="activity-subtabs" style="margin-bottom:12px">
+      <div class="activity-subtab-btn ${activeTab==='arrivals'?'on':''}" data-act="switchNotifTab" data-tab="arrivals">
+        📬 وصلك حديثاً ${arrivals.length ? `(${arrivals.length})` : ''}
+      </div>
+      <div class="activity-subtab-btn ${activeTab==='events'?'on':''}" data-act="switchNotifTab" data-tab="events">
+        ⚡ نشاط الرفيق (${evs.length})
+      </div>
+    </div>
+    <div id="notifsContent">
+      ${renderNotifsTabContent(activeTab, arrivals, evs)}
+    </div>
+    <p class="foot" style="margin-top:14px">تشجيع… تفاعل… رحلة مشتركة 💚</p>
+  `);
+}
+
+function renderNotifsTabContent(tab, arrivals, evs){
+  arrivals = arrivals || getWebIncomingArrivals();
+  evs = evs || ((data ? data.activity : []).slice(0, 20));
+
+  if(tab === 'arrivals'){
+    if(!arrivals.length){
+      return `<div class="empty"><span class="e">📬</span>لا عناصر واردة جديدة حاليًا.<br><small style="color:var(--text-3)">كل ما يضيفه رفيقك سيظهر هنا فورًا.</small></div>`;
+    }
+    return `
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;padding:2px">
+        ${arrivals.map(a => `
+          <div class="row" style="background:var(--surface-2);border-radius:12px;padding:10px 12px;gap:10px;cursor:pointer;border:1px solid var(--border)" data-act="navIncoming" data-target="${a.act}" data-id="${a.id}">
+            <span style="font-size:22px">${a.emoji}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:14px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.title)}</div>
+              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px">${esc(a.subtitle)} • ${a.time}</div>
+            </div>
+            <button class="mini" style="font-size:11.5px;padding:4px 8px">عرض ➜</button>
+          </div>
+        `).join('')}
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <button class="mini" data-act="dismissIncoming" style="padding:6px 14px">تم الاطلاع على الجميع ✓</button>
+      </div>
+    `;
+  }
+
+  // Events tab
+  if(!evs.length){
+    return `<div class="empty"><span class="e">🌿</span>لا أحداث نشاط مسجلة بعد.</div>`;
+  }
+  return `
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;padding:2px">
+      ${evs.map(ev => `
+        <div class="notif-row" style="padding:8px 10px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center">
+          <span class="nico" style="font-size:20px">${evEmoji(ev.kind)}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;color:var(--text-1)">${evText(ev.kind, nameOf(ev.user_id), ev.payload)}</div>
+            <div class="shop-meta" style="margin-top:2px">${relAr(ev.created_at)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 function openEditProfile(){
   const me=meProfile();
@@ -10963,16 +11226,93 @@ document.addEventListener('click', async e=>{
       case 'saveReview': await saveReview(); break;
       case 'completeRecurring': { const t=(data.tasks||[]).find(x=>x.id===el.dataset.id); if(t) await completeRecurring(t); break; }
       case 'sendUrgent': { const inp=$('#urgentIn'); const t=((inp&&inp.value)||'').trim(); if(!t){ toast('اكتب الرسالة'); break; }
-        const me=meId(); const sh=(data.circles||[]).find(c=>c.circle.type==='SHARED')||(data.circles||[])[0];
+        const me=meId(); const sh=sharedFirst();
         if(!sh){ toast('تحتاج دائرة مشتركة أولًا'); break; }
         const peer=((sh.members||[])[0]&&(sh.members||[])[0].p&&(sh.members||[])[0].p.id!==me)?(sh.members||[])[0].p:((sh.members||[])[1]||{}).p||null;
         await rest('POST','tasks',{id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),owner_id:me,circle_id:sh.circle.id,title:t,visibility:'CIRCLE',assigned_to:peer?peer.id:null,priority:'URGENT',status:'TODO'});
         try{ const ptok=(peer&&peer.avatar_url||'').startsWith('FCM:')?peer.avatar_url.slice(4):null;
-          if(ptok) await fetch('https://rafiq-web-tau.vercel.app/api/send-push',{method:'POST',headers:{'Content-Type':'application/json','x-rafiq-key':'rk_77d1db341635c4e56368244df9fa09a3'},body:JSON.stringify({to_token:ptok,title:'رسالة مستجلة',message:t,urgent:true})}); }catch(e){}
+          if(ptok) await fetch('https://rafiq-web-tau.vercel.app/api/send-push',{method:'POST',headers:{'Content-Type':'application/json','x-rafiq-key':'rk_77d1db341635c4e56368244df9fa09a3'},body:JSON.stringify({to_token:ptok,title:'رسالة مستعجلة',message:t,urgent:true})}); }catch(e){}
         if(inp) inp.value=''; await refreshAll(); renderApp(); toast('أُرسلت 🚨'); break; }
-      case 'delUrgent': { if(!confirm('حذف هذه الرسالة المستجلة؟')) break;
-        await rest('DELETE','tasks','id=eq.'+el.dataset.id); await refreshAll(); renderApp(); toast('حُذفت الرسالة'); break; }
+      case 'delUrgent': { if(!confirm('حذف هذه الرسالة المستعجلة؟')) break;
+        await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id).catch(()=>{});
+        await rest('DELETE','tasks','id=eq.'+el.dataset.id).catch(()=>{});
+        await refreshAll(); renderApp(); toast('حُذفت الرسالة'); break; }
       case 'doneUrgent': { await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+el.dataset.id); await refreshAll(); renderApp(); break; }
+      case 'toggleSelectAllUrgent': {
+        const checked = el.checked;
+        document.querySelectorAll('.urgent-cb').forEach(c => c.checked = checked);
+        updateUrgentSelectionState();
+        break;
+      }
+      case 'urgentCheckboxChange': {
+        updateUrgentSelectionState();
+        break;
+      }
+      case 'deleteSelectedUrgent': {
+        const checkedCbs = Array.from(document.querySelectorAll('.urgent-cb:checked'));
+        if(!checkedCbs.length) break;
+        if(!confirm(`هل تريد بالتأكيد حذف ${checkedCbs.length} رسالة مستعجلة محددة؟`)) break;
+        for(const c of checkedCbs){
+          const id = c.dataset.id;
+          await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+id).catch(()=>{});
+          await rest('DELETE','tasks','id=eq.'+id).catch(()=>{});
+        }
+        await refreshAll(); renderApp(); toast(`حُذفت ${checkedCbs.length} رسالة ✓`); break;
+      }
+      case 'deleteAllUrgent': {
+        const allUrg = (data.tasks || []).filter(t => isUrgentActive(t));
+        if(!allUrg.length) break;
+        if(!confirm(`هل تريد بالتأكيد حذف جميع الرسائل المستعجلة (${allUrg.length})؟`)) break;
+        for(const u of allUrg){
+          await rest('PATCH','tasks',{status:'DONE'},'id=eq.'+u.id).catch(()=>{});
+          await rest('DELETE','tasks','id=eq.'+u.id).catch(()=>{});
+        }
+        await refreshAll(); renderApp(); toast('حُذفت جميع الرسائل المستعجلة ✓'); break;
+      }
+      case 'switchNotifTab': {
+        const tab = el.dataset.tab;
+        document.querySelectorAll('.activity-subtab-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+        const c = $('#notifsContent');
+        if(c) c.innerHTML = renderNotifsTabContent(tab);
+        break;
+      }
+      case 'openIncomingArrivals': {
+        openIncomingArrivalsSheet();
+        break;
+      }
+      case 'dismissIncoming': {
+        dismissIncomingArrivals(el.dataset.sig);
+        break;
+      }
+      case 'dismissIncomingBanner': {
+        window._dismissedIncomingBanner = true;
+        renderApp();
+        break;
+      }
+      case 'navIncoming': {
+        closeSheet();
+        const tgt = el.dataset.target;
+        if(tgt === 'openPlaces') renderPlaces();
+        else if(tgt === 'openMedia') renderMedia();
+        else if(tgt === 'openBookmarks') renderBookmarks();
+        else if(tgt === 'openShopping') renderShopping();
+        else if(tgt === 'openUrgent'){
+          view = 'home';
+          renderApp();
+          setTimeout(()=>{
+            const elSec = document.querySelector('[data-sec="urgent"]');
+            if(elSec) elSec.scrollIntoView({behavior:'smooth'});
+          }, 150);
+        } else if(tgt === 'openReminders'){
+          view = 'home';
+          renderApp();
+          setTimeout(()=>{
+            const elSec = document.querySelector('[data-sec="reminders"]');
+            if(elSec) elSec.scrollIntoView({behavior:'smooth'});
+          }, 150);
+        }
+        break;
+      }
       case 'playMedia': { openPlayer(el.dataset.u, el.dataset.t, el.dataset.id); break; }
       case 'openSmartAddLink': await openSmartAddLink(el.dataset.kind, el.dataset.url, el.dataset.title); break;
       case 'saveSmartAddLink': await saveSmartAddLink(); break;
@@ -11389,7 +11729,11 @@ const SEC_META=[
 function secSummary(k){
   try{
     const today=new Date().toISOString().slice(0,10), me=meId();
-    const lc=t=>{ const l=(data&&data.sharedLists||[]).find(x=>x.title===t); return l? (data.shopping||[]).filter(i=>i.list_id===l.id).length : 0; };
+    const lc=t=>{
+      const matching = (data&&data.sharedLists||[]).filter(x=>x.title===t);
+      const mIds = new Set(matching.map(x=>x.id));
+      return (data.shopping||[]).filter(i=>mIds.has(i.list_id)).length;
+    };
     if(k==='lifetracker'){ const trk=getTrackerData(); const n=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(today)).length; return n? n+' نشاط اليوم':'سجل الأنشطة والعادات'; }
     if(k==='food'){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي'); const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id&&(i.note||'').startsWith(today)).length:0; return n? n+' وجبة اليوم':'لا وجبات اليوم'; }
     if(k==='schedule'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=today).length; return n? n+' موعد قادم':'لا مواعيد'; }
@@ -11420,7 +11764,7 @@ function secSummary(k){
     if(k==='places'){ const n=lc('أماكننا المحفوظة'); return n? n+' مكان':'لا أماكن'; }
     if(k==='media'){ const n=lc('مقاطعنا الجميلة'); return n? n+' مقطع':'لا مقاطع'; }
     if(k==='bookmarks'){ const n=lc('الإشارات المرجعية'); return n? n+' إشارة محفوظة':'لا إشارات'; }
-    if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='URGENT'&&t.status!=='DONE').length; return n? n+' مستعجلة':'لا رسائل'; }
+    if(k==='urgent'){ const n=(data&&data.tasks||[]).filter(t=>isUrgentActive(t)).length; return n? n+' مستعجلة':'لا رسائل'; }
   }catch(e){}
   return '';
 }
