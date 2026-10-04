@@ -262,6 +262,25 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .otp-b:focus{border-color:var(--accent-2);background:var(--surface)}
 
 /* ===== مشغّل المقاطع المنبثق — سينمائي داكن (Preset 05 Locomotive) 50% ===== */
+
+/* ─────────── Drum Roller: منتقي الوقت الدوّار ─────────── */
+.drum-wrap{display:flex;gap:0;align-items:center;justify-content:center;direction:ltr;margin:8px 0}
+.drum-col{display:flex;flex-direction:column;align-items:center;width:88px;position:relative}
+.drum-col-label{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:4px;text-align:center}
+.drum-viewport{height:168px;overflow:hidden;position:relative;width:100%;cursor:grab}
+.drum-viewport:active{cursor:grabbing}
+.drum-viewport::before,.drum-viewport::after{content:'';position:absolute;left:0;right:0;height:56px;z-index:2;pointer-events:none}
+.drum-viewport::before{top:0;background:linear-gradient(to bottom,var(--surface) 0%,transparent 100%)}
+.drum-viewport::after{bottom:0;background:linear-gradient(to top,var(--surface) 0%,transparent 100%)}
+.drum-selector{position:absolute;top:56px;left:6px;right:6px;height:56px;border-radius:12px;background:var(--accent-verysoft);border:2px solid var(--accent);pointer-events:none;z-index:1}
+.drum-list{display:flex;flex-direction:column;transition:transform .18s cubic-bezier(.25,.8,.25,1);will-change:transform}
+.drum-item{height:56px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--text-2);transition:color .12s,font-size .12s;user-select:none;font-variant-numeric:tabular-nums}
+.drum-item.active{color:var(--accent);font-size:32px}
+.drum-sep{font-size:36px;font-weight:900;color:var(--accent);padding:0 4px;line-height:168px}
+.drum-period{display:flex;flex-direction:column;gap:6px;justify-content:center;margin-right:10px}
+.drum-period button{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;min-width:60px}
+.drum-period button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* ──────────────────────────────────────────────────────────── */
 .rmp-backdrop{position:fixed;inset:0;z-index:900;background:rgba(4,5,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;animation:rmpFade .18s ease}
 @keyframes rmpFade{from{opacity:0}to{opacity:1}}
 .rmp-panel{width:60vw;max-width:1200px;background:#0B0C0D;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(48,138,101,.15);overflow:hidden;color:#F2F2F0;display:flex;flex-direction:column}
@@ -774,7 +793,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.18';
+const APP_VERSION = '1.4.19';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -838,6 +857,20 @@ async function refreshSession(){
     session = {access_token:d.access_token, refresh_token:d.refresh_token, expires_at:Date.now()+(d.expires_in||3600)*1000, user:d.user};
     saveSession(); return true;
   }catch(e){ return false; }
+}
+
+/* ── auto-refresh wrapper: يجدد JWT تلقائياً ويعيد المحاولة ── */
+async function restWithRefresh(method, table, a3, a4, a5) {
+  try {
+    return await rest(method, table, a3, a4, a5);
+  } catch(e) {
+    const m = String(e.message || e);
+    if (m.includes('JWT') || m.includes('401') || m.includes('NO_SESSION')) {
+      const ok = await refreshSession();
+      if (ok) return await rest(method, table, a3, a4, a5);
+    }
+    throw e;
+  }
 }
 async function rest(method, table, a3, a4, a5){
   let query='', body=null, prefer=null;
@@ -3388,7 +3421,7 @@ async function saveRenameStore(listId){
   const title = ((inp && inp.value) || '').trim();
   if(!title){ toast('اكتب اسم المتجر'); return; }
   try {
-    await rest('PATCH', 'shared_lists', { title }, 'id=eq.' + listId);
+    await restWithRefresh('PATCH', 'shared_lists', { title }, 'id=eq.' + listId);
     closeSheet();
     await refreshAll();
     renderApp();
@@ -3417,6 +3450,7 @@ async function deleteStore(listId, storeName){
 }
 
 function renderShopping(){
+  if(typeof renderNav === "function") renderNav();
   const stores = getStoreLists();
   const past = getPastBoughtItems();
   const activeTab = window._activeStoreTab || 'ALL';
@@ -3544,6 +3578,7 @@ function evTimeText(t){ const d=evDate(t); if(!d) return ''; return String(d.get
 const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 let schedMonth=null;
 function renderSchedule(){
+  if(typeof renderNav === "function") renderNav();
   const evs=eventsOf();
   if(!schedMonth){ const n=new Date(); schedMonth=new Date(n.getFullYear(), n.getMonth(), 1); }
   const y=schedMonth.getFullYear(), m=schedMonth.getMonth();
@@ -3657,6 +3692,7 @@ async function logPickedDish(meal){
 }
 
 function renderFood(){
+  if(typeof renderNav === "function") renderNav();
   const meals=[['فطور','🍳','meal-futoor'],['غداء','🍲','meal-ghadaa'],['عشاء','🥗','meal-ashaa'],['سناك','🍎','meal-snack']];
   const entries=foodEntries();
   const dl=(data.sharedLists||[]).find(x=>x.title==='أطباق نحبها');
@@ -6595,7 +6631,7 @@ async function saveEditMed(itemId){
     const ongoing=window._emdOngoing; const end=ongoing?null:(($('#emdEnd')||{}).value||null);
     const patient=window._emdPatient||'me';
     const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
-    await rest('PATCH','items',{title:name.trim(),unit:dose,target_value:perDay,frequency:'MED|'+schedule,description:desc},'id=eq.'+itemId);
+    await restWithRefresh('PATCH','items',{title:name.trim(),unit:dose,target_value:perDay,frequency:'MED|'+schedule,description:desc},'id=eq.'+itemId);
     await refreshAll(); closeSheet(); renderApp(); toast('تم تعديل الدواء ✓');
   }catch(e){ toast('تعذر التعديل: '+(e&&e.message?e.message:'')); }
 }
@@ -6664,6 +6700,7 @@ async function undoLastDose(itemId){
 }
 
 function renderMeds(){
+  if(typeof renderNav === "function") renderNav();
   const meds = medsOf();
   const today = new Date();
   const todayIso = today.toISOString().slice(0, 10);
@@ -6898,6 +6935,7 @@ function weekStats(){ const me=meId(); const start=new Date(); start.setDate(sta
     overdue:overdueTasks().length}; }
 /* ---------- العادات ---------- */
 function renderHabits(){
+  if(typeof renderNav === "function") renderNav();
   const me=meProfile(), habits=habitsFor(meId());
   $('#view').innerHTML=`<div class="screen">
     <div class="card" data-act="openLifeTracker" style="background:var(--accent-soft);border:1.5px solid var(--accent);cursor:pointer;margin-bottom:14px;padding:12px 14px;display:flex;align-items:center;gap:12px">
@@ -6935,6 +6973,7 @@ function circleName(cid){ const c=circlesOf().find(x=>x.circle.id===cid); return
 
 /* ---------- الإحصائيات + رحلتنا ---------- */
 function renderStats(){
+  if(typeof renderNav === "function") renderNav();
   const me=meProfile(), comp=companionOf();
   const myPct=dailyPct(meId());
   const habits=habitsFor(meId());
@@ -6994,6 +7033,7 @@ function evText(k,who,payload){ if(k==='REMINDER') return who+' يذكّرك: «
 /* ---------- المهام ---------- */
 /* ---------- المهام ---------- */
 function renderTasks(){
+  if(typeof renderNav === "function") renderNav();
   const tasks=visibleTasks();
   const f=window._taskFilter||'ALL';
   const list=tasks.filter(t=>f==='ALL'||t.status===f).sort((a,b)=>(a.status==='DONE')-(b.status==='DONE'));
@@ -7435,6 +7475,7 @@ function renderSpaces(){
 }
 
 function renderSpacesDrilldown(spaceKey){
+  if(typeof renderNav === "function") renderNav();
   const me = meId();
   const sm = spaceMeta(spaceKey);
   const comp = companionOf();
@@ -8177,59 +8218,192 @@ function closeModal(){ closePopup(); }
 function openTimePickerModal(initTime, onPick){
   let [hStr, mStr] = (initTime || '17:00').split(':');
   let selHour = parseInt(hStr || '17', 10);
-  let selMin = parseInt(mStr || '0', 10);
+  let selMin  = parseInt(mStr  || '0',  10);
   if(isNaN(selHour)) selHour = 17;
-  if(isNaN(selMin)) selMin = 0;
+  if(isNaN(selMin))  selMin  = 0;
+  // تقريب الدقائق لأقرب 5
+  selMin = Math.round(selMin / 5) * 5;
+  if(selMin >= 60) { selMin = 55; }
 
-  const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+  const MINS = [0,5,10,15,20,25,30,35,40,45,50,55];
+
+  function buildDrum(containerId, items, selectedVal, onChange){
+    const vp = document.getElementById(containerId);
+    if(!vp) return;
+    const list = vp.querySelector('.drum-list');
+    const ITEM_H = 56;
+    const PAD = 2; // عناصر وهمية فوق وتحت
+
+    // بناء العناصر مع حشو للتوسيط
+    const padded = [...Array(PAD).fill(null), ...items, ...Array(PAD).fill(null)];
+    list.innerHTML = padded.map((v, i) => {
+      const real = v !== null;
+      const isActive = real && v === selectedVal;
+      return `<div class="drum-item${isActive ? ' active' : ''}" data-val="${real ? v : ''}">${real ? String(v).padStart(2,'0') : ''}</div>`;
+    }).join('');
+
+    // موضع أولي
+    let curIdx = items.indexOf(selectedVal);
+    if(curIdx < 0) curIdx = 0;
+    let offsetY = -curIdx * ITEM_H;
+    list.style.transform = `translateY(${offsetY}px)`;
+
+    function updateActive(){
+      list.querySelectorAll('.drum-item').forEach((el, i) => {
+        const realIdx = i - PAD;
+        el.classList.toggle('active', realIdx === curIdx);
+      });
+    }
+
+    function snapTo(idx){
+      curIdx = Math.max(0, Math.min(items.length - 1, idx));
+      offsetY = -curIdx * ITEM_H;
+      list.style.transition = 'transform .18s cubic-bezier(.25,.8,.25,1)';
+      list.style.transform = `translateY(${offsetY}px)`;
+      updateActive();
+      onChange(items[curIdx]);
+    }
+
+    // Touch drag
+    let startY = 0, startOffset = 0, isDragging = false;
+    vp.addEventListener('touchstart', e => {
+      isDragging = true;
+      startY = e.touches[0].clientY;
+      startOffset = offsetY;
+      list.style.transition = 'none';
+    }, {passive:true});
+    vp.addEventListener('touchmove', e => {
+      if(!isDragging) return;
+      const dy = e.touches[0].clientY - startY;
+      offsetY = startOffset + dy;
+      list.style.transform = `translateY(${offsetY}px)`;
+    }, {passive:true});
+    vp.addEventListener('touchend', () => {
+      isDragging = false;
+      const idx = Math.round(-offsetY / ITEM_H);
+      snapTo(idx);
+    });
+
+    // Mouse drag
+    let mStart = 0, mStartOff = 0, mDragging = false;
+    vp.addEventListener('mousedown', e => {
+      mDragging = true; mStart = e.clientY; mStartOff = offsetY;
+      list.style.transition = 'none'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if(!mDragging) return;
+      offsetY = mStartOff + (e.clientY - mStart);
+      list.style.transform = `translateY(${offsetY}px)`;
+    });
+    document.addEventListener('mouseup', () => {
+      if(!mDragging) return;
+      mDragging = false;
+      const idx = Math.round(-offsetY / ITEM_H);
+      snapTo(idx);
+    });
+
+    // Wheel scroll
+    vp.addEventListener('wheel', e => {
+      e.preventDefault();
+      const idx = curIdx + (e.deltaY > 0 ? 1 : -1);
+      snapTo(idx);
+    }, {passive:false});
+
+    // Click on item
+    list.addEventListener('click', e => {
+      const item = e.target.closest('.drum-item');
+      if(!item || item.dataset.val === '') return;
+      const val = parseInt(item.dataset.val, 10);
+      const idx = items.indexOf(val);
+      if(idx >= 0) snapTo(idx);
+    });
+  }
+
+  const HOURS = Array.from({length: 24}, (_, i) => i);
 
   const renderContent = () => {
-    const formatted = `${String(selHour).padStart(2, '0')}:${String(selMin).padStart(2, '0')}`;
-    openModal('⏰ اختيار الساعة والدقائق', `
-      <div style="text-align:center;margin-bottom:14px;background:var(--accent-verysoft);padding:12px;border-radius:14px;border:1px solid var(--accent-2)">
-        <div style="font-size:32px;font-weight:900;color:var(--accent);letter-spacing:2px">${formatted}</div>
-        <div style="font-size:12px;color:var(--text-2);margin-top:2px">اضغط لاختيار الساعة والدقيقة مباشرة دون الحاجة للكتابة</div>
+    const formatted = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
+    const isPM = selHour >= 12;
+    const hour12 = selHour % 12 || 12;
+    const periodAr = isPM ? 'مساءً' : 'صباحاً';
+
+    openModal('🕐 اختيار الوقت', `
+      <div style="text-align:center;margin-bottom:10px;background:var(--accent-verysoft);padding:10px 16px;border-radius:14px;border:1px solid var(--accent-2)">
+        <div style="font-size:36px;font-weight:900;color:var(--accent);letter-spacing:3px;font-variant-numeric:tabular-nums">${formatted}</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:2px">${periodAr}</div>
       </div>
 
-      <div style="margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <label style="font-size:12.5px;font-weight:700">اختر الساعة:</label>
-          <span style="font-size:11.5px;color:var(--accent);font-weight:700">${selHour < 12 ? 'صباحاً' : 'مساءً'} (${selHour})</span>
+      <div class="drum-wrap">
+        <!-- الفترة صباح/مساء -->
+        <div class="drum-period" id="drumPeriod">
+          <button class="${!isPM ? 'on' : ''}" id="btnAM" onclick="window._drumSetPeriod(false)">صباحاً</button>
+          <button class="${isPM  ? 'on' : ''}" id="btnPM" onclick="window._drumSetPeriod(true)">مساءً</button>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:4px">
-          ${Array.from({length: 24}, (_, i) => i).map(h => `
-            <button type="button" class="mini ${selHour === h ? 'primary' : 'ghost'}" onclick="window._pickHour(${h})" style="padding:7px 0;font-size:12px;font-weight:${selHour===h?'800':'500'};border-radius:8px;background:${selHour===h?'var(--accent)':'var(--surface-2)'};color:${selHour===h?'#fff':'var(--text-1)'};border:1px solid ${selHour===h?'var(--accent)':'var(--border)'}">
-              ${String(h).padStart(2, '0')}
-            </button>
-          `).join('')}
+
+        <!-- أسطوانة الساعة -->
+        <div class="drum-col">
+          <div class="drum-col-label">الساعة</div>
+          <div class="drum-viewport" id="drumHourVp">
+            <div class="drum-selector"></div>
+            <div class="drum-list"></div>
+          </div>
+        </div>
+
+        <!-- فاصل -->
+        <div class="drum-sep">:</div>
+
+        <!-- أسطوانة الدقائق -->
+        <div class="drum-col">
+          <div class="drum-col-label">الدقائق</div>
+          <div class="drum-viewport" id="drumMinVp">
+            <div class="drum-selector"></div>
+            <div class="drum-list"></div>
+          </div>
         </div>
       </div>
 
-      <div style="margin-bottom:14px">
-        <label style="font-size:12.5px;font-weight:700;display:block;margin-bottom:6px">اختر الدقائق (${selMin}):</label>
-        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px">
-          ${minuteOptions.map(m => `
-            <button type="button" class="mini ${selMin === m ? 'primary' : 'ghost'}" onclick="window._pickMinute(${m})" style="padding:7px 0;font-size:12.5px;font-weight:${selMin===m?'800':'500'};border-radius:8px;background:${selMin===m?'var(--accent)':'var(--surface-2)'};color:${selMin===m?'#fff':'var(--text-1)'};border:1px solid ${selMin===m?'var(--accent)':'var(--border)'}">
-              :${String(m).padStart(2, '0')}
-            </button>
-          `).join('')}
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn full" onclick="window._confirmTimeSelection()" style="font-weight:700">تحديد الوقت (${formatted}) ✓</button>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn full" id="drumConfirmBtn" style="font-weight:700">تحديد الوقت ✓</button>
         <button class="btn ghost" onclick="closeModal()">إلغاء</button>
       </div>
     `);
 
-    window._pickHour = (h) => { selHour = h; renderContent(); };
-    window._pickMinute = (m) => { selMin = m; renderContent(); };
-    window._confirmTimeSelection = () => {
-      const finalVal = `${String(selHour).padStart(2, '0')}:${String(selMin).padStart(2, '0')}`;
+    // بناء الأسطوانتين
+    buildDrum('drumHourVp', HOURS, selHour, (h) => { selHour = h; refreshDrumDisplay(); });
+    buildDrum('drumMinVp',  MINS,  selMin,  (m) => { selMin  = m; refreshDrumDisplay(); });
+
+    window._drumSetPeriod = (pm) => {
+      const curH = selHour % 12;
+      selHour = pm ? (curH === 0 ? 12 : curH + 12) : (curH === 0 ? 0 : curH);
+      buildDrum('drumHourVp', HOURS, selHour, (h) => { selHour = h; refreshDrumDisplay(); });
+      refreshDrumDisplay();
+    };
+
+    const btn = document.getElementById('drumConfirmBtn');
+    if(btn) btn.onclick = () => {
+      const val = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
       closeModal();
-      if(onPick) onPick(finalVal);
+      if(onPick) onPick(val);
     };
   };
+
+  function refreshDrumDisplay(){
+    const formatted = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
+    const isPM = selHour >= 12;
+    const el = document.querySelector('.rmp-modal-body .drum-wrap');
+    if(!el) return;
+    // تحديث العرض الرئيسي
+    const display = document.querySelector('.rmp-modal-body [style*="font-size:36px"]');
+    if(display) display.textContent = formatted;
+    const periodEl = document.querySelector('.rmp-modal-body [style*="font-size:12px"]');
+    if(periodEl) periodEl.textContent = isPM ? 'مساءً' : 'صباحاً';
+    const btnAM = document.getElementById('btnAM');
+    const btnPM = document.getElementById('btnPM');
+    if(btnAM) btnAM.className = !isPM ? 'on' : '';
+    if(btnPM) btnPM.className =  isPM ? 'on' : '';
+    const confirmBtn = document.getElementById('drumConfirmBtn');
+    if(confirmBtn) confirmBtn.textContent = `تحديد الوقت (${formatted}) ✓`;
+  }
 
   renderContent();
 }
@@ -9035,7 +9209,7 @@ async function incHabit(id){
   const amount=prompt('كم تريد إضافة إلى «'+item.title+'»؟ (الوحدة: '+(item.unit||'')+')','1');
   if(amount==null) return; const n=parseFloat(amount); if(!n||n<=0) return;
   try{ await rest('POST','progress_entries',{id:uuid(),item_id:id,user_id:meId(),value:n,unit:item.unit,recorded_at:nowIso()},'return=minimal');
-    if(item.target_value&&n>=(+item.target_value)) logAct(item.circle_id,'ITEM_COMPLETED',item.title);
+    if(item.target_value&&n>=(+item.target_value)){ logAct(item.circle_id,'ITEM_COMPLETED',item.title); await logHabitInTracker(item); }
     await refreshAll(); renderApp(); toast('سُجل التقدم ✓');
   }catch(e){ toast(friendly(e)); }
 }
@@ -9044,9 +9218,58 @@ async function binHabit(id,on){
   try{
     if(on) await rest('POST','progress_entries',{id:uuid(),item_id:id,user_id:meId(),value:item.target_value||1,unit:item.unit,recorded_at:nowIso()},'return=minimal');
     else await rest('DELETE','progress_entries',null,null).catch(()=>{});
-    if(on) logAct(item.circle_id,'ITEM_COMPLETED',item.title);
+    if(on){ logAct(item.circle_id,'ITEM_COMPLETED',item.title); await logHabitInTracker(item); }
     await refreshAll(); renderApp();
   }catch(e){ toast(friendly(e)); }
+}
+
+/* ── تسجيل إتمام العادة في متتبع الأنشطة تلقائياً ── */
+async function logHabitInTracker(item) {
+  try {
+    if (!item) return;
+    const trk = getTrackerData();
+    // تحقق: لا تُسجَّل مرتين في اليوم الواحد
+    const today = new Date().toISOString().slice(0, 10);
+    const alreadyLogged = (trk.entries || []).some(e =>
+      e.note && e.note.includes('habit:' + item.id) &&
+      (e.loggedAt || '').startsWith(today)
+    );
+    if (alreadyLogged) return;
+    // أضف فئة للعادة في المتتبع إذا لم تكن موجودة
+    let catId = (trk.categories || []).find(c => c.id === ('habit_' + item.id))?.id;
+    if (!catId) {
+      catId = 'habit_' + item.id;
+      const cat = {
+        id: catId,
+        name: item.title,
+        color: '#22c55e',
+        icon: '🌱',
+        unit: item.unit || 'مرة',
+        goal: item.target_value || 1
+      };
+      trk.categories = trk.categories || [];
+      trk.categories.push(cat);
+    }
+    // سجّل النشاط
+    const now = new Date();
+    const entry = {
+      id: uuid(),
+      categoryId: catId,
+      loggedAt: now.toISOString(),
+      startTime: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
+      endTime: null,
+      value: item.target_value || 1,
+      note: 'habit:' + item.id,
+      mood: null
+    };
+    trk.entries = trk.entries || [];
+    trk.entries.push(entry);
+    saveTrackerData(trk);
+    // مزامنة مع السحابة
+    try {
+      await rest('POST', 'tracker_entries', _entryToRow(entry), 'return=minimal');
+    } catch(e) { /* سيُزامن لاحقاً */ }
+  } catch(e) { console.warn('[habitTracker]', e); }
 }
 /* الحذف الصحيح لسجلات اليوم (للتراجع عن الثنائية) — يُنفذ عبر استعلام */
 async function deleteTodayEntries(itemId){
@@ -9921,7 +10144,7 @@ function openEditBookmarkModal(id, curTitle, curUrl, curCat){
     const cat = ($('#bmEditCatInput') ? $('#bmEditCatInput').value : '').trim();
     if(!u){ toast('يرجى كتابة الرابط'); return; }
     const body = { title: t || getWebDomain(u), note: u, unit: cat || null };
-    await rest('PATCH', 'shared_list_items?id=eq.' + id, body, 'return=minimal');
+    await restWithRefresh('PATCH', 'shared_list_items?id=eq.' + id, body, 'return=minimal');
     await refreshAll(); renderApp(); closeSheet();
     toast('تم تحديث الإشارة بنجاح ✓');
   };
@@ -9954,6 +10177,7 @@ function detectMediaPlatform(url){
 }
 
 function renderMedia(){
+  if(typeof renderNav === "function") renderNav();
   const med = mediaOf();
   const allItems = med.items;
   const list = med.list;
@@ -10181,13 +10405,14 @@ function openEditPlaceModal(id, curTitle, curNote){
     if(!name){ toast('اكتب اسم المكان'); return; }
     if(!link) link = 'https://maps.google.com/?q=' + encodeURIComponent(name);
     const newNote = addr + '|' + link + '|' + cat;
-    await rest('PATCH', 'shared_list_items?id=eq.' + id, { title: name, note: newNote }, 'return=minimal');
+    await restWithRefresh('PATCH', 'shared_list_items?id=eq.' + id, { title: name, note: newNote }, 'return=minimal');
     await refreshAll(); closeSheet(); renderApp();
     toast('تم تحديث المكان بنجاح ✓');
   };
 }
 
 function renderPlaces(){
+  if(typeof renderNav === "function") renderNav();
   const pl = placesOf();
   const allItems = pl.items;
   const list = pl.list;
@@ -10324,6 +10549,7 @@ function renderPlaces(){
 
 /* ---------- قسم الإشارات المرجعية (Bookmarks Screen) ---------- */
 function renderBookmarks(){
+  if(typeof renderNav === "function") renderNav();
   const bm = bookmarksOf();
   const allItems = bm.items;
   const list = bm.list;
