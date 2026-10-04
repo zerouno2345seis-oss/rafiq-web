@@ -169,7 +169,7 @@ h2{font-size:16px;font-weight:600}
 @media(min-width:680px){#nav .in{max-width:760px}}
 @media(min-width:920px){#nav .in{max-width:880px}}
 @media(min-width:1150px){#nav .in{max-width:960px}}
-#nav button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:12px;font-weight:600;padding:6px 2px;position:relative;transition:color .12s;white-space:nowrap}
+#nav .in > button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#777873;font-size:12px;font-weight:600;padding:6px 2px;position:relative;transition:color .12s;white-space:nowrap}
 #nav button.on{color:var(--accent);font-weight:700}
 #nav button span:not(.ic){font-size:11.5px;line-height:1.2;white-space:nowrap;overflow:visible}
 @media(min-width:680px){
@@ -263,24 +263,22 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 
 /* ===== مشغّل المقاطع المنبثق — سينمائي داكن (Preset 05 Locomotive) 50% ===== */
 
-/* ─────────── Drum Roller: منتقي الوقت الدوّار ─────────── */
-.drum-wrap{display:flex;gap:0;align-items:center;justify-content:center;direction:ltr;margin:8px 0}
-.drum-col{display:flex;flex-direction:column;align-items:center;width:88px;position:relative}
-.drum-col-label{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:4px;text-align:center}
-.drum-viewport{height:168px;overflow:hidden;position:relative;width:100%;cursor:grab}
-.drum-viewport:active{cursor:grabbing}
-.drum-viewport::before,.drum-viewport::after{content:'';position:absolute;left:0;right:0;height:56px;z-index:2;pointer-events:none}
-.drum-viewport::before{top:0;background:linear-gradient(to bottom,var(--surface) 0%,transparent 100%)}
-.drum-viewport::after{bottom:0;background:linear-gradient(to top,var(--surface) 0%,transparent 100%)}
-.drum-selector{position:absolute;top:56px;left:6px;right:6px;height:56px;border-radius:12px;background:var(--accent-verysoft);border:2px solid var(--accent);pointer-events:none;z-index:1}
-.drum-list{display:flex;flex-direction:column;transition:transform .18s cubic-bezier(.25,.8,.25,1);will-change:transform}
-.drum-item{height:56px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--text-2);transition:color .12s,font-size .12s;user-select:none;font-variant-numeric:tabular-nums}
-.drum-item.active{color:var(--accent);font-size:32px}
-.drum-sep{font-size:36px;font-weight:900;color:var(--accent);padding:0 4px;line-height:168px}
-.drum-period{display:flex;flex-direction:column;gap:6px;justify-content:center;margin-right:10px}
-.drum-period button{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;min-width:60px}
-.drum-period button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-/* ──────────────────────────────────────────────────────────── */
+/* ─────────── منتقي الوقت المدمج الأنيق (Compact Box Picker) ─────────── */
+.tp-wrap{display:flex;align-items:center;justify-content:center;gap:8px;direction:ltr;margin:6px 0 10px}
+.tp-col{display:flex;flex-direction:column;align-items:center;gap:3px}
+.tp-label{font-size:10.5px;font-weight:700;color:var(--text-3);text-align:center;letter-spacing:0.5px}
+.tp-box{width:64px;height:50px;background:var(--accent-verysoft);border:2px solid var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;box-shadow:0 2px 6px rgba(0,0,0,.04);transition:transform .12s,border-color .12s}
+.tp-box:active{transform:scale(0.96)}
+.tp-num{font-size:25px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.tp-btn{width:64px;height:24px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;cursor:pointer;transition:all .1s;user-select:none}
+.tp-btn:active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tp-colon{font-size:24px;font-weight:900;color:var(--accent);margin-top:16px;user-select:none}
+.tp-period-col{display:flex;flex-direction:column;gap:5px;justify-content:center;margin-top:16px;margin-right:4px}
+.tp-period-btn{padding:5px 11px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.tp-period-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tp-quick-row{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px;scrollbar-width:none;justify-content:center}
+.tp-quick-btn{flex-shrink:0;padding:4px 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.tp-quick-btn:hover{border-color:var(--accent);color:var(--accent)}
 .rmp-backdrop{position:fixed;inset:0;z-index:900;background:rgba(4,5,6,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;animation:rmpFade .18s ease}
 @keyframes rmpFade{from{opacity:0}to{opacity:1}}
 .rmp-panel{width:60vw;max-width:1200px;background:#0B0C0D;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(48,138,101,.15);overflow:hidden;color:#F2F2F0;display:flex;flex-direction:column}
@@ -793,7 +791,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.19';
+const APP_VERSION = '1.4.20';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -1862,15 +1860,15 @@ function renderNav(){
     const colSet = typeof collapsedSet === 'function' ? collapsedSet() : new Set();
     const activeSecs = (typeof SEC_META !== 'undefined' ? SEC_META : []).filter(m => !colSet.has(m[0]));
     $('#nav').innerHTML = `
-      <div style="display:flex;align-items:center;width:100%;height:56px;padding:4px 8px;gap:6px;background:var(--surface);border-top:1px solid var(--border);box-sizing:border-box">
-        <button data-act="closeNavReveal" style="width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:var(--text-2);cursor:pointer;flex-shrink:0" title="إغلاق">✕</button>
-        <div style="width:1px;height:24px;background:var(--border);flex-shrink:0"></div>
+      <div class="in" style="height:56px;padding:4px 10px;display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box">
+        <button data-act="closeNavReveal" style="all:unset;width:32px;min-width:32px;max-width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:var(--text-2);cursor:pointer;flex-shrink:0;box-sizing:border-box" title="إغلاق">✕</button>
+        <div style="width:1px;height:22px;background:var(--border);flex-shrink:0"></div>
         <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;padding:2px 0;scrollbar-width:none">
           ${activeSecs.map(m => {
             const singleWord = (m[2]||'').trim().split(' ')[0];
-            return `<button data-act="openSecFromNav" data-sec="${m[0]}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;min-width:52px;height:46px;border-radius:8px;background:transparent;border:none;cursor:pointer;padding:2px;color:var(--text-1)">
-              <span style="font-size:18px;line-height:1">${m[1]}</span>
-              <span style="font-size:9.5px;font-weight:600;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48px">${singleWord}</span>
+            return `<button data-act="openSecFromNav" data-sec="${m[0]}" style="all:unset;display:flex;flex-direction:column;align-items:center;justify-content:center;width:50px;min-width:50px;height:44px;border-radius:8px;background:transparent;cursor:pointer;padding:2px;color:var(--text-1);box-sizing:border-box">
+              <span style="font-size:17px;line-height:1">${m[1]}</span>
+              <span style="font-size:9.5px;font-weight:600;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46px">${singleWord}</span>
             </button>`;
           }).join('')}
         </div>
@@ -8221,193 +8219,120 @@ function openTimePickerModal(initTime, onPick){
   let selMin  = parseInt(mStr  || '0',  10);
   if(isNaN(selHour)) selHour = 17;
   if(isNaN(selMin))  selMin  = 0;
-  // تقريب الدقائق لأقرب 5
   selMin = Math.round(selMin / 5) * 5;
-  if(selMin >= 60) { selMin = 55; }
-
-  const MINS = [0,5,10,15,20,25,30,35,40,45,50,55];
-
-  function buildDrum(containerId, items, selectedVal, onChange){
-    const vp = document.getElementById(containerId);
-    if(!vp) return;
-    const list = vp.querySelector('.drum-list');
-    const ITEM_H = 56;
-    const PAD = 2; // عناصر وهمية فوق وتحت
-
-    // بناء العناصر مع حشو للتوسيط
-    const padded = [...Array(PAD).fill(null), ...items, ...Array(PAD).fill(null)];
-    list.innerHTML = padded.map((v, i) => {
-      const real = v !== null;
-      const isActive = real && v === selectedVal;
-      return `<div class="drum-item${isActive ? ' active' : ''}" data-val="${real ? v : ''}">${real ? String(v).padStart(2,'0') : ''}</div>`;
-    }).join('');
-
-    // موضع أولي
-    let curIdx = items.indexOf(selectedVal);
-    if(curIdx < 0) curIdx = 0;
-    let offsetY = -curIdx * ITEM_H;
-    list.style.transform = `translateY(${offsetY}px)`;
-
-    function updateActive(){
-      list.querySelectorAll('.drum-item').forEach((el, i) => {
-        const realIdx = i - PAD;
-        el.classList.toggle('active', realIdx === curIdx);
-      });
-    }
-
-    function snapTo(idx){
-      curIdx = Math.max(0, Math.min(items.length - 1, idx));
-      offsetY = -curIdx * ITEM_H;
-      list.style.transition = 'transform .18s cubic-bezier(.25,.8,.25,1)';
-      list.style.transform = `translateY(${offsetY}px)`;
-      updateActive();
-      onChange(items[curIdx]);
-    }
-
-    // Touch drag
-    let startY = 0, startOffset = 0, isDragging = false;
-    vp.addEventListener('touchstart', e => {
-      isDragging = true;
-      startY = e.touches[0].clientY;
-      startOffset = offsetY;
-      list.style.transition = 'none';
-    }, {passive:true});
-    vp.addEventListener('touchmove', e => {
-      if(!isDragging) return;
-      const dy = e.touches[0].clientY - startY;
-      offsetY = startOffset + dy;
-      list.style.transform = `translateY(${offsetY}px)`;
-    }, {passive:true});
-    vp.addEventListener('touchend', () => {
-      isDragging = false;
-      const idx = Math.round(-offsetY / ITEM_H);
-      snapTo(idx);
-    });
-
-    // Mouse drag
-    let mStart = 0, mStartOff = 0, mDragging = false;
-    vp.addEventListener('mousedown', e => {
-      mDragging = true; mStart = e.clientY; mStartOff = offsetY;
-      list.style.transition = 'none'; e.preventDefault();
-    });
-    document.addEventListener('mousemove', e => {
-      if(!mDragging) return;
-      offsetY = mStartOff + (e.clientY - mStart);
-      list.style.transform = `translateY(${offsetY}px)`;
-    });
-    document.addEventListener('mouseup', () => {
-      if(!mDragging) return;
-      mDragging = false;
-      const idx = Math.round(-offsetY / ITEM_H);
-      snapTo(idx);
-    });
-
-    // Wheel scroll
-    vp.addEventListener('wheel', e => {
-      e.preventDefault();
-      const idx = curIdx + (e.deltaY > 0 ? 1 : -1);
-      snapTo(idx);
-    }, {passive:false});
-
-    // Click on item
-    list.addEventListener('click', e => {
-      const item = e.target.closest('.drum-item');
-      if(!item || item.dataset.val === '') return;
-      const val = parseInt(item.dataset.val, 10);
-      const idx = items.indexOf(val);
-      if(idx >= 0) snapTo(idx);
-    });
-  }
-
-  const HOURS = Array.from({length: 24}, (_, i) => i);
+  if(selMin >= 60) selMin = 55;
 
   const renderContent = () => {
     const formatted = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
     const isPM = selHour >= 12;
-    const hour12 = selHour % 12 || 12;
     const periodAr = isPM ? 'مساءً' : 'صباحاً';
 
-    openModal('🕐 اختيار الوقت', `
-      <div style="text-align:center;margin-bottom:10px;background:var(--accent-verysoft);padding:10px 16px;border-radius:14px;border:1px solid var(--accent-2)">
-        <div style="font-size:36px;font-weight:900;color:var(--accent);letter-spacing:3px;font-variant-numeric:tabular-nums">${formatted}</div>
-        <div style="font-size:12px;color:var(--text-2);margin-top:2px">${periodAr}</div>
-      </div>
+    openModal('⏰ تحديد الوقت', `
+      <div style="max-width:300px;margin:0 auto;text-align:center">
+        <!-- عداد الوقت بنظام الصناديق: الأرقام داخل المربع ومصغر بنسبة 50% -->
+        <div class="tp-wrap">
+          <!-- الفترة: صباحاً / مساءً -->
+          <div class="tp-period-col">
+            <button class="tp-period-btn ${!isPM ? 'on' : ''}" onclick="window._tpSetPeriod(false)">صباحاً</button>
+            <button class="tp-period-btn ${isPM  ? 'on' : ''}" onclick="window._tpSetPeriod(true)">مساءً</button>
+          </div>
 
-      <div class="drum-wrap">
-        <!-- الفترة صباح/مساء -->
-        <div class="drum-period" id="drumPeriod">
-          <button class="${!isPM ? 'on' : ''}" id="btnAM" onclick="window._drumSetPeriod(false)">صباحاً</button>
-          <button class="${isPM  ? 'on' : ''}" id="btnPM" onclick="window._drumSetPeriod(true)">مساءً</button>
-        </div>
+          <!-- عمود الساعة -->
+          <div class="tp-col">
+            <div class="tp-label">الساعة</div>
+            <button class="tp-btn" onclick="window._tpAdjHour(1)">▲</button>
+            <div class="tp-box" id="tpHourBox" title="مرر العجلة لتغيير الساعة">
+              <span class="tp-num" id="tpHourVal">${String(selHour).padStart(2,'0')}</span>
+            </div>
+            <button class="tp-btn" onclick="window._tpAdjHour(-1)">▼</button>
+          </div>
 
-        <!-- أسطوانة الساعة -->
-        <div class="drum-col">
-          <div class="drum-col-label">الساعة</div>
-          <div class="drum-viewport" id="drumHourVp">
-            <div class="drum-selector"></div>
-            <div class="drum-list"></div>
+          <!-- نقطتا الفصل -->
+          <div class="tp-colon">:</div>
+
+          <!-- عمود الدقائق -->
+          <div class="tp-col">
+            <div class="tp-label">الدقيقة</div>
+            <button class="tp-btn" onclick="window._tpAdjMin(5)">▲</button>
+            <div class="tp-box" id="tpMinBox" title="مرر العجلة لتغيير الدقائق">
+              <span class="tp-num" id="tpMinVal">${String(selMin).padStart(2,'0')}</span>
+            </div>
+            <button class="tp-btn" onclick="window._tpAdjMin(-5)">▼</button>
           </div>
         </div>
 
-        <!-- فاصل -->
-        <div class="drum-sep">:</div>
-
-        <!-- أسطوانة الدقائق -->
-        <div class="drum-col">
-          <div class="drum-col-label">الدقائق</div>
-          <div class="drum-viewport" id="drumMinVp">
-            <div class="drum-selector"></div>
-            <div class="drum-list"></div>
-          </div>
+        <!-- أزرار سريعة للأوقات الشائعة -->
+        <div class="tp-quick-row">
+          <button class="tp-quick-btn" onclick="window._tpQuick('now')">الآن ⏱️</button>
+          <button class="tp-quick-btn" onclick="window._tpQuick('08:00')">08:00 ص</button>
+          <button class="tp-quick-btn" onclick="window._tpQuick('12:00')">12:00 م</button>
+          <button class="tp-quick-btn" onclick="window._tpQuick('17:00')">05:00 م</button>
+          <button class="tp-quick-btn" onclick="window._tpQuick('21:00')">09:00 م</button>
         </div>
-      </div>
 
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <button class="btn full" id="drumConfirmBtn" style="font-weight:700">تحديد الوقت ✓</button>
-        <button class="btn ghost" onclick="closeModal()">إلغاء</button>
+        <!-- زرا التأكيد والإلغاء -->
+        <div style="display:flex;gap:6px">
+          <button class="btn full" id="tpConfirmBtn" style="padding:10px 0;font-size:13.5px;font-weight:700">تحديد (${formatted} ${periodAr}) ✓</button>
+          <button class="btn ghost" onclick="closeModal()" style="padding:10px 14px">إلغاء</button>
+        </div>
       </div>
     `);
 
-    // بناء الأسطوانتين
-    buildDrum('drumHourVp', HOURS, selHour, (h) => { selHour = h; refreshDrumDisplay(); });
-    buildDrum('drumMinVp',  MINS,  selMin,  (m) => { selMin  = m; refreshDrumDisplay(); });
+    // دوال التعديل
+    window._tpAdjHour = (delta) => {
+      selHour = (selHour + delta + 24) % 24;
+      renderContent();
+    };
 
-    window._drumSetPeriod = (pm) => {
+    window._tpAdjMin = (delta) => {
+      selMin = (selMin + delta + 60) % 60;
+      renderContent();
+    };
+
+    window._tpSetPeriod = (toPM) => {
       const curH = selHour % 12;
-      selHour = pm ? (curH === 0 ? 12 : curH + 12) : (curH === 0 ? 0 : curH);
-      buildDrum('drumHourVp', HOURS, selHour, (h) => { selHour = h; refreshDrumDisplay(); });
-      refreshDrumDisplay();
+      selHour = toPM ? (curH === 0 ? 12 : curH + 12) : (curH === 0 ? 0 : curH);
+      renderContent();
     };
 
-    const btn = document.getElementById('drumConfirmBtn');
-    if(btn) btn.onclick = () => {
-      const val = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
-      closeModal();
-      if(onPick) onPick(val);
+    window._tpQuick = (timeStr) => {
+      if(timeStr === 'now'){
+        const n = new Date();
+        selHour = n.getHours();
+        selMin = Math.round(n.getMinutes() / 5) * 5;
+        if(selMin >= 60) selMin = 55;
+      } else {
+        const parts = timeStr.split(':');
+        selHour = parseInt(parts[0], 10) || 0;
+        selMin = parseInt(parts[1], 10) || 0;
+      }
+      renderContent();
     };
+
+    // دعم تمرير العجلة (Wheel) على الصناديق
+    setTimeout(() => {
+      const hBox = document.getElementById('tpHourBox');
+      const mBox = document.getElementById('tpMinBox');
+      if(hBox){
+        hBox.onwheel = (e) => { e.preventDefault(); window._tpAdjHour(e.deltaY > 0 ? -1 : 1); };
+      }
+      if(mBox){
+        mBox.onwheel = (e) => { e.preventDefault(); window._tpAdjMin(e.deltaY > 0 ? -5 : 5); };
+      }
+    }, 50);
+
+    const confBtn = document.getElementById('tpConfirmBtn');
+    if(confBtn){
+      confBtn.onclick = () => {
+        const finalVal = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
+        closeModal();
+        if(onPick) onPick(finalVal);
+      };
+    }
   };
-
-  function refreshDrumDisplay(){
-    const formatted = `${String(selHour).padStart(2,'0')}:${String(selMin).padStart(2,'0')}`;
-    const isPM = selHour >= 12;
-    const el = document.querySelector('.rmp-modal-body .drum-wrap');
-    if(!el) return;
-    // تحديث العرض الرئيسي
-    const display = document.querySelector('.rmp-modal-body [style*="font-size:36px"]');
-    if(display) display.textContent = formatted;
-    const periodEl = document.querySelector('.rmp-modal-body [style*="font-size:12px"]');
-    if(periodEl) periodEl.textContent = isPM ? 'مساءً' : 'صباحاً';
-    const btnAM = document.getElementById('btnAM');
-    const btnPM = document.getElementById('btnPM');
-    if(btnAM) btnAM.className = !isPM ? 'on' : '';
-    if(btnPM) btnPM.className =  isPM ? 'on' : '';
-    const confirmBtn = document.getElementById('drumConfirmBtn');
-    if(confirmBtn) confirmBtn.textContent = `تحديد الوقت (${formatted}) ✓`;
-  }
 
   renderContent();
 }
-
 function openDatePickerModal(initDate, onPick){
   let d = initDate ? new Date(initDate + (initDate.length === 10 ? 'T12:00:00' : '')) : new Date();
   if(isNaN(d.getTime())) d = new Date();
@@ -10142,11 +10067,34 @@ function openEditBookmarkModal(id, curTitle, curUrl, curCat){
     const u = ($('#bmEditUrl') ? $('#bmEditUrl').value : '').trim();
     const t = ($('#bmEditTitle') ? $('#bmEditTitle').value : '').trim();
     const cat = ($('#bmEditCatInput') ? $('#bmEditCatInput').value : '').trim();
-    if(!u){ toast('يرجى كتابة الرابط'); return; }
-    const body = { title: t || getWebDomain(u), note: u, unit: cat || null };
-    await restWithRefresh('PATCH', 'shared_list_items?id=eq.' + id, body, 'return=minimal');
-    await refreshAll(); renderApp(); closeSheet();
-    toast('تم تحديث الإشارة بنجاح ✓');
+    if(!u){ toast('يرجى كتابة الرابط أولاً'); return; }
+    const finalTitle = t || getWebDomain(u);
+    const patch = { title: finalTitle, note: u, unit: cat || null };
+
+    // 1. تحديث محلي فوري ليظهر التعديل مباشرة للمستخدم دون انتظار الشبكة
+    const local = (data.shopping || []).find(x => x.id === id);
+    if(local){
+      local.title = finalTitle;
+      local.note = u;
+      local.unit = patch.unit;
+      saveSnap();
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الحفظ... ⏳';
+
+    try {
+      // 2. إرسال إلى Supabase بالصيغة القياسية السليمة مع تجديد JWT
+      await restWithRefresh('PATCH', 'shared_list_items', patch, 'id=eq.' + id, 'return=minimal');
+      await refreshAll().catch(()=>{});
+      closeSheet();
+      renderApp();
+      toast('تم تحديث الإشارة بنجاح ✓');
+    } catch(err){
+      btn.disabled = false;
+      btn.textContent = 'حفظ التعديلات ✓';
+      toast(friendly(err));
+    }
   };
 }
 
@@ -10405,9 +10353,31 @@ function openEditPlaceModal(id, curTitle, curNote){
     if(!name){ toast('اكتب اسم المكان'); return; }
     if(!link) link = 'https://maps.google.com/?q=' + encodeURIComponent(name);
     const newNote = addr + '|' + link + '|' + cat;
-    await restWithRefresh('PATCH', 'shared_list_items?id=eq.' + id, { title: name, note: newNote }, 'return=minimal');
-    await refreshAll(); closeSheet(); renderApp();
-    toast('تم تحديث المكان بنجاح ✓');
+    const patch = { title: name, note: newNote };
+
+    // 1. تحديث محلي فوري
+    const local = (data.shopping || []).find(x => x.id === id);
+    if(local){
+      local.title = name;
+      local.note = newNote;
+      saveSnap();
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الحفظ... ⏳';
+
+    try {
+      // 2. حفظ في Supabase مع تجديد الجلسة
+      await restWithRefresh('PATCH', 'shared_list_items', patch, 'id=eq.' + id, 'return=minimal');
+      await refreshAll().catch(()=>{});
+      closeSheet();
+      renderApp();
+      toast('تم تحديث المكان بنجاح ✓');
+    } catch(err){
+      btn.disabled = false;
+      btn.textContent = 'حفظ تعديلات المكان ✓';
+      toast(friendly(err));
+    }
   };
 }
 
