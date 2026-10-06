@@ -450,6 +450,43 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 .med-dose-pill{display:inline-block;padding:3px 6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent-2)}
 .med-log-btn{display:inline-block;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;border:none}
 
+/* --- Ruled Lined Notebook / Dictation Styles --- */
+.dictation-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+.dictation-notebook{width:100%;max-width:620px;height:90vh;max-height:800px;background:#FFFDF8;border:2.5px solid #C58A1B;border-radius:22px;box-shadow:0 20px 48px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;position:relative;box-sizing:border-box}
+[data-theme="dark"] .dictation-notebook{background:#1E1C18;border-color:#B57F24}
+.dictation-notebook-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid #E9DFC6;background:#FAF5EB;flex-shrink:0}
+[data-theme="dark"] .dictation-notebook-head{background:#26231E;border-bottom-color:#3D372E}
+.dictation-rec-dot{width:14px;height:14px;border-radius:50%;background:#EF4444;display:inline-block;cursor:pointer;animation:dictationPulse 1.4s infinite ease-in-out}
+.dictation-rec-dot.paused{background:#9CA3AF;animation:none}
+@keyframes dictationPulse{0%{transform:scale(0.92);opacity:0.7}50%{transform:scale(1.18);opacity:1;box-shadow:0 0 12px rgba(239,68,68,0.85)}100%{transform:scale(0.92);opacity:0.7}}
+.dictation-notebook-lines{flex:1;width:100%;padding:16px 20px;box-sizing:border-box;background-color:#FFFDF8;background-image:repeating-linear-gradient(transparent,transparent 34px,#E9DFC6 34px,#E9DFC6 36px);background-attachment:local;line-height:36px;font-size:17px;color:#2C2416;border:none;outline:none;resize:none;overflow-y:auto;direction:rtl;text-align:right;font-family:inherit}
+[data-theme="dark"] .dictation-notebook-lines{background-color:#1E1C18;background-image:repeating-linear-gradient(transparent,transparent 34px,#3A342A 34px,#3A342A 36px);color:#EDE4D3}
+.dictation-bottom-bar{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1.5px solid #E9DFC6;background:#FAF5EB;flex-shrink:0;gap:10px}
+[data-theme="dark"] .dictation-bottom-bar{background:#26231E;border-top-color:#3D372E}
+.dictation-btn-circle{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;width:44px;height:44px;font-size:18px;font-weight:700;transition:transform .12s,background .12s;box-sizing:border-box}
+.dictation-btn-circle:active{transform:scale(0.92)}
+.dictation-btn-cancel{background:#FEE2E2;color:#DC2626;border:1.5px solid #FCA5A5}
+[data-theme="dark"] .dictation-btn-cancel{background:rgba(220,38,38,0.2);color:#F87171;border-color:rgba(220,38,38,0.4)}
+.dictation-btn-mic{background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;width:52px;height:52px;font-size:24px}
+.dictation-btn-mic.listening{background:#FEE2E2;color:#DC2626;border-color:#F87171;animation:pulseMic 1.4s infinite}
+[data-theme="dark"] .dictation-btn-mic{background:rgba(217,119,6,0.2);color:#FBBF24;border-color:rgba(217,119,6,0.4)}
+.dictation-btn-save{background:var(--accent);color:#fff;border:none;padding:0 18px;border-radius:26px;height:44px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
+.dictation-btn-save:active{transform:scale(0.96)}
+/* --- Notes (Keep Style) Styles --- */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;width:100%;box-sizing:border-box}
+.notes-list{display:flex;flex-direction:column;gap:10px;width:100%;box-sizing:border-box}
+.note-card{border-radius:16px;padding:12px 14px;box-sizing:border-box;cursor:pointer;border:1.5px solid rgba(0,0,0,0.08);box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column;position:relative;min-height:100px}
+[data-theme="dark"] .note-card{border-color:rgba(255,255,255,0.1);box-shadow:0 2px 8px rgba(0,0,0,0.25)}
+.note-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.08)}
+.note-card-title{font-size:14.5px;font-weight:700;color:inherit;margin-bottom:6px;line-height:1.35}
+.note-card-body{font-size:13px;color:inherit;opacity:0.9;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;flex:1}
+.note-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:10.5px;opacity:0.75}
+.note-card-pin{all:unset;cursor:pointer;padding:4px;font-size:14px;opacity:0.5;transition:opacity .12s,transform .12s}
+.note-card-pin:hover,.note-card-pin.pinned{opacity:1;transform:scale(1.15)}
+.note-color-chip{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;box-sizing:border-box;transition:transform .12s;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.note-color-chip.active{border-color:#245045;transform:scale(1.15)}
+[data-theme="dark"] .note-color-chip.active{border-color:#fff}
+
 /* --- Universal Spaces, Badges, Stripes & 3-Dots Menu Styles --- */
 .space-stripe-me{border-inline-start:5px solid var(--space-me) !important}
 .space-stripe-shared{border-inline-start:5px solid var(--space-shared) !important}
@@ -1123,6 +1160,7 @@ async function refreshAll(){
   saveSnap();
   try{ syncTrackerFromCloud(); }catch(e){}
   try{ checkWebIncomingArrivals(); }catch(e){}
+  try{ syncNotes(); }catch(e){}
 }
 let dataSig='';
 function dataSignature(){ try{ return JSON.stringify(data).length + '|' + (data.items?data.items.length:0) + '|' + (data.tasks?data.tasks.length:0) + '|' + (data.shopping?data.shopping.length:0) + '|' + (data.entries?data.entries.length:0) + '|' + (data.activity?data.activity.length:0); }catch(e){ return String(Math.random()); } }
@@ -1908,7 +1946,8 @@ function renderApp(){
     meds: renderMeds,
     media: renderMedia,
     places: renderPlaces,
-    bookmarks: renderBookmarks
+    bookmarks: renderBookmarks,
+    notes: renderNotes
   };
   (routes[view] || renderHome)();
 }
@@ -5816,49 +5855,15 @@ function parseVoiceActivityText(rawText, categories){
 }
 
 function startTrackerVoiceInput(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){
-    toast('المتصفح لا يدعم التسجيل الصوتي المباشر. يمكنك استخدام متصفح Chrome أو الإدخال اليدوي.');
-    return;
-  }
-
-  const micBtn = document.getElementById('trkVoiceMicBtn');
-  if(micBtn) micBtn.classList.add('listening');
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'ar-SA';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  toast('🎙️ استمع الآن... تحدث بنشاطك والوقت');
-
-  recognition.onresult = (e) => {
-    if(micBtn) micBtn.classList.remove('listening');
-    if(e.results && e.results[0] && e.results[0][0]){
-      const text = e.results[0][0].transcript;
-      if(text && text.trim()){
-        const trk = getTrackerData();
-        const parsed = parseVoiceActivityText(text.trim(), trk.categories);
-        openVoiceReviewSheet(parsed);
-      }
+  openDictationNotebook({
+    mode: 'tracker',
+    initialText: '',
+    onSave: (spokenText) => {
+      const trk = getTrackerData();
+      const parsed = parseVoiceActivityText(spokenText, trk.categories);
+      openVoiceReviewSheet(parsed);
     }
-  };
-
-  recognition.onerror = (err) => {
-    if(micBtn) micBtn.classList.remove('listening');
-    toast('تعذر التقاط الصوت أو تم إلغاؤه');
-  };
-
-  recognition.onend = () => {
-    if(micBtn) micBtn.classList.remove('listening');
-  };
-
-  try{
-    recognition.start();
-  }catch(err){
-    if(micBtn) micBtn.classList.remove('listening');
-    toast('حدث خطأ في بدء التسجيل الصوتي');
-  }
+  });
 }
 
 function toggleVrNewCat(on){
@@ -7782,6 +7787,13 @@ function renderMore(){
         badge: `${(getCustomProactiveCards()||[]).length} مخصصة`
       },
       {
+        id: 'gemini',
+        icon: '🤖',
+        title: 'الذكاء الاصطناعي (Gemini)',
+        subtitle: 'مفاتيح Gemini وتنعيم النص المنطوق',
+        badge: (typeof getGeminiKeys === 'function' && getGeminiKeys().length) ? 'جاهز ✓' : 'بلا مفتاح'
+      },
+      {
         id: 'circles',
         icon: '👥',
         title: 'الدوائر والشريك',
@@ -8160,11 +8172,75 @@ function renderMore(){
         </div>
       </div>
     `;
+  } else if(cat === 'gemini'){
+    const keys = (typeof getGeminiKeys === 'function') ? getGeminiKeys() : [];
+    const curModel = (typeof getGeminiModel === 'function') ? getGeminiModel() : 'gemini-flash-lite-latest';
+    catContent = `
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-head">
+          <h2 style="font-size:15px">🤖 الذكاء الاصطناعي (Gemini)</h2>
+          <span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-weight:700">
+            ${keys.length ? 'جاهز ✓' : 'بلا مفتاح'}
+          </span>
+        </div>
+        <p style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">
+          يُستخدم لتنعيم وصياغة النصوص المنطوقة في التدوين الحي ومتتبع الحياة. المفاتيح تُحفظ مشفّرة محلياً في متصفحك فقط ولا تُرفع لأي مكان.
+        </p>
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="font-size:12.5px;color:var(--accent);font-weight:700;display:inline-block;margin-bottom:8px">
+          🔑 احصل على مفتاح مجاني من Google AI Studio ↗
+        </a>
+        <div style="display:inline-block;padding:3px 9px;border-radius:8px;background:rgba(66,133,244,0.12);color:#4285F4;font-size:11px;font-weight:700">
+          🔄 تدوير تلقائي (3 مفاتيح عند نفاد الحصة)
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <h2 style="font-size:15px;margin-bottom:10px">النموذج المعتمد</h2>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${[
+            ['gemini-flash-lite-latest', 'Gemini Flash Lite (سريع • حصة مجانية عالية • موصى به)'],
+            ['gemini-2.5-flash', 'Gemini 2.5 Flash (شامل وذكي)'],
+            ['gemini-1.5-flash', 'Gemini 1.5 Flash (مستقر)']
+          ].map(([mId, mLabel]) => `
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:${curModel===mId?'var(--accent-soft)':'var(--surface)'};border:1px solid ${curModel===mId?'var(--accent)':'var(--border)'};cursor:pointer">
+              <input type="radio" name="geminiModelRadio" value="${mId}" ${curModel===mId?'checked':''} onchange="setGeminiModel('${mId}');renderMore();">
+              <span style="font-size:13px;font-weight:${curModel===mId?'700':'500'};color:var(--text-1)">${mLabel}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:15px;margin-bottom:10px">مفاتيح Google AI Studio</h2>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${[0, 1, 2].map(idx => {
+            const keyVal = keys[idx] || '';
+            return `
+              <div>
+                <label style="display:block;font-size:12px;color:var(--text-2);margin-bottom:4px">مفتاح API ${idx + 1} ${idx===0?'(الأساسي)':''}</label>
+                <div style="display:flex;gap:6px">
+                  <input type="password" id="geminiKeyInput_${idx}" value="${esc(keyVal)}" placeholder="AIza... أو AQ..."
+                    style="flex:1;height:38px;border-radius:10px;border:1.5px solid var(--border);padding:0 10px;background:var(--surface);color:var(--text-1);font-family:monospace;font-size:12px">
+                  <button type="button" class="mini" onclick="togglePasswordVis('geminiKeyInput_${idx}')" style="padding:0 8px" title="إظهار/إخفاء">👁</button>
+                  <button type="button" class="mini" onclick="testKeyAt(${idx})" style="padding:0 10px;font-weight:700">فحص</button>
+                </div>
+                <div id="geminiKeyStatus_${idx}" style="font-size:11px;margin-top:3px;color:var(--text-3)"></div>
+              </div>
+            `;
+          }).join('')}
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn" onclick="saveGeminiKeysFromInputs()" style="flex:2">حفظ المفاتيح ✓</button>
+            <button class="btn ghost" onclick="saveGeminiKeys([]);renderMore();toast('تم مسح المفاتيح');" style="flex:1">مسح الكل</button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   const catTitles = {
     sections: '🧩 شريط الأقسام والداشبورد',
     proactive_customization: '⚡ تخصيص بطاقة إنجاز',
+    gemini: '🤖 الذكاء الاصطناعي (Gemini)',
     circles: '👥 الدوائر والشريك',
     data: '💾 البيانات والمحذوفات',
     appearance: '🎨 المظهر والتخصيص',
@@ -10639,6 +10715,1148 @@ function renderBookmarks(){
   </div>`;
 }
 
+/* ==========================================================================
+   الملاحظات والتدوين الحي والذكاء الاصطناعي (Notes, Live Dictation, Gemini)
+   مطابقة بنسبة 100% مع أندرويد v1.4.21 وتطبيق مصب
+   ========================================================================== */
+
+const NOTES_LIGHT_COLORS = [
+  'transparent', '#FAAFA8', '#F39F76', '#FFF8B8', '#E2F6D3', '#B4DDD3',
+  '#D4E4ED', '#AECCDC', '#D3BFDB', '#F6E2DD', '#E9E3D4', '#EFEFF1'
+];
+const NOTES_DARK_COLORS = [
+  'transparent', '#77172E', '#692B17', '#7C4A03', '#264D3B', '#0C625D',
+  '#256377', '#284255', '#472E5B', '#6C394F', '#4B443A', '#232427'
+];
+
+function autoColorIndex(id){
+  if(!id) return 1;
+  let h = 0;
+  for(let i = 0; i < id.length; i++){
+    h = ((h << 5) - h) + id.charCodeAt(i) | 0;
+  }
+  return 1 + (Math.abs(h) % (NOTES_LIGHT_COLORS.length - 1));
+}
+
+function noteBgColor(index, isDark, noteId){
+  const table = isDark ? NOTES_DARK_COLORS : NOTES_LIGHT_COLORS;
+  const i = (!index || index === 0) ? autoColorIndex(noteId || '') : Math.max(1, Math.min(index, table.length - 1));
+  return table[i] || table[1];
+}
+
+function noteStampWeb(timestamp){
+  let d;
+  if(typeof timestamp === 'number'){
+    d = new Date(timestamp);
+  } else if(typeof timestamp === 'string'){
+    d = new Date(timestamp);
+  } else {
+    d = new Date();
+  }
+  if(isNaN(d.getTime())) d = new Date();
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const period = h < 12 ? 'ص' : 'م';
+  h = (h % 12) || 12;
+  return `${day}/${month}/${year} • ${h}:${m} ${period}`;
+}
+
+/* --- Storage & Supabase Sync (Latest-Wins) --- */
+function getNotesList(){
+  try {
+    const raw = localStorage.getItem('rafiq_notes');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e){
+    return [];
+  }
+}
+
+function saveNotesLocal(arr){
+  localStorage.setItem('rafiq_notes', JSON.stringify(arr || []));
+}
+
+function parseNoteTime(v){
+  if(!v) return 0;
+  if(typeof v === 'number') return v;
+  const ms = new Date(v).getTime();
+  return isNaN(ms) ? 0 : ms;
+}
+
+function mergeNotesWeb(localList, cloudList){
+  const localMap = new Map();
+  (localList || []).forEach(n => { if(n && n.id) localMap.set(n.id, n); });
+  const cloudMap = new Map();
+  (cloudList || []).forEach(n => { if(n && n.id) cloudMap.set(n.id, n); });
+
+  const allIds = new Set([...localMap.keys(), ...cloudMap.keys()]);
+  const merged = [];
+  const toPush = [];
+
+  for(const id of allIds){
+    const l = localMap.get(id);
+    const c = cloudMap.get(id);
+    if(l && !c){
+      merged.push(l);
+      toPush.push(l);
+    } else if(!l && c){
+      merged.push({
+        id: c.id,
+        user_id: c.user_id,
+        title: c.title || '',
+        body: c.body || '',
+        color_index: c.color_index || 0,
+        pinned: !!c.pinned,
+        deleted: !!c.deleted,
+        created_at: c.created_at || new Date().toISOString(),
+        updated_at: c.updated_at || new Date().toISOString()
+      });
+    } else if(l && c){
+      const lTime = parseNoteTime(l.updated_at);
+      const cTime = parseNoteTime(c.updated_at);
+      if(lTime > cTime){
+        merged.push(l);
+        toPush.push(l);
+      } else {
+        merged.push({
+          id: c.id,
+          user_id: c.user_id,
+          title: c.title || '',
+          body: c.body || '',
+          color_index: c.color_index || 0,
+          pinned: !!c.pinned,
+          deleted: !!c.deleted,
+          created_at: c.created_at || l.created_at,
+          updated_at: c.updated_at || l.updated_at
+        });
+      }
+    }
+  }
+  return { merged, toPush };
+}
+
+async function syncNotes(showToast = false){
+  const user = meId();
+  if(!user){
+    if(showToast) toast('يرجى تسجيل الدخول لمزامنة الملاحظات');
+    return;
+  }
+  try {
+    const cloudRaw = await rest('GET', 'notes', null, 'order=updated_at.desc');
+    const cloudNotes = Array.isArray(cloudRaw) ? cloudRaw : [];
+    const localNotes = getNotesList();
+    const { merged, toPush } = mergeNotesWeb(localNotes, cloudNotes);
+
+    saveNotesLocal(merged);
+
+    if(toPush.length > 0){
+      for(const note of toPush){
+        const dto = {
+          id: note.id,
+          user_id: user,
+          title: note.title || '',
+          body: note.body || '',
+          color_index: note.color_index || 0,
+          pinned: !!note.pinned,
+          deleted: !!note.deleted,
+          created_at: typeof note.created_at === 'number' ? new Date(note.created_at).toISOString() : (note.created_at || new Date().toISOString()),
+          updated_at: typeof note.updated_at === 'number' ? new Date(note.updated_at).toISOString() : (note.updated_at || new Date().toISOString())
+        };
+        await rest('POST', 'notes', dto, 'resolution=merge-duplicates').catch(async () => {
+          await rest('PATCH', 'notes', dto, 'id=eq.' + note.id).catch(() => {});
+        });
+      }
+    }
+
+    if(view === 'notes') renderNotes();
+    if(showToast) toast('تمت مزامنة الملاحظات مع السحابة بنجاح ✓');
+  } catch(err){
+    console.warn('Note sync failed:', err);
+    if(showToast) toast('الملاحظات محفوظة محلياً (تعذّر الاتصال بالسحابة)');
+  }
+}
+
+function createNoteFromText(text, title = '', colorIndex = 0){
+  const now = new Date().toISOString();
+  const id = (crypto.randomUUID ? crypto.randomUUID() : ('note_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)));
+  const item = {
+    id,
+    user_id: meId() || '',
+    title: (title || '').trim(),
+    body: (text || '').trim(),
+    color_index: colorIndex || 0,
+    pinned: false,
+    deleted: false,
+    created_at: now,
+    updated_at: now
+  };
+  const list = getNotesList();
+  list.unshift(item);
+  saveNotesLocal(list);
+  syncNotes().catch(()=>{});
+  return item;
+}
+
+function updateNoteItem(id, updates){
+  const list = getNotesList();
+  const idx = list.findIndex(n => n.id === id);
+  if(idx < 0) return null;
+  list[idx] = {
+    ...list[idx],
+    ...updates,
+    updated_at: new Date().toISOString()
+  };
+  saveNotesLocal(list);
+  syncNotes().catch(()=>{});
+  return list[idx];
+}
+
+async function togglePinNote(id){
+  const list = getNotesList();
+  const n = list.find(x => x.id === id);
+  if(!n) return;
+  updateNoteItem(id, { pinned: !n.pinned });
+  renderNotes();
+  toast(n.pinned ? 'تم إلغاء التثبيت' : 'تم تثبيت الملاحظة 📌');
+}
+
+async function copyNoteText(id){
+  const list = getNotesList();
+  const n = list.find(x => x.id === id);
+  if(!n) return;
+  const full = (n.title ? n.title + '\n\n' : '') + (n.body || '');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    await navigator.clipboard.writeText(full);
+    toast('تم نسخ الملاحظة إلى الحافظة 📋');
+  } else {
+    toast(full);
+  }
+}
+
+async function deleteNotePrompt(id){
+  if(!confirm('هل تريد حذف هذه الملاحظة؟ ستُنقل للمحذوفات وتُحذف من جميع أجهزتك.')) return;
+  updateNoteItem(id, { deleted: true });
+  renderNotes();
+  toast('تم حذف الملاحظة 🗑️');
+}
+
+/* --- Spoken Arabic Punctuation & Voice Editing --- */
+function normArabicKey(w){
+  if(!w) return '';
+  return w
+    .replace(/[\u064B-\u0652\u0640]/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .toLowerCase()
+    .replace(/^[،.؟!:؛]+|[،.؟!:؛]+$/g, '');
+}
+
+const PUNCT_PHRASES = [
+  [['فاصله', 'منقوطه'], '؛'],
+  [['علامه', 'استفهام'], '؟'],
+  [['اشاره', 'استفهام'], '؟'],
+  [['علامه', 'تعجب'], '!'],
+  [['اشاره', 'تعجب'], '!'],
+  [['سطر', 'جديد'], '\n'],
+  [['اسطر', 'جديد'], '\n'],
+  [['السطر', 'الجديد'], '\n'],
+  [['السطر', 'التالي'], '\n'],
+  [['فقره', 'جديده'], '\n'],
+  [['افتح', 'قوس'], '('],
+  [['اغلق', 'قوس'], ')'],
+  [['افتح', 'تنصيص'], '«'],
+  [['اغلق', 'تنصيص'], '»'],
+  [['فاصله'], '،'],
+  [['نقطه'], '.'],
+  [['نقطتان'], ':'],
+  [['نقطتين'], ':'],
+  [['شرطه'], '—'],
+  [['داش'], '—']
+];
+
+const OP_PHRASES = [
+  [['امسح', 'الكل'], 'CLEAR'],
+  [['مسح', 'الكل'], 'CLEAR'],
+  [['احذف', 'الكل'], 'CLEAR'],
+  [['احذف', 'الجمله'], 'DELETE_SENTENCE'],
+  [['حذف', 'الجمله'], 'DELETE_SENTENCE'],
+  [['احذف', 'السطر'], 'DELETE_SENTENCE'],
+  [['احذف', 'كلمه'], 'DELETE_WORD'],
+  [['حذف', 'كلمه'], 'DELETE_WORD'],
+  [['امسح', 'كلمه'], 'DELETE_WORD'],
+  [['امسح'], 'CLEAR'],
+  [['مسح'], 'CLEAR'],
+  [['احذف'], 'DELETE_WORD'],
+  [['حذف'], 'DELETE_WORD'],
+  [['تراجع'], 'UNDO'],
+  [['تعداد', 'نقطي'], 'LIST_BULLET'],
+  [['قائمه', 'نقطيه'], 'LIST_BULLET'],
+  [['تعداد', 'رقمي'], 'LIST_NUMBER'],
+  [['قائمه', 'رقميه'], 'LIST_NUMBER'],
+  [['انهاء', 'التعداد'], 'LIST_END'],
+  [['نهايه', 'التعداد'], 'LIST_END']
+];
+
+function matchAtArr(keys, at, phrase){
+  if(at + phrase.length > keys.length) return false;
+  for(let k = 0; k < phrase.length; k++){
+    const key = keys[at + k];
+    const target = phrase[k];
+    const ok = (key === target) || (k === 0 && key.length > 3 && key.startsWith('و') && key.substring(1) === target);
+    if(!ok) return false;
+  }
+  return true;
+}
+
+function parseSpokenUtterance(raw){
+  const words = raw.trim().split(/\s+/).filter(Boolean);
+  if(!words.length) return { text: '', op: null };
+  const keys = words.map(w => normArabicKey(w));
+
+  let op = null;
+  let end = words.length;
+  for(const [phrase, o] of OP_PHRASES){
+    const at = end - phrase.length;
+    if(at >= 0 && matchAtArr(keys, at, phrase)){
+      op = o;
+      end = at;
+      break;
+    }
+  }
+
+  const pieces = [];
+  let i = 0;
+  while(i < end){
+    let matchedPunct = null;
+    let matchLen = 0;
+    for(const [phrase, punct] of PUNCT_PHRASES){
+      if(matchAtArr(keys, i, phrase)){
+        matchedPunct = punct;
+        matchLen = phrase.length;
+        break;
+      }
+    }
+    if(matchedPunct){
+      pieces.push(matchedPunct);
+      i += matchLen;
+    } else {
+      pieces.push(words[i]);
+      i++;
+    }
+  }
+
+  let out = '';
+  for(let j = 0; j < pieces.length; j++){
+    const p = pieces[j];
+    if(!out){
+      out = p;
+    } else if(p === '\n'){
+      out += '\n';
+    } else if(out.endsWith('\n') || out.endsWith('(') || out.endsWith('«') || out.endsWith('—')){
+      out += p;
+    } else if(['،', '.', '؟', '!', '؛', ':', ')', '»'].includes(p)){
+      out += p;
+    } else {
+      out += ' ' + p;
+    }
+  }
+  return { text: out, op };
+}
+
+function appendWithoutOverlap(base, addition){
+  const b = (base || '').trimEnd();
+  const a = (addition || '').trim();
+  if(!b) return a.replace(/^\n+/, '');
+  if(!a) return b;
+  if(b.endsWith('\n') || a.startsWith('\n')){
+    return b.replace(/[\n\s]+$/, '') + '\n' + a.replace(/^[\n\s]+/, '');
+  }
+  if(b.endsWith('(') || b.endsWith('«')) return b + a;
+  if(b === a || b.endsWith(a)) return b;
+  if(a.startsWith(b)) return a;
+
+  const bw = b.split(/[\s\t]+/);
+  const aw = a.split(/[\s\t]+/);
+  const maxK = Math.min(bw.length, aw.length);
+  for(let k = maxK; k >= 1; k--){
+    const bSlice = bw.slice(-k).map(normArabicKey).join(' ');
+    const aSlice = aw.slice(0, k).map(normArabicKey).join(' ');
+    if(bSlice === aSlice){
+      return b + ' ' + aw.slice(k).join(' ');
+    }
+  }
+  const sep = (['(', '«', '—'].includes(b.slice(-1)) || ['،', '.', '؟', '!', '؛', ':', ')', '»'].includes(a.charAt(0))) ? '' : ' ';
+  return b + sep + a;
+}
+
+function deleteLastWordText(t){
+  const s = (t || '').trimEnd();
+  if(s.endsWith('\n')) return s.slice(0, -1);
+  const cut = Math.max(s.lastIndexOf(' '), s.lastIndexOf('\n'));
+  return cut < 0 ? '' : s.substring(0, cut + 1).trimEnd();
+}
+
+function deleteLastSentenceText(t){
+  const s = (t || '').trimEnd();
+  if(!s) return '';
+  const body = s.slice(0, -1);
+  let cut = -1;
+  for(let i = body.length - 1; i >= 0; i--){
+    if('.؟!؛\n'.includes(body[i])){
+      cut = i;
+      break;
+    }
+  }
+  return cut < 0 ? '' : s.substring(0, cut + 1).trimEnd();
+}
+
+/* --- Gemini AI Client with Key Rotation --- */
+function getGeminiKeys(){
+  try {
+    const raw = localStorage.getItem('rafiq_gemini_keys');
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(Boolean) : [];
+  } catch(e){
+    return [];
+  }
+}
+
+function saveGeminiKeys(arr){
+  const clean = (arr || []).map(k => (typeof k === 'string' ? k.trim() : '')).filter(Boolean);
+  localStorage.setItem('rafiq_gemini_keys', JSON.stringify(clean));
+}
+
+function getGeminiModel(){
+  return localStorage.getItem('rafiq_gemini_model') || 'gemini-flash-lite-latest';
+}
+
+function setGeminiModel(m){
+  localStorage.setItem('rafiq_gemini_model', m || 'gemini-flash-lite-latest');
+}
+
+function togglePasswordVis(inputId){
+  const inp = document.getElementById(inputId);
+  if(!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function saveGeminiKeysFromInputs(){
+  const k0 = (document.getElementById('geminiKeyInput_0')?.value || '').trim();
+  const k1 = (document.getElementById('geminiKeyInput_1')?.value || '').trim();
+  const k2 = (document.getElementById('geminiKeyInput_2')?.value || '').trim();
+  const keys = [k0, k1, k2].filter(Boolean);
+  saveGeminiKeys(keys);
+  renderMore();
+  toast(keys.length ? `تم حفظ ${keys.length} مفاتيح بنجاح ✓` : 'تم حفظ الإعدادات');
+}
+
+async function testKeyAt(idx){
+  const inp = document.getElementById('geminiKeyInput_' + idx);
+  const st = document.getElementById('geminiKeyStatus_' + idx);
+  const key = (inp?.value || '').trim();
+  if(!key){
+    if(st) st.innerHTML = '<span style="color:var(--error)">المفتاح فارغ</span>';
+    return;
+  }
+  if(st) st.innerHTML = '<span style="color:var(--text-3)">جارٍ الفحص... ⏳</span>';
+  try {
+    const model = getGeminiModel();
+    const res = await callGeminiApiOnce(key, model, 'أنت اختبار اتصال.', 'أجب بكلمة واحدة: تم');
+    if(res){
+      if(st) st.innerHTML = '<span style="color:var(--accent);font-weight:700">✓ متصل ويعمل بنجاح!</span>';
+      toast('المفتاح صالح ويعمل بنجاح ✓');
+    }
+  } catch(err){
+    if(st) st.innerHTML = `<span style="color:var(--error);font-weight:700">✗ خطأ: ${esc(err.message || 'فشل الاتصال')}</span>`;
+  }
+}
+
+async function callGeminiApiOnce(apiKey, model, systemPrompt, userText){
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const body = {
+    contents: [
+      { role: 'user', parts: [{ text: userText }] }
+    ],
+    systemInstruction: {
+      parts: [{ text: systemPrompt }]
+    },
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 2048,
+      ...(model.includes('2.5-flash') ? { thinkingConfig: { thinkingBudget: 0 } } : {})
+    }
+  };
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if(!resp.ok){
+    const errText = await resp.text().catch(() => '');
+    let msg = `HTTP ${resp.status}`;
+    if(resp.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) msg = 'نفدت الحصة المجانية لهذا المفتاح (429)';
+    else if(resp.status === 400 || resp.status === 403) msg = 'المفتاح غير صالح أو صلاحياته مقيدة';
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+  const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  return (candidate || '').trim();
+}
+
+async function smoothArabicTextWithGemini(rawText){
+  if(!rawText || !rawText.trim()) return rawText;
+  const keys = getGeminiKeys();
+  if(!keys.length) throw new Error('لم تُضف مفاتيح Gemini بعد. أضفها من الإعدادات.');
+
+  const model = getGeminiModel();
+  const modelsToTry = (model === 'gemini-flash-lite-latest') 
+    ? ['gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-1.5-flash']
+    : [model, 'gemini-flash-lite-latest'];
+
+  const system = 'أنت مدقق ومحرر نصوص عربية وإملاء صوتي. قم بتصحيح الأخطاء الإملائية والنحوية الناتجة عن التعرّف الصوتي، وضع علامات الترقيم الصحيحة، ونظّم الأسطر والفقرات دون تغيير المعنى الأصلي للنص. أعد النص المصحح فقط بدون أي مقدمات أو شروحات.';
+
+  let lastErr = null;
+  for(const m of modelsToTry){
+    for(const key of keys){
+      try {
+        const res = await callGeminiApiOnce(key, m, system, rawText);
+        if(res) return res;
+      } catch(err){
+        lastErr = err;
+      }
+    }
+  }
+  throw lastErr || new Error('تعذّر الاتصال بـ Gemini');
+}
+
+/* --- Live Ruled Dictation Notebook Modal --- */
+let activeDictationState = {
+  isListening: false,
+  committedText: '',
+  undoStack: [],
+  mode: 'note'
+};
+
+function openDictationNotebook(opts = {}){
+  const initialText = opts.initialText || '';
+  const mode = opts.mode || 'note';
+  const onSaveCallback = opts.onSave || null;
+
+  const existing = document.getElementById('dictationOverlay');
+  if(existing) existing.remove();
+
+  activeDictationState = {
+    isListening: false,
+    committedText: initialText,
+    undoStack: [],
+    mode: mode
+  };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'dictationOverlay';
+  overlay.className = 'dictation-modal-overlay';
+
+  overlay.innerHTML = `
+    <div class="dictation-notebook" onclick="event.stopPropagation()">
+      <!-- Notebook Header -->
+      <div class="dictation-notebook-head">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div id="dictationDot" class="dictation-rec-dot paused" title="انقر للبدء أو الإيقاف"></div>
+          <span id="dictationStatus" style="font-size:13px;font-weight:700;color:#8A8372">
+            ${mode === 'tracker' ? '📈 تدوين نشاط بصوتك' : '📝 دفتر التدوين الحي'}
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button type="button" class="mini" id="dictationCopyBtn" style="font-size:11.5px;padding:4px 8px;border-radius:8px">📋 نسخ</button>
+          <button type="button" class="mini" id="dictationClearBtn" style="font-size:11.5px;padding:4px 8px;border-radius:8px;color:var(--error)">🧹 مسح</button>
+        </div>
+      </div>
+
+      <!-- Ruled Lined Notebook Paper -->
+      <textarea id="dictationTextarea" class="dictation-notebook-lines" placeholder="تحدث بطلاقة... سيُكتب كلامك هنا مباشرة مسطراً، مع علامات الترقيم التلقائية (فاصلة، نقطة، سطر جديد)...">${esc(initialText)}</textarea>
+
+      <!-- Symbol & Control Chips Bar -->
+      <div style="padding:6px 14px;background:#FAF5EB;border-top:1px solid #E9DFC6;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center">
+        <button type="button" class="chip" id="dictationSmoothBtn" style="background:#FEF3C7;color:#B45309;font-weight:700;border:1px solid #FCD34D" title="تنعيم وتدقيق النص عبر Gemini">✨ تنعيم</button>
+        <button type="button" class="chip" id="dictationUndoBtn" style="background:#E0F2FE;color:#0369A1;font-weight:700;border:1px solid #BAE6FD" title="تراجع">↩ تراجع</button>
+        <button type="button" class="chip" id="dictationDelWordBtn" style="background:#FEE2E2;color:#B91C1C;font-weight:700;border:1px solid #FECACA" title="حذف كلمة">⌫ كلمة</button>
+        ${['،', '.', '؟', '!', ':', '—', '«', '»', '↵'].map(sym => `
+          <button type="button" class="chip dictation-sym-chip" data-sym="${sym}" style="background:#FFFDF8;border:1px solid #E9DFC6;color:#4B443A;font-weight:700;padding:3px 10px">${sym}</button>
+        `).join('')}
+      </div>
+
+      <!-- Bottom Actions Bar -->
+      <div class="dictation-bottom-bar">
+        <button type="button" id="dictationCancelBtn" class="dictation-btn-circle dictation-btn-cancel" title="إلغاء">✕</button>
+        <button type="button" id="dictationMicBtn" class="dictation-btn-circle dictation-btn-mic" title="ميكروفون (بدء / إيقاف)">🎙️</button>
+        <button type="button" id="dictationSaveBtn" class="dictation-btn-save" title="حفظ">
+          <span id="dictationSaveSpinner" style="display:none">⏳</span>
+          <span>حفظ ✓</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const ta = document.getElementById('dictationTextarea');
+  const dot = document.getElementById('dictationDot');
+  const st = document.getElementById('dictationStatus');
+  const micBtn = document.getElementById('dictationMicBtn');
+  const saveBtn = document.getElementById('dictationSaveBtn');
+  const cancelBtn = document.getElementById('dictationCancelBtn');
+  const smoothBtn = document.getElementById('dictationSmoothBtn');
+  const undoBtn = document.getElementById('dictationUndoBtn');
+  const delWordBtn = document.getElementById('dictationDelWordBtn');
+  const clearBtn = document.getElementById('dictationClearBtn');
+  const copyBtn = document.getElementById('dictationCopyBtn');
+
+  function pushUndo(){
+    activeDictationState.undoStack.push(ta.value);
+    if(activeDictationState.undoStack.length > 20) activeDictationState.undoStack.shift();
+  }
+
+  function updateMicUi(listening){
+    activeDictationState.isListening = listening;
+    if(listening){
+      dot.classList.remove('paused');
+      micBtn.classList.add('listening');
+      st.textContent = '🎙️ يستمع الآن... تكلّم';
+      st.style.color = '#EF4444';
+    } else {
+      dot.classList.add('paused');
+      micBtn.classList.remove('listening');
+      st.textContent = 'متوقف مؤقتاً (اضغط المايك للمتابعة)';
+      st.style.color = '#8A8372';
+    }
+  }
+
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let wantsListen = true;
+
+  if(!SpeechRec){
+    st.textContent = 'التعرّف الصوتي غير مدعوم في هذا المتصفح — يمكنك الكتابة يدوياً';
+    micBtn.style.opacity = '0.5';
+  } else {
+    recognition = new SpeechRec();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'ar-SA';
+
+    recognition.onstart = () => {
+      updateMicUi(true);
+    };
+
+    recognition.onresult = (e) => {
+      let finalTranscript = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const transcript = e.results[i][0].transcript;
+        if(e.results[i].isFinal){
+          finalTranscript += transcript + ' ';
+        }
+      }
+
+      if(finalTranscript.trim()){
+        pushUndo();
+        const parsed = parseSpokenUtterance(finalTranscript);
+        if(parsed.op === 'CLEAR'){
+          ta.value = '';
+          activeDictationState.committedText = '';
+        } else if(parsed.op === 'DELETE_WORD'){
+          ta.value = deleteLastWordText(ta.value);
+          activeDictationState.committedText = ta.value;
+        } else if(parsed.op === 'DELETE_SENTENCE'){
+          ta.value = deleteLastSentenceText(ta.value);
+          activeDictationState.committedText = ta.value;
+        } else if(parsed.op === 'UNDO'){
+          if(activeDictationState.undoStack.length){
+            ta.value = activeDictationState.undoStack.pop();
+            activeDictationState.committedText = ta.value;
+          }
+        } else if(parsed.text){
+          const merged = appendWithoutOverlap(ta.value, parsed.text);
+          ta.value = merged;
+          activeDictationState.committedText = merged;
+        }
+        ta.scrollTop = ta.scrollHeight;
+      }
+    };
+
+    recognition.onerror = (e) => {
+      if(e.error === 'not-allowed'){
+        wantsListen = false;
+        toast('يرجى منح إذن الميكروفون للإملاء الحي');
+      }
+      updateMicUi(false);
+    };
+
+    recognition.onend = () => {
+      if(wantsListen && document.getElementById('dictationOverlay')){
+        try { recognition.start(); } catch(err){}
+      } else {
+        updateMicUi(false);
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch(err){
+      updateMicUi(false);
+    }
+  }
+
+  function toggleListening(){
+    if(!SpeechRec) return;
+    if(activeDictationState.isListening){
+      wantsListen = false;
+      try { recognition.stop(); } catch(e){}
+      updateMicUi(false);
+    } else {
+      wantsListen = true;
+      try { recognition.start(); } catch(e){}
+      updateMicUi(true);
+    }
+  }
+
+  dot.onclick = toggleListening;
+  micBtn.onclick = toggleListening;
+
+  overlay.querySelectorAll('.dictation-sym-chip').forEach(btn => {
+    btn.onclick = () => {
+      pushUndo();
+      const sym = btn.dataset.sym;
+      const b = ta.value.trimEnd();
+      if(sym === '↵'){
+        ta.value = b + '\n';
+      } else if(['(', '«', '—'].includes(sym)){
+        ta.value = (!b || b.endsWith('\n')) ? (b + sym) : (b + ' ' + sym);
+      } else {
+        ta.value = b + sym + ' ';
+      }
+      activeDictationState.committedText = ta.value;
+      ta.focus();
+      ta.scrollTop = ta.scrollHeight;
+    };
+  });
+
+  delWordBtn.onclick = () => {
+    pushUndo();
+    ta.value = deleteLastWordText(ta.value);
+    activeDictationState.committedText = ta.value;
+    ta.focus();
+  };
+
+  undoBtn.onclick = () => {
+    if(activeDictationState.undoStack.length){
+      ta.value = activeDictationState.undoStack.pop();
+      activeDictationState.committedText = ta.value;
+      ta.focus();
+    } else {
+      toast('لا يوجد تراجع');
+    }
+  };
+
+  clearBtn.onclick = () => {
+    if(!ta.value.trim() || confirm('مسح النص بالكامل؟')){
+      pushUndo();
+      ta.value = '';
+      activeDictationState.committedText = '';
+      ta.focus();
+    }
+  };
+
+  copyBtn.onclick = async () => {
+    if(!ta.value.trim()){ toast('النص فارغ'); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(ta.value);
+      toast('تم نسخ النص 📋');
+    } else {
+      toast(ta.value);
+    }
+  };
+
+  smoothBtn.onclick = async () => {
+    const orig = ta.value.trim();
+    if(!orig){ toast('لا يوجد نص لتنعيمه'); return; }
+    const keys = getGeminiKeys();
+    if(!keys.length){
+      toast('يرجى إضافة مفتاح Gemini في الإعدادات أولاً 🔑');
+      return;
+    }
+    pushUndo();
+    smoothBtn.disabled = true;
+    smoothBtn.textContent = '⏳ ينعّم...';
+    try {
+      const smoothed = await smoothArabicTextWithGemini(orig);
+      if(smoothed){
+        ta.value = smoothed;
+        activeDictationState.committedText = smoothed;
+        toast('تم تنعيم وصياغة النص بنجاح ✨');
+      }
+    } catch(e){
+      toast('تعذّر التنعيم: ' + (e.message || 'خطأ'));
+    } finally {
+      smoothBtn.disabled = false;
+      smoothBtn.textContent = '✨ تنعيم';
+    }
+  };
+
+  function closeNotebook(){
+    wantsListen = false;
+    if(recognition){
+      try { recognition.stop(); } catch(e){}
+      try { recognition.abort(); } catch(e){}
+    }
+    overlay.remove();
+  }
+
+  cancelBtn.onclick = closeNotebook;
+  overlay.onclick = (e) => {
+    if(e.target === overlay) closeNotebook();
+  };
+
+  saveBtn.onclick = async () => {
+    const raw = ta.value.trim();
+    if(!raw){
+      toast('النص فارغ');
+      return;
+    }
+
+    let finalText = raw;
+    const keys = getGeminiKeys();
+    if(keys.length > 0 && raw.length > 10){
+      const sp = document.getElementById('dictationSaveSpinner');
+      if(sp) sp.style.display = 'inline-block';
+      saveBtn.disabled = true;
+      try {
+        finalText = await smoothArabicTextWithGemini(raw);
+      } catch(e){
+        finalText = raw;
+      } finally {
+        if(sp) sp.style.display = 'none';
+        saveBtn.disabled = false;
+      }
+    }
+
+    closeNotebook();
+
+    if(onSaveCallback){
+      onSaveCallback(finalText);
+      return;
+    }
+
+    if(mode === 'tracker'){
+      await appendTrackerEntryDirect(finalText);
+    } else {
+      createNoteFromText(finalText);
+      if(view === 'notes') renderNotes();
+      toast('تم حفظ الملاحظة بنجاح 📝 ✓');
+    }
+  };
+
+  setTimeout(() => { ta.focus(); }, 150);
+}
+
+async function appendTrackerEntryDirect(text){
+  try {
+    const trk = getTrackerData();
+    const entry = {
+      id: (crypto.randomUUID ? crypto.randomUUID() : ('act_' + Date.now())),
+      text: text,
+      loggedAt: new Date().toISOString()
+    };
+    trk.entries = trk.entries || [];
+    trk.entries.unshift(entry);
+    saveTrackerData(trk);
+    if(typeof renderLifeTracker === 'function' && view === 'lifetracker') renderLifeTracker();
+    toast('تم تدوين النشاط بنجاح 📈 ✓');
+  } catch(e){
+    toast('تم حفظ النص بنجاح');
+  }
+}
+
+/* --- Notes Screen UI (Google Keep Style) --- */
+function renderNotes(){
+  const allNotes = getNotesList().filter(n => !n.deleted);
+  const q = (window._notesSearchQuery || '').trim().toLowerCase();
+  const viewMode = localStorage.getItem('rafiq_notes_view') || 'grid';
+  const isDark = document.documentElement.dataset.theme === 'dark';
+
+  const filtered = allNotes.filter(n => {
+    if(!q) return true;
+    const t = (n.title || '').toLowerCase();
+    const b = (n.body || '').toLowerCase();
+    return t.includes(q) || b.includes(q);
+  });
+
+  const pinned = filtered.filter(n => !!n.pinned);
+  const others = filtered.filter(n => !n.pinned);
+
+  const container = $('#view');
+  if(!container) return;
+
+  container.innerHTML = `<div class="screen">
+    <!-- Header -->
+    <div class="row" style="min-height:46px;border-top:none;padding:0;margin-bottom:8px">
+      <button class="link" data-act="goHome" style="font-size:14px;font-weight:700">➜ رجوع</button>
+      <b style="flex:1;text-align:center;font-size:18px">📝 دفتر الملاحظات (${allNotes.length})</b>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="mini" data-act="syncNotesNow" title="مزامنة مع السحابة" style="padding:5px 8px;font-size:13px">🔄</button>
+        <button class="mini" data-act="toggleNotesView" title="تغيير طريقة العرض" style="padding:5px 8px;font-size:13px">
+          ${viewMode === 'grid' ? '☰' : '🔲'}
+        </button>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-3);margin-bottom:12px">
+      بطاقات أفكار وملاحظات سريعة ملونة بنمط Google Keep، مع تدوين صوتي مسطر ومزامنة سحابية.
+    </p>
+
+    <!-- Search & Quick Action Bar -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+      <input type="text" id="notesSearchInput" value="${esc(window._notesSearchQuery || '')}" placeholder="ابحث في الملاحظات... 🔍"
+        style="flex:1;height:42px;border-radius:12px;border:1.5px solid var(--border);padding:0 12px;background:var(--surface);color:var(--text-1);font-family:inherit;font-size:13px;box-sizing:border-box"
+        oninput="window._notesSearchQuery=this.value;renderNotes();const el=document.getElementById('notesSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}">
+      <button class="mini" data-act="openLiveDictationForNote" style="height:42px;padding:0 12px;border-radius:12px;white-space:nowrap;font-weight:700;display:flex;align-items:center;gap:4px;background:#FEF3C7;color:#92400E;border:1px solid #FCD34D">
+        <span>🎙️</span><span>تدوين حي</span>
+      </button>
+      <button class="mini" data-act="openAddNote" style="height:42px;padding:0 12px;border-radius:12px;white-space:nowrap;font-weight:700;display:flex;align-items:center;gap:4px;background:var(--accent);color:#fff">
+        <span>＋</span><span>جديدة</span>
+      </button>
+    </div>
+
+    ${!allNotes.length ? `
+      <div class="card" style="padding:40px 16px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">📝</div>
+        <b style="font-size:16px;color:var(--text-1)">لا توجد ملاحظات بعد</b>
+        <p style="font-size:13px;color:var(--text-3);margin:8px 0 16px">دوّن خواطرك، أفكارك، وقوائمك صوتياً أو كتابياً لتصل إليها من جميع أجهزتك.</p>
+        <div style="display:flex;justify-content:center;gap:8px">
+          <button class="btn" data-act="openLiveDictationForNote" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FCD34D">🎙️ ابدأ تدوين صوتي حي</button>
+          <button class="btn" data-act="openAddNote">＋ ملاحظة جديدة</button>
+        </div>
+      </div>
+    ` : !filtered.length ? `
+      <div class="card" style="padding:28px;text-align:center">
+        <div style="font-size:34px;margin-bottom:8px">🔍</div>
+        <b style="font-size:15px;color:var(--text-1)">لم يتم العثور على نتائج</b>
+        <p style="font-size:12.5px;color:var(--text-3);margin-top:4px">لا توجد ملاحظات تطابق «${esc(q)}»</p>
+        <button class="mini" onclick="window._notesSearchQuery='';renderNotes()" style="margin-top:10px">مسح البحث</button>
+      </div>
+    ` : `
+      ${pinned.length ? `
+        <div style="font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:8px;padding:0 4px">📌 المثبتة (${pinned.length})</div>
+        <div class="${viewMode === 'grid' ? 'notes-grid' : 'notes-list'}" style="margin-bottom:20px">
+          ${pinned.map(n => renderNoteCardHtml(n, isDark)).join('')}
+        </div>
+      ` : ''}
+
+      ${pinned.length && others.length ? `
+        <div style="font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:8px;padding:0 4px">أخرى (${others.length})</div>
+      ` : ''}
+
+      <div class="${viewMode === 'grid' ? 'notes-grid' : 'notes-list'}">
+        ${others.map(n => renderNoteCardHtml(n, isDark)).join('')}
+      </div>
+    `}
+
+    <div class="foot" style="margin-top:20px">ملاحظاتك مشفرة ومحفوظة محلياً ومتزامنة مع سحابة رفيق 📝</div>
+  </div>`;
+}
+
+function renderNoteCardHtml(n, isDark){
+  const bg = noteBgColor(n.color_index, isDark, n.id);
+  const stamp = noteStampWeb(n.updated_at);
+  const isPinned = !!n.pinned;
+  const textColor = isDark ? '#F3F4F6' : '#1F2937';
+
+  return `
+    <div class="note-card" style="background:${bg};color:${textColor}" onclick="openNoteModal('${n.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
+        ${n.title ? `<div class="note-card-title">${esc(n.title)}</div>` : '<div style="flex:1"></div>'}
+        <button type="button" class="note-card-pin ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation();togglePinNote('${n.id}')" title="${isPinned ? 'إلغاء التثبيت' : 'تثبيت'}">
+          ${isPinned ? '📌' : '📍'}
+        </button>
+      </div>
+
+      ${n.body ? `<div class="note-card-body">${esc(n.body)}</div>` : ''}
+
+      <div class="note-card-foot">
+        <span>${stamp}</span>
+        <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
+          <button type="button" class="link" onclick="copyNoteText('${n.id}')" title="نسخ" style="padding:2px;font-size:12px">📋</button>
+          <button type="button" class="link" onclick="deleteNotePrompt('${n.id}')" title="حذف" style="padding:2px;font-size:12px;color:var(--error)">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openNoteModal(noteId = null){
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const list = getNotesList();
+  const existing = noteId ? list.find(n => n.id === noteId) : null;
+
+  let currentTitle = existing ? existing.title : '';
+  let currentBody = existing ? existing.body : '';
+  let currentColorIndex = existing ? (existing.color_index || 0) : 0;
+  let isPinned = existing ? !!existing.pinned : false;
+
+  const modal = document.createElement('div');
+  modal.id = 'noteEditModal';
+  modal.className = 'dictation-modal-overlay';
+
+  function renderModalContent(){
+    const bg = noteBgColor(currentColorIndex, isDark, noteId || 'temp');
+    const colors = isDark ? NOTES_DARK_COLORS : NOTES_LIGHT_COLORS;
+
+    modal.innerHTML = `
+      <div class="dictation-notebook" style="max-height:680px;background:${bg};border-color:var(--border)" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="dictation-notebook-head" style="background:rgba(0,0,0,0.04);border-bottom:1px solid rgba(0,0,0,0.08)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button type="button" class="link" id="noteModalBackBtn" style="font-size:14px;font-weight:700">➜ رجوع</button>
+            <b style="font-size:15px">${existing ? 'تعديل الملاحظة' : 'ملاحظة جديدة'}</b>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button type="button" class="mini" id="noteModalPinBtn" style="font-size:13px;padding:4px 8px">
+              ${isPinned ? '📌 مثبتة' : '📍 تثبيت'}
+            </button>
+            <button type="button" class="mini" id="noteModalMicBtn" style="font-size:13px;padding:4px 8px;background:#FEF3C7;color:#92400E;border:1px solid #FCD34D" title="تدوين صوتي">
+              🎙️ صوت
+            </button>
+            <button type="button" class="mini" id="noteModalSmoothBtn" style="font-size:13px;padding:4px 8px" title="تنعيم بـ Gemini">
+              ✨ تنعيم
+            </button>
+          </div>
+        </div>
+
+        <!-- Note Inputs -->
+        <div style="flex:1;display:flex;flex-direction:column;padding:14px 18px;overflow-y:auto;gap:10px">
+          <input type="text" id="noteEditTitle" value="${esc(currentTitle)}" placeholder="العنوان (اختياري)"
+            style="border:none;background:transparent;outline:none;font-size:17px;font-weight:700;color:inherit;font-family:inherit;width:100%">
+          <div style="height:1px;background:rgba(0,0,0,0.08)"></div>
+          <textarea id="noteEditBody" placeholder="اكتب ملاحظتك هنا..."
+            style="flex:1;border:none;background:transparent;outline:none;font-size:14.5px;line-height:1.6;color:inherit;font-family:inherit;width:100%;resize:none;min-height:220px">${esc(currentBody)}</textarea>
+        </div>
+
+        <!-- Color Palette Picker -->
+        <div style="padding:10px 16px;background:rgba(0,0,0,0.03);border-top:1px solid rgba(0,0,0,0.08);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center">
+          <span style="font-size:11px;color:var(--text-3);white-space:nowrap;margin-left:4px">اللون:</span>
+          ${colors.map((c, idx) => `
+            <div class="note-color-chip ${currentColorIndex === idx ? 'active' : ''}" data-idx="${idx}"
+              style="background:${idx === 0 ? 'var(--surface)' : c};border-color:${currentColorIndex === idx ? 'var(--accent)' : 'rgba(0,0,0,0.15)'}"
+              title="${idx === 0 ? 'تلقائي' : 'لون ' + idx}">
+              ${idx === 0 ? '🎨' : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="dictation-bottom-bar" style="background:rgba(0,0,0,0.04);border-top:1px solid rgba(0,0,0,0.08)">
+          ${existing ? `
+            <button type="button" class="mini" id="noteModalDelBtn" style="color:var(--error);font-weight:700;padding:8px 14px">🗑️ حذف</button>
+          ` : '<div></div>'}
+          <div style="display:flex;gap:8px">
+            <button type="button" class="btn ghost" id="noteModalCancelBtn">إلغاء</button>
+            <button type="button" class="btn" id="noteModalSaveBtn" style="padding:0 22px">حفظ ✓</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const titleInp = modal.querySelector('#noteEditTitle');
+    const bodyInp = modal.querySelector('#noteEditBody');
+    if(titleInp) titleInp.oninput = () => { currentTitle = titleInp.value; };
+    if(bodyInp) bodyInp.oninput = () => { currentBody = bodyInp.value; };
+
+    modal.querySelector('#noteModalPinBtn').onclick = () => {
+      isPinned = !isPinned;
+      renderModalContent();
+    };
+
+    modal.querySelectorAll('.note-color-chip').forEach(chip => {
+      chip.onclick = () => {
+        currentColorIndex = parseInt(chip.dataset.idx, 10);
+        renderModalContent();
+      };
+    });
+
+    modal.querySelector('#noteModalBackBtn').onclick = () => modal.remove();
+    modal.querySelector('#noteModalCancelBtn').onclick = () => modal.remove();
+
+    if(modal.querySelector('#noteModalDelBtn')){
+      modal.querySelector('#noteModalDelBtn').onclick = async () => {
+        if(confirm('حذف هذه الملاحظة؟')){
+          modal.remove();
+          await deleteNotePrompt(existing.id);
+        }
+      };
+    }
+
+    modal.querySelector('#noteModalMicBtn').onclick = () => {
+      openDictationNotebook({
+        initialText: bodyInp.value,
+        mode: 'custom',
+        onSave: (spoken) => {
+          currentBody = appendWithoutOverlap(currentBody, spoken);
+          renderModalContent();
+        }
+      });
+    };
+
+    modal.querySelector('#noteModalSmoothBtn').onclick = async () => {
+      const bText = bodyInp.value.trim();
+      if(!bText){ toast('لا يوجد نص لتنعيمه'); return; }
+      const btn = modal.querySelector('#noteModalSmoothBtn');
+      btn.textContent = '⏳ ينعّم...';
+      try {
+        const smoothed = await smoothArabicTextWithGemini(bText);
+        if(smoothed){
+          currentBody = smoothed;
+          renderModalContent();
+          toast('تم تنعيم النص ✨');
+        }
+      } catch(e){
+        toast('تعذّر التنعيم: ' + (e.message || 'خطأ'));
+        btn.textContent = '✨ تنعيم';
+      }
+    };
+
+    modal.querySelector('#noteModalSaveBtn').onclick = () => {
+      const t = currentTitle.trim();
+      const b = currentBody.trim();
+      if(!t && !b){ toast('يرجى كتابة عنوان أو نص للملاحظة'); return; }
+      if(existing){
+        updateNoteItem(existing.id, {
+          title: t,
+          body: b,
+          color_index: currentColorIndex,
+          pinned: isPinned
+        });
+        toast('تم تحديث الملاحظة ✓');
+      } else {
+        const n = createNoteFromText(b, t, currentColorIndex);
+        if(isPinned) updateNoteItem(n.id, { pinned: true });
+        toast('تمت إضافة الملاحظة بنجاح ✓');
+      }
+      modal.remove();
+      renderNotes();
+    };
+  }
+
+  renderModalContent();
+  document.body.appendChild(modal);
+  modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+  setTimeout(() => {
+    const el = modal.querySelector(currentTitle ? '#noteEditBody' : '#noteEditTitle');
+    if(el) el.focus();
+  }, 100);
+}
+
 /* ---------- المراجعة الأسبوعية ---------- */
 function openReview(){
   const w=weekStats();
@@ -10669,6 +11887,8 @@ function openAddMenu(anchorBtn, targetSpace){
   const today=new Date().toISOString().slice(0,10);
   const items=[
     ['🔗','إضافة رابط ذكي','openSmartAddLink',''],
+    ['📝','ملاحظة جديدة','openAddNote',''],
+    ['🎙️','تدوين صوتي حي','openLiveDictationForNote',''],
     ['✅','مهمة جديدة','openAddTask',''],
     ['🌱','عادة / هدف','openAddHabit',''],
     ['🛒','عنصر تسوق','shopAll',''],
@@ -11559,6 +12779,19 @@ document.addEventListener('click', async e=>{
         }
         break;
       }
+      case 'openAddNote': openNoteModal(); break;
+      case 'openLiveDictationForNote': openDictationNotebook({ mode: 'note' }); break;
+      case 'toggleNotesView': {
+        const cur = localStorage.getItem('rafiq_notes_view') || 'grid';
+        localStorage.setItem('rafiq_notes_view', cur === 'grid' ? 'list' : 'grid');
+        renderNotes();
+        break;
+      }
+      case 'syncNotesNow': await syncNotes(true); break;
+      case 'openEditNote': openNoteModal(el.dataset.id); break;
+      case 'togglePinNote': await togglePinNote(el.dataset.id); break;
+      case 'copyNoteText': await copyNoteText(el.dataset.id); break;
+      case 'deleteNotePrompt': await deleteNotePrompt(el.dataset.id); break;
       case 'toggleMedsView': { medsTable=(el.dataset.v==='table'); renderApp(); break; }
       case 'renameCircle': { const n=($('#crName')||{}).value||''; if(!n.trim()){ toast('اكتب الاسم'); break; }
         await rest('PATCH','circles',{name:n.trim()},'id=eq.'+el.dataset.id); await refreshAll(); closeSheet(); view='more'; renderApp(); toast('تم تعديل الاسم ✓'); break; }
@@ -11915,6 +13148,7 @@ const SEC_META=[
   ['lifetracker','📈','الأنشطة'],
   ['food','🍽','طعامنا'],
   ['schedule','📅','جدولي'],
+  ['notes','📝','ملاحظات'],
   ['remind','🔔','ذكّرني'],
   ['habits','🌱','عاداتي'],
   ['proactive','⚡','إنجاز'],
@@ -11940,6 +13174,7 @@ function secSummary(k){
     if(k==='lifetracker'){ const trk=getTrackerData(); const n=(trk.entries||[]).filter(e=>(e.loggedAt||'').startsWith(today)).length; return n? n+' نشاط اليوم':'سجل الأنشطة والعادات'; }
     if(k==='food'){ const l=(data&&data.sharedLists||[]).find(x=>x.title==='طعامنا اليومي'); const n=l? (data.shopping||[]).filter(i=>i.list_id===l.id&&(i.note||'').startsWith(today)).length:0; return n? n+' وجبة اليوم':'لا وجبات اليوم'; }
     if(k==='schedule'){ const n=(data&&data.tasks||[]).filter(t=>t.priority==='EVENT'&&(t.due_at||'')>=today).length; return n? n+' موعد قادم':'لا مواعيد'; }
+    if(k==='notes'){ const n=getNotesList().filter(x=>!x.deleted).length; return n? n+' ملاحظة':'دفتر الخواطر والتدوين'; }
     if(k==='remind') return 'أرسل تذكيرًا';
     if(k==='habits'){ const n=habitsFor(me).length; return n? n+' عادة':'لا عادات'; }
     if(k==='proactive'){
@@ -11978,6 +13213,7 @@ function pickSec(k){
   if(k==='food'){ view='food'; renderApp(); return; }
   if(k==='meds'){ view='meds'; renderApp(); return; }
   if(k==='schedule'){ view='schedule'; renderApp(); return; }
+  if(k==='notes'){ view='notes'; renderApp(); return; }
   if(k==='media'){ view='media'; renderApp(); return; }
   if(k==='places'){ view='places'; renderApp(); return; }
   if(k==='bookmarks' || k==='bookmark'){ view='bookmarks'; renderApp(); return; }
