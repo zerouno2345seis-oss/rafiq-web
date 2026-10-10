@@ -452,30 +452,50 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 
 /* --- Ruled Lined Notebook / Dictation Styles --- */
 .dictation-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+.dictation-modal-overlay.dictation-fullscreen-overlay{background:#FFFDF8;padding:0;backdrop-filter:none}
+[data-theme="dark"] .dictation-modal-overlay.dictation-fullscreen-overlay{background:#1E1C18}
 .dictation-notebook{width:100%;max-width:620px;height:90vh;max-height:800px;background:#FFFDF8;border:2.5px solid #C58A1B;border-radius:22px;box-shadow:0 20px 48px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;position:relative;box-sizing:border-box}
+.dictation-notebook.fullscreen-paper{max-width:100%;height:100%;max-height:100%;border:none;border-radius:0;box-shadow:none}
 [data-theme="dark"] .dictation-notebook{background:#1E1C18;border-color:#B57F24}
-.dictation-notebook-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid #E9DFC6;background:#FAF5EB;flex-shrink:0}
-[data-theme="dark"] .dictation-notebook-head{background:#26231E;border-bottom-color:#3D372E}
-.dictation-rec-dot{width:14px;height:14px;border-radius:50%;background:#EF4444;display:inline-block;cursor:pointer;animation:dictationPulse 1.4s infinite ease-in-out}
-.dictation-rec-dot.paused{background:#9CA3AF;animation:none}
-@keyframes dictationPulse{0%{transform:scale(0.92);opacity:0.7}50%{transform:scale(1.18);opacity:1;box-shadow:0 0 12px rgba(239,68,68,0.85)}100%{transform:scale(0.92);opacity:0.7}}
-.dictation-notebook-lines{flex:1;width:100%;padding:16px 20px;box-sizing:border-box;background-color:#FFFDF8;background-image:repeating-linear-gradient(transparent,transparent 34px,#E9DFC6 34px,#E9DFC6 36px);background-attachment:local;line-height:36px;font-size:17px;color:#2C2416;border:none;outline:none;resize:none;overflow-y:auto;direction:rtl;text-align:right;font-family:inherit}
+[data-theme="dark"] .dictation-notebook.fullscreen-paper{background:#1E1C18;border:none}
+.dictation-notebook-head{padding:8px 18px;display:flex;align-items:center;justify-content:space-between;background:transparent;border-bottom:none;flex-shrink:0;z-index:10}
+[data-theme="dark"] .dictation-notebook-head{background:transparent}
+.dictation-rec-dot{width:14px;height:14px;border-radius:50%;background:#EF4444;display:inline-block;cursor:pointer;animation:dictationPulse 1.4s infinite ease-in-out;box-shadow:0 0 0 0 rgba(239,68,68,0.4)}
+.dictation-rec-dot.paused{background:#9CA3AF;animation:none;box-shadow:none}
+@keyframes dictationPulse{0%{transform:scale(0.92);box-shadow:0 0 0 0 rgba(239,68,68,0.6)}70%{transform:scale(1.15);box-shadow:0 0 0 9px rgba(239,68,68,0)}100%{transform:scale(0.92);box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.dictation-menu-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#8A8372;font-size:22px;font-weight:bold;cursor:pointer;transition:background 0.2s,color 0.2s;user-select:none}
+.dictation-menu-btn:hover{background:rgba(0,0,0,0.06);color:#1F242E}
+.dictation-popup-menu{position:absolute;top:44px;left:18px;background:#FFF;border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,0.18);border:1px solid #ECE4D4;width:185px;padding:6px;z-index:50;display:none;flex-direction:column}
+[data-theme="dark"] .dictation-popup-menu{background:#26231E;border-color:#3D372E;color:#EDE4D3}
+.dictation-popup-menu.show{display:flex}
+.dictation-menu-item{padding:9px 12px;font-size:13px;font-weight:600;color:#2D3748;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s}
+[data-theme="dark"] .dictation-menu-item{color:#EDE4D3}
+.dictation-menu-item:hover{background:#F8F4EC}
+[data-theme="dark"] .dictation-menu-item:hover{background:#353028}
+.dictation-menu-divider{height:1px;background:#EDE6D6;margin:4px 6px}
+[data-theme="dark"] .dictation-menu-divider{background:#3D372E}
+.dictation-notebook-lines{flex:1;width:100%;padding:4px 20px 16px;box-sizing:border-box;background-color:#FFFDF8;background-image:repeating-linear-gradient(transparent,transparent 34px,#E9DFC6 34px,#E9DFC6 36px);background-attachment:local;line-height:36px;font-size:18px;color:#1F242E;border:none;outline:none;resize:none;overflow-y:auto;direction:rtl;text-align:right;font-family:'Amiri',system-ui,sans-serif}
 [data-theme="dark"] .dictation-notebook-lines{background-color:#1E1C18;background-image:repeating-linear-gradient(transparent,transparent 34px,#3A342A 34px,#3A342A 36px);color:#EDE4D3}
-.dictation-bottom-bar{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1.5px solid #E9DFC6;background:#FAF5EB;flex-shrink:0;gap:10px}
-[data-theme="dark"] .dictation-bottom-bar{background:#26231E;border-top-color:#3D372E}
-.dictation-btn-circle{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;width:44px;height:44px;font-size:18px;font-weight:700;transition:transform .12s,background .12s;box-sizing:border-box}
-.dictation-btn-circle:active{transform:scale(0.92)}
-.dictation-btn-cancel{background:#FEE2E2;color:#DC2626;border:1.5px solid #FCA5A5}
-[data-theme="dark"] .dictation-btn-cancel{background:rgba(220,38,38,0.2);color:#F87171;border-color:rgba(220,38,38,0.4)}
-.dictation-btn-mic{background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;width:52px;height:52px;font-size:24px}
-.dictation-btn-mic.listening{background:#FEE2E2;color:#DC2626;border-color:#F87171;animation:pulseMic 1.4s infinite}
-[data-theme="dark"] .dictation-btn-mic{background:rgba(217,119,6,0.2);color:#FBBF24;border-color:rgba(217,119,6,0.4)}
-.dictation-btn-save{background:var(--accent);color:#fff;border:none;padding:0 18px;border-radius:26px;height:44px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
-.dictation-btn-save:active{transform:scale(0.96)}
+.dictation-classic-strip{padding:8px 10px 14px;display:flex;align-items:center;justify-content:space-between;gap:4px;background:#FFFDF8;border-top:1px solid rgba(232,222,198,0.6);z-index:10;box-sizing:border-box}
+[data-theme="dark"] .dictation-classic-strip{background:#1E1C18;border-top-color:#3A342A}
+.dictation-key{flex:1;height:44px;border-radius:8px;border:1px solid #E2D9C7;border-bottom:2px solid #CCC0AA;background:#F7F3EA;color:#38332A;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform .08s,background .12s;user-select:none;padding:0;font-family:inherit;font-size:17px;font-weight:700}
+[data-theme="dark"] .dictation-key{background:#2A2620;border-color:#453E33;border-bottom-color:#1E1C18;color:#DDD5C7}
+.dictation-key:active{transform:translateY(2px);border-bottom-width:1px;background:#EBE4D5}
+.dictation-key.smooth-key .icon{color:#8C8475;transition:color .25s,transform .2s}
+.dictation-key.smooth-key.is-working .icon{color:#D97706;display:inline-block;animation:smoothSparkle 1.1s ease-in-out infinite alternate}
+@keyframes smoothSparkle{0%{transform:scale(1.08) rotate(0deg)}100%{transform:scale(1.24) rotate(8deg)}}
+.dictation-key.ai-key .icon{color:#8C8475;transition:color .25s,transform .2s}
+.dictation-key.ai-key.is-working .icon{color:#308A65;display:inline-block;animation:aiPulse 1.1s ease-in-out infinite alternate}
+@keyframes aiPulse{0%{transform:scale(1.08) rotate(0deg)}100%{transform:scale(1.22) rotate(-8deg)}}
+.dictation-key.save-key{flex:1.15;border-color:#D6C8AF}
+.dictation-key.save-key .icon{font-size:20px;font-weight:bold;color:#172944}
+[data-theme="dark"] .dictation-key.save-key .icon{color:#E2D9C7}
 .dictation-interim-box{padding:6px 14px;background:rgba(254,243,199,0.85);color:#92400E;font-size:12.5px;font-weight:600;border-top:1px dashed #FCD34D;display:flex;align-items:center;gap:6px;flex-shrink:0;direction:rtl;text-align:right}
 [data-theme="dark"] .dictation-interim-box{background:rgba(217,119,6,0.18);color:#FDE68A;border-top-color:rgba(217,119,6,0.35)}
-.dictation-lang-select{font-size:11.5px;padding:4px 8px;border-radius:10px;border:1px solid #E9DFC6;background:#FFFDF8;color:#2C2416;font-weight:700;cursor:pointer;outline:none;font-family:inherit}
-[data-theme="dark"] .dictation-lang-select{background:#26231E;border-color:#3D372E;color:#EDE4D3}
+.dictation-btn-circle{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;width:44px;height:44px;font-size:18px;font-weight:700;transition:transform .12s,background .12s;box-sizing:border-box}
+.dictation-btn-cancel{background:#FEE2E2;color:#DC2626;border:1.5px solid #FCA5A5}
+.dictation-btn-mic{background:#FEF3C7;color:#D97706;border:1.5px solid #FCD34D;width:52px;height:52px;font-size:24px}
+.dictation-btn-save{background:var(--accent);color:#fff;border:none;padding:0 18px;border-radius:26px;height:44px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
 /* --- Notes (Keep Style) Styles --- */
 .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;width:100%;box-sizing:border-box}
 .notes-list{display:flex;flex-direction:column;gap:10px;width:100%;box-sizing:border-box}
@@ -832,7 +852,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.21';
+const APP_VERSION = '1.4.22';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -11044,6 +11064,74 @@ function matchAtArr(keys, at, phrase){
   return true;
 }
 
+function mapBilingualSpeech(input){
+  if(!input || !input.trim()) return input;
+  let res = input;
+  const multi = [
+    [/\b(موتشاس|موتشوس)\s+(غراسياس|قراسياس|كراسياس)\b/gi, 'muchas gracias'],
+    [/\b(دي|د)\s+نادا\b/gi, 'de nada'],
+    [/\bبور\s+فافور\b/gi, 'por favor'],
+    [/\bبورفافور\b/gi, 'por favor'],
+    [/\b(بويناس|بوينا)\s+(تارديس|تاردي)\b/gi, 'buenas tardes'],
+    [/\b(بويناس|بوينا)\s+(نوتشيس|نوتشي)\b/gi, 'buenas noches'],
+    [/\b(بوينوس|بوينو)\s+(دياز|دياس|ديا)\b/gi, 'buenos días'],
+    [/\b(استا|أستا)\s+لويغو\b/gi, 'hasta luego'],
+    [/\b(استا|أستا)\s+مانيانا\b/gi, 'hasta mañana'],
+    [/\b(فين|فيم)\s+دي\s+سيمانا\b/gi, 'fin de semana'],
+    [/\bسيمانا\s+(باسادا|باثادا)\b/gi, 'semana pasada'],
+    [/\bبروكسيما\s+سيمانا\b/gi, 'próxima semana'],
+    [/\bنو\s+باسا\s+نادا\b/gi, 'no pasa nada'],
+    [/\bتودو\s+(بين|بيين)\b/gi, 'todo bien'],
+    [/\bكومو\s+(استاس|أستاس)\b/gi, 'cómo estás'],
+    [/\bكومو\s+(انداس|أنداس)\b/gi, 'cómo andás'],
+    [/\bكي\s+تال\b/gi, 'qué tal'],
+    [/\bكي\s+باسا\b/gi, 'qué pasa'],
+    [/\bبوينا\s+اوندا\b/gi, 'buena onda'],
+    [/\bمالا\s+اوندا\b/gi, 'mala onda']
+  ];
+  for(const [pat, rep] of multi){ res = res.replace(pat, rep); }
+
+  const arRev = [
+    [/\b(?:salam\s+alaikum|salam\s+aleikum|asalam\s+alaikum)\b/gi, 'السلام عليكم'],
+    [/\b(?:inshallah|inchala|inshala|in\s+sha\s+allah)\b/gi, 'إن شاء الله'],
+    [/\b(?:alhamdulillah|alhamdolelah|elhamdulillah)\b/gi, 'الحمد لله'],
+    [/\b(?:sabah\s+al\s+khair|sabah\s+el\s+kheir)\b/gi, 'صباح الخير'],
+    [/\b(?:masaa\s+al\s+khair|masa\s+el\s+kheir)\b/gi, 'مساء الخير']
+  ];
+  for(const [pat, rep] of arRev){ res = res.replace(pat, rep); }
+
+  const singles = [
+    [['سوبرميركادو', 'سوبرماركادو'], 'supermercado'],
+    [['فارماسيا'], 'farmacia'],
+    [['ميديكو'], 'médico'],
+    [['كلينيكا'], 'clínica'],
+    [['هوسبيتال', 'اوسبيتال'], 'hospital'],
+    [['تورنو'], 'turno'],
+    [['كيوسكو'], 'kiosco'],
+    [['فيردوليريا'], 'verdulería'],
+    [['كارنيسيريا'], 'carnicería'],
+    [['باناديريا'], 'panadería'],
+    [['كولكتيفو', 'كوليكتيفو'], 'colectivo'],
+    [['سوبتي'], 'subte'],
+    [['فاكتوراس', 'فاكتورا'], 'facturas'],
+    [['اسادو', 'أسادو'], 'asado'],
+    [['ماتي'], 'mate'],
+    [['كيلومبو'], 'quilombo'],
+    [['بولودو'], 'boludo'],
+    [['بورتينيو', 'بورتينيا'], 'porteño']
+  ];
+  for(const [aliases, target] of singles){
+    for(const alias of aliases){
+      res = res.replace(new RegExp('(?<![\\p{L}\\p{N}])' + alias + '(?![\\p{L}\\p{N}])', 'gui'), target);
+      res = res.replace(new RegExp('(?<![\\p{L}\\p{N}])ال' + alias + '(?![\\p{L}\\p{N}])', 'gui'), 'الـ ' + target);
+      res = res.replace(new RegExp('(?<![\\p{L}\\p{N}])([بوك])ال' + alias + '(?![\\p{L}\\p{N}])', 'gui'), (m, p1) => p1 + 'الـ ' + target);
+      res = res.replace(new RegExp('(?<![\\p{L}\\p{N}])(و?لل)' + alias + '(?![\\p{L}\\p{N}])', 'gui'), (m, p1) => p1 + 'ـ ' + target);
+      res = res.replace(new RegExp('(?<![\\p{L}\\p{N}])و' + alias + '(?![\\p{L}\\p{N}])', 'gui'), 'و ' + target);
+    }
+  }
+  return res;
+}
+
 function parseSpokenUtterance(raw){
   const words = raw.trim().split(/\s+/).filter(Boolean);
   if(!words.length) return { text: '', op: null };
@@ -11250,7 +11338,37 @@ async function smoothArabicTextWithGemini(rawText){
     ? ['gemini-flash-lite-latest', 'gemini-2.5-flash', 'gemini-1.5-flash']
     : [model, 'gemini-flash-lite-latest'];
 
-  const system = 'أنت مدقق ومحرر نصوص عربية وإملاء صوتي. قم بتصحيح الأخطاء الإملائية والنحوية الناتجة عن التعرّف الصوتي، وضع علامات الترقيم الصحيحة، ونظّم الأسطر والفقرات دون تغيير المعنى الأصلي للنص. أعد النص المصحح فقط بدون أي مقدمات أو شروحات.';
+  const system = 'أنت محرّر إملاء وتنسيق نصوص دقيق للغاية. ' +
+    'قاعدة أساسية وحاسمة: ممنوع منعاً باتاً ترجمة أي كلمة من لغة إلى أخرى! ' +
+    'لا تترجم أبداً من العربي إلى الإسباني، ولا تترجم أبداً من الإسباني إلى العربي تحت أي ظرف. ' +
+    'الكلمات المنطوقة بالعربية يجب أن تبقى بالعربية بأحرفها، والكلمات المنطوقة بالإسبانية يجب أن تبقى بالإسبانية بأحرفها اللاتينية الأصلية. ' +
+    'ممنوع منعاً باتاً تكرار الكلمة مرتين، وممنوع وضع أقواس صوتية أو لفظ بديل. ' +
+    'مهمتك الوحيدة: تصحيح الأخطاء الإملائية الواضحة وضبط الترقيم والفواصل دون أي ترجمة ودون أي تغيير في المعنى. ' +
+    'أعد النص المحسّن فقط دون أي مقدمات أو شروحات أو علامات اقتباس.';
+
+  let lastErr = null;
+  for(const m of modelsToTry){
+    for(const key of keys){
+      try {
+        const res = await callGeminiApiOnce(key, m, system, rawText);
+        if(res) return res;
+      } catch(err){
+        lastErr = err;
+      }
+    }
+  }
+  throw lastErr || new Error('تعذّر الاتصال بـ Gemini');
+}
+
+async function formatArabicTextWithGemini(rawText){
+  if(!rawText || !rawText.trim()) return rawText;
+  const keys = getGeminiKeys();
+  if(!keys.length) throw new Error('لم تُضف مفاتيح Gemini بعد. أضفها من الإعدادات.');
+
+  const model = getGeminiModel();
+  const modelsToTry = [model, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-lite-latest'];
+
+  const system = 'أنت مساعد صياغة وترتيب أفكار في تطبيق «رفيق». أعد صياغة وترتيب النص التالي بأسلوب منظم وواضح: رتّب الأفكار في نقاط رئيسية واضحة (•) وعناوين مختصرة إذا لزم الأمر، صحّح الإملاء والترقيم، وحافظ على كامل المعنى والتفاصيل بدقة دون أي اختصار أو زيادة أو تعليقات خارجية. أعد النص المنظّم فقط دون أي مقدمات أو شروح.';
 
   let lastErr = null;
   for(const m of modelsToTry){
@@ -11342,28 +11460,26 @@ function openDictationNotebook(opts = {}){
 
   const overlay = document.createElement('div');
   overlay.id = 'dictationOverlay';
-  overlay.className = 'dictation-modal-overlay';
+  overlay.className = 'dictation-modal-overlay dictation-fullscreen-overlay';
 
   overlay.innerHTML = `
-    <div class="dictation-notebook" onclick="event.stopPropagation()">
-      <!-- Notebook Header -->
+    <div class="dictation-notebook fullscreen-paper" onclick="event.stopPropagation()">
+      <!-- Header -->
       <div class="dictation-notebook-head">
         <div style="display:flex;align-items:center;gap:10px">
           <div id="dictationDot" class="dictation-rec-dot paused" title="انقر للبدء أو الإيقاف"></div>
-          <span id="dictationStatus" style="font-size:13px;font-weight:700;color:#8A8372">
-            ${mode === 'tracker' ? '📈 تدوين نشاط بصوتك' : '📝 دفتر التدوين الحي'}
-          </span>
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <select id="dictationLangSelect" class="dictation-lang-select" title="لهجة التعرّف الصوتي">
-            <option value="ar-SA" ${speechLang==='ar-SA'?'selected':''}>🇸🇦 فصحى / خليج</option>
-            <option value="ar-EG" ${speechLang==='ar-EG'?'selected':''}>🇪🇬 مصر</option>
-            <option value="ar-LB" ${speechLang==='ar-LB'?'selected':''}>🇱🇧 الشام</option>
-            <option value="ar-IQ" ${speechLang==='ar-IQ'?'selected':''}>🇮🇶 العراق</option>
-            <option value="ar-MA" ${speechLang==='ar-MA'?'selected':''}>🇲🇦 المغرب</option>
-          </select>
-          <button type="button" class="mini" id="dictationCopyBtn" style="font-size:11.5px;padding:4px 8px;border-radius:8px">📋 نسخ</button>
-          <button type="button" class="mini" id="dictationClearBtn" style="font-size:11.5px;padding:4px 8px;border-radius:8px;color:var(--error)">🧹 مسح</button>
+        <div style="position:relative">
+          <div class="dictation-menu-btn" id="dictationMenuBtn" title="الخيارات والخطوط">⋮</div>
+          <div class="dictation-popup-menu" id="dictationPopupMenu">
+            <div class="dictation-menu-item" data-font="'Amiri', serif">🖋️ خط أميري كلاسيكي</div>
+            <div class="dictation-menu-item" data-font="'Tajawal', sans-serif">📄 خط تجوال حديث</div>
+            <div class="dictation-menu-item" data-font="'Katibeh', cursive">✍️ خط كتيبة (يدوي)</div>
+            <div class="dictation-menu-item" data-font="'Almarai', sans-serif">📱 خط المراعي</div>
+            <div class="dictation-menu-divider"></div>
+            <div class="dictation-menu-item" id="dictationCopyMenuItem">📋 نسخ النص بالكامل</div>
+            <div class="dictation-menu-item" style="color:var(--error)" id="dictationClearMenuItem">🗑️ مسح الورقة</div>
+          </div>
         </div>
       </div>
 
@@ -11373,27 +11489,20 @@ function openDictationNotebook(opts = {}){
         <span id="dictationInterimText" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       </div>
 
-      <!-- Ruled Lined Notebook Paper -->
-      <textarea id="dictationTextarea" class="dictation-notebook-lines" placeholder="تحدث بطلاقة مستمرة... كلامك سيظهر هنا مباشرة أثناء نطقك، مع تحويل الترقيم التلقائي (فاصلة، نقطة، سطر جديد، استفهام)...">${esc(initialText)}</textarea>
+      <!-- Ruled Lined Notebook Paper (100% borderless) -->
+      <textarea id="dictationTextarea" class="dictation-notebook-lines" placeholder="ابدأ التحدث بصوتك مباشرة... النص سينهمر على السطور بنعومة دون أي حواف تحصر الشاشة...">${esc(initialText)}</textarea>
 
-      <!-- Symbol & Control Chips Bar -->
-      <div style="padding:6px 14px;background:#FAF5EB;border-top:1px solid #E9DFC6;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center">
-        <button type="button" class="chip" id="dictationSmoothBtn" style="background:#FEF3C7;color:#B45309;font-weight:700;border:1px solid #FCD34D" title="تنعيم وتنسيق النص العربي">✨ تنعيم</button>
-        <button type="button" class="chip" id="dictationUndoBtn" style="background:#E0F2FE;color:#0369A1;font-weight:700;border:1px solid #BAE6FD" title="تراجع">↩ تراجع</button>
-        <button type="button" class="chip" id="dictationDelWordBtn" style="background:#FEE2E2;color:#B91C1C;font-weight:700;border:1px solid #FECACA" title="حذف كلمة">⌫ كلمة</button>
-        ${['،', '.', '؟', '!', ':', '—', '«', '»', '↵'].map(sym => `
-          <button type="button" class="chip dictation-sym-chip" data-sym="${sym}" style="background:#FFFDF8;border:1px solid #E9DFC6;color:#4B443A;font-weight:700;padding:3px 10px">${sym}</button>
-        `).join('')}
-      </div>
-
-      <!-- Bottom Actions Bar -->
-      <div class="dictation-bottom-bar">
-        <button type="button" id="dictationCancelBtn" class="dictation-btn-circle dictation-btn-cancel" title="إلغاء">✕</button>
-        <button type="button" id="dictationMicBtn" class="dictation-btn-circle dictation-btn-mic" title="ميكروفون (بدء / إيقاف)">🎙️</button>
-        <button type="button" id="dictationSaveBtn" class="dictation-btn-save" title="حفظ">
-          <span id="dictationSaveSpinner" style="display:none">⏳</span>
-          <span>حفظ ✓</span>
-        </button>
+      <!-- Bottom Actions Bar: 9 Neutral Classic Keys -->
+      <div class="dictation-classic-strip">
+        <button type="button" class="dictation-key" id="dictationCancelBtn" title="إلغاء وخروج">✕</button>
+        <button type="button" class="dictation-key" id="dictationLangBtn" title="تبديل اللغة (🌐 تلقائي / ع عربي / Ñ إسباني)"><span id="dictationLangIcon">🌐</span></button>
+        <button type="button" class="dictation-key" id="dictationClearBtn" title="مسح الكل">🗑️</button>
+        <button type="button" class="dictation-key" id="dictationDelWordBtn" title="حذف آخر كلمة">⌫</button>
+        <button type="button" class="dictation-key" id="dictationNewlineBtn" title="سطر جديد">↵</button>
+        <button type="button" class="dictation-key smooth-key" id="dictationSmoothBtn" title="تنعيم وترقيم النص ✨"><span class="icon">✨</span></button>
+        <button type="button" class="dictation-key ai-key" id="dictationAiBtn" title="صياغة وتنظيم الذكاء الاصطناعي 🪄"><span class="icon">🪄</span></button>
+        <button type="button" class="dictation-key" id="dictationCopyBtn" title="نسخ النص للحافظة">📋</button>
+        <button type="button" class="dictation-key save-key" id="dictationSaveBtn" title="حفظ واعتماد الفكرة ✓"><span class="icon">✓</span></button>
       </div>
     </div>
   `;
@@ -11402,18 +11511,46 @@ function openDictationNotebook(opts = {}){
 
   const ta = document.getElementById('dictationTextarea');
   const dot = document.getElementById('dictationDot');
-  const st = document.getElementById('dictationStatus');
-  const micBtn = document.getElementById('dictationMicBtn');
-  const saveBtn = document.getElementById('dictationSaveBtn');
   const cancelBtn = document.getElementById('dictationCancelBtn');
-  const smoothBtn = document.getElementById('dictationSmoothBtn');
-  const undoBtn = document.getElementById('dictationUndoBtn');
-  const delWordBtn = document.getElementById('dictationDelWordBtn');
+  const langBtn = document.getElementById('dictationLangBtn');
+  const langIcon = document.getElementById('dictationLangIcon');
   const clearBtn = document.getElementById('dictationClearBtn');
+  const delWordBtn = document.getElementById('dictationDelWordBtn');
+  const newlineBtn = document.getElementById('dictationNewlineBtn');
+  const smoothBtn = document.getElementById('dictationSmoothBtn');
+  const aiBtn = document.getElementById('dictationAiBtn');
   const copyBtn = document.getElementById('dictationCopyBtn');
-  const langSel = document.getElementById('dictationLangSelect');
+  const saveBtn = document.getElementById('dictationSaveBtn');
+  const menuBtn = document.getElementById('dictationMenuBtn');
+  const popupMenu = document.getElementById('dictationPopupMenu');
+  const copyMenuItem = document.getElementById('dictationCopyMenuItem');
+  const clearMenuItem = document.getElementById('dictationClearMenuItem');
   const interimBox = document.getElementById('dictationInterimBox');
   const interimText = document.getElementById('dictationInterimText');
+
+  // Font setup
+  const savedFont = localStorage.getItem('rafiq_dictation_font') || "'Amiri', serif";
+  ta.style.fontFamily = savedFont;
+
+  menuBtn.onclick = (e) => {
+    e.stopPropagation();
+    popupMenu.classList.toggle('show');
+  };
+  const closeMenuListener = (e) => {
+    if(!e.target.closest('#dictationMenuBtn') && !e.target.closest('#dictationPopupMenu')){
+      popupMenu.classList.remove('show');
+    }
+  };
+  document.addEventListener('click', closeMenuListener);
+
+  popupMenu.querySelectorAll('.dictation-menu-item[data-font]').forEach(item => {
+    item.onclick = () => {
+      ta.style.fontFamily = item.dataset.font;
+      localStorage.setItem('rafiq_dictation_font', item.dataset.font);
+      popupMenu.classList.remove('show');
+      toast('تم تغيير الخط ✓');
+    };
+  });
 
   function pushUndo(){
     activeDictationState.undoStack.push(ta.value);
@@ -11424,16 +11561,9 @@ function openDictationNotebook(opts = {}){
     activeDictationState.isListening = listening;
     if(listening){
       dot.classList.remove('paused');
-      micBtn.classList.add('listening');
-      st.textContent = '🎙️ يستمع الآن... تكلّم';
-      st.style.color = '#EF4444';
     } else {
       dot.classList.add('paused');
-      micBtn.classList.remove('listening');
-      st.textContent = 'متوقف مؤقتاً (اضغط المايك للمتابعة)';
-      st.style.color = '#8A8372';
       dot.style.transform = '';
-      micBtn.style.transform = '';
       if(interimBox) interimBox.style.display = 'none';
     }
   }
@@ -11443,6 +11573,7 @@ function openDictationNotebook(opts = {}){
   let wantsListen = true;
   let isRestarting = false;
   let restartTimer = null;
+  let dictationLangMode = 0; // 0: AUTO (ar-SA), 1: ARABIC (ar-SA), 2: SPANISH (es-ES)
 
   function safeRestart(){
     if(!wantsListen || !recognition || !document.getElementById('dictationOverlay')) return;
@@ -11463,8 +11594,7 @@ function openDictationNotebook(opts = {}){
   }
 
   if(!SpeechRec){
-    st.textContent = 'التعرّف الصوتي غير مدعوم في هذا المتصفح — يمكنك الكتابة يدوياً';
-    micBtn.style.opacity = '0.5';
+    toast('التعرّف الصوتي غير مدعوم في هذا المتصفح — يمكنك الكتابة يدوياً');
   } else {
     recognition = new SpeechRec();
     recognition.continuous = true;
@@ -11489,10 +11619,10 @@ function openDictationNotebook(opts = {}){
         }
       }
 
-      // If we have final results: lock into committed text
       if(newFinalStr.trim()){
         pushUndo();
-        const parsed = parseSpokenUtterance(newFinalStr);
+        const mappedFinal = mapBilingualSpeech(newFinalStr.trim());
+        const parsed = (dictationLangMode === 2) ? { text: mappedFinal, op: null } : parseSpokenUtterance(mappedFinal);
         if(parsed.op === 'CLEAR'){
           activeDictationState.committedText = '';
           ta.value = '';
@@ -11523,14 +11653,14 @@ function openDictationNotebook(opts = {}){
         ta.scrollTop = ta.scrollHeight;
       }
 
-      // If we have interim results: display in real time with zero latency
       if(interimStr.trim()){
+        const mappedInterim = mapBilingualSpeech(interimStr);
         const fullLive = activeDictationState.committedText
-          ? (activeDictationState.committedText + (activeDictationState.committedText.endsWith('\n') ? '' : ' ') + interimStr)
-          : interimStr;
+          ? (activeDictationState.committedText + (activeDictationState.committedText.endsWith('\n') ? '' : ' ') + mappedInterim)
+          : mappedInterim;
         ta.value = fullLive;
         if(interimBox && interimText){
-          interimText.textContent = interimStr.trim();
+          interimText.textContent = mappedInterim.trim();
           interimBox.style.display = 'flex';
         }
         ta.scrollTop = ta.scrollHeight;
@@ -11538,20 +11668,13 @@ function openDictationNotebook(opts = {}){
     };
 
     recognition.onerror = (e) => {
-      console.log('SpeechRecognition notice:', e.error);
-      if(e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'network'){
-        // Normal pause or transient network glitch: KEEP LISTENING!
+      if(e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'network' || e.error === 'aborted'){
         return;
       }
       if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
         wantsListen = false;
         updateMicUi(false);
-        st.textContent = '❌ إذن الميكروفون مطلوب — اضغط للتشغيل';
-        st.style.color = 'var(--error)';
         toast('يرجى منح إذن الميكروفون للمتابعة');
-        return;
-      }
-      if(e.error === 'aborted'){
         return;
       }
     };
@@ -11573,7 +11696,6 @@ function openDictationNotebook(opts = {}){
     await startDictationAudioMeter((vol) => {
       if(activeDictationState.isListening){
         dot.style.transform = 'scale(' + (1 + (vol / 100) * 0.45) + ')';
-        micBtn.style.transform = 'scale(' + (1 + (vol / 100) * 0.18) + ')';
       }
     });
 
@@ -11601,38 +11723,38 @@ function openDictationNotebook(opts = {}){
   }
 
   dot.onclick = toggleListening;
-  micBtn.onclick = toggleListening;
 
-  if(langSel){
-    langSel.onchange = () => {
-      speechLang = langSel.value;
-      localStorage.setItem('rafiq_speech_lang', speechLang);
-      if(recognition){
-        recognition.lang = speechLang;
-        try { recognition.abort(); } catch(e){}
-        safeRestart();
-      }
-      toast('تم تغيير اللهجة إلى ' + langSel.options[langSel.selectedIndex].text + ' ✓');
-    };
-  }
+  // Language cycling: 🌐 (auto) -> ع (arabic) -> Ñ (spanish)
+  langBtn.onclick = () => {
+    dictationLangMode = (dictationLangMode + 1) % 3;
+    if(dictationLangMode === 0){
+      langIcon.textContent = '🌐';
+      speechLang = 'ar-SA';
+      toast('اللغة: تسجيل تلقائي ذكي 🌐');
+    } else if(dictationLangMode === 1){
+      langIcon.textContent = 'ع';
+      speechLang = 'ar-SA';
+      toast('اللغة: عربي فقط (ع)');
+    } else {
+      langIcon.textContent = 'Ñ';
+      speechLang = 'es-AR';
+      toast('اللغة: إسباني أرجنتيني فقط (Ñ)');
+    }
+    if(recognition){
+      recognition.lang = speechLang;
+      try { recognition.abort(); } catch(e){}
+      safeRestart();
+    }
+  };
 
-  overlay.querySelectorAll('.dictation-sym-chip').forEach(btn => {
-    btn.onclick = () => {
-      pushUndo();
-      const sym = btn.dataset.sym;
-      const b = (activeDictationState.committedText || ta.value).trimEnd();
-      if(sym === '↵'){
-        activeDictationState.committedText = b + '\n';
-      } else if(['(', '«', '—'].includes(sym)){
-        activeDictationState.committedText = (!b || b.endsWith('\n')) ? (b + sym) : (b + ' ' + sym);
-      } else {
-        activeDictationState.committedText = b + sym + ' ';
-      }
-      ta.value = activeDictationState.committedText;
-      ta.focus();
-      ta.scrollTop = ta.scrollHeight;
-    };
-  });
+  newlineBtn.onclick = () => {
+    pushUndo();
+    const b = (activeDictationState.committedText || ta.value).trimEnd();
+    activeDictationState.committedText = b + '\n';
+    ta.value = activeDictationState.committedText;
+    ta.focus();
+    ta.scrollTop = ta.scrollHeight;
+  };
 
   delWordBtn.onclick = () => {
     pushUndo();
@@ -11641,69 +11763,86 @@ function openDictationNotebook(opts = {}){
     ta.focus();
   };
 
-  undoBtn.onclick = () => {
-    if(activeDictationState.undoStack.length){
-      activeDictationState.committedText = activeDictationState.undoStack.pop();
-      ta.value = activeDictationState.committedText;
-      ta.focus();
+  async function copyDictationText(){
+    const txt = ta.value.trim();
+    if(!txt){ toast('النص فارغ'); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(txt);
+      toast('تم نسخ النص للحافظة ✓');
     } else {
-      toast('لا يوجد تراجع');
+      toast(txt);
     }
-  };
+  }
+  copyBtn.onclick = copyDictationText;
+  copyMenuItem.onclick = () => { popupMenu.classList.remove('show'); copyDictationText(); };
 
-  clearBtn.onclick = () => {
+  function clearDictationText(){
     if(!ta.value.trim() || confirm('مسح النص بالكامل؟')){
       pushUndo();
       activeDictationState.committedText = '';
       ta.value = '';
       ta.focus();
     }
-  };
-
-  copyBtn.onclick = async () => {
-    const txt = ta.value.trim();
-    if(!txt){ toast('النص فارغ'); return; }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(txt);
-      toast('تم نسخ النص 📋');
-    } else {
-      toast(txt);
-    }
-  };
+  }
+  clearBtn.onclick = clearDictationText;
+  clearMenuItem.onclick = () => { popupMenu.classList.remove('show'); clearDictationText(); };
 
   smoothBtn.onclick = async () => {
     const orig = ta.value.trim();
     if(!orig){ toast('لا يوجد نص لتنعيمه'); return; }
     const keys = getGeminiKeys();
     pushUndo();
-    smoothBtn.disabled = true;
-    smoothBtn.textContent = '⏳ ينعّم...';
+    smoothBtn.classList.add('is-working');
     try {
       if(keys.length > 0){
         const smoothed = await smoothArabicTextWithGemini(orig);
         if(smoothed){
           activeDictationState.committedText = smoothed;
           ta.value = smoothed;
-          toast('تم تنعيم وصياغة النص عبر Gemini بنجاح ✨');
+          toast('تم تنعيم وترقيم النص بنجاح ✨');
         }
       } else {
         const formatted = localTypographyFormat(orig);
         activeDictationState.committedText = formatted;
         ta.value = formatted;
-        toast('تم تنسيق وترتيب النص العربي بنجاح ✓');
+        toast('تم ضبط الترقيم محلياً ✓');
       }
     } catch(e){
       const formatted = localTypographyFormat(orig);
       activeDictationState.committedText = formatted;
       ta.value = formatted;
-      toast('تم تنسيق النص محلياً ✓');
+      toast('تم ضبط الترقيم محلياً ✓');
     } finally {
-      smoothBtn.disabled = false;
-      smoothBtn.textContent = '✨ تنعيم';
+      smoothBtn.classList.remove('is-working');
+    }
+  };
+
+  aiBtn.onclick = async () => {
+    const orig = ta.value.trim();
+    if(!orig){ toast('لا يوجد نص للصياغة'); return; }
+    const keys = getGeminiKeys();
+    if(!keys.length){
+      toast('أضف مفتاح Gemini من الإعدادات لاستعمال الصياغة الذكية');
+      return;
+    }
+    pushUndo();
+    aiBtn.classList.add('is-working');
+    try {
+      const formatted = await formatArabicTextWithGemini(orig);
+      if(formatted){
+        activeDictationState.committedText = formatted;
+        ta.value = formatted;
+        toast('تمت الصياغة والتنظيم الذكي بنجاح 🪄');
+      }
+    } catch(e){
+      toast('تعذّرت الصياغة الذكية الآن');
+    } finally {
+      aiBtn.classList.remove('is-working');
     }
   };
 
   function closeNotebook(){
+    document.removeEventListener('click', closeMenuListener);
     stopListening();
     overlay.remove();
   }
@@ -11882,7 +12021,10 @@ function renderNoteCardHtml(n, isDark){
       ${n.body ? `<div class="note-card-body">${esc(n.body)}</div>` : ''}
 
       <div class="note-card-foot">
-        <span>${stamp}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span>${stamp}</span>
+          ${n.shared_with_partner ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#EFF6FF;color:#1D4ED8;font-weight:700">👥 مشترك</span>' : ''}
+        </div>
         <div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
           <button type="button" class="link" onclick="copyNoteText('${n.id}')" title="نسخ" style="padding:2px;font-size:12px">📋</button>
           <button type="button" class="link" onclick="deleteNotePrompt('${n.id}')" title="حذف" style="padding:2px;font-size:12px;color:var(--error)">🗑️</button>
@@ -11901,6 +12043,8 @@ function openNoteModal(noteId = null){
   let currentBody = existing ? existing.body : '';
   let currentColorIndex = existing ? (existing.color_index || 0) : 0;
   let isPinned = existing ? !!existing.pinned : false;
+  let isSharedWithPartner = existing ? !!existing.shared_with_partner : false;
+  let showRuling = localStorage.getItem('note_show_ruling') !== 'false';
 
   const modal = document.createElement('div');
   modal.id = 'noteEditModal';
@@ -11909,6 +12053,7 @@ function openNoteModal(noteId = null){
   function renderModalContent(){
     const bg = noteBgColor(currentColorIndex, isDark, noteId || 'temp');
     const colors = isDark ? NOTES_DARK_COLORS : NOTES_LIGHT_COLORS;
+    const ruleLineColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
 
     modal.innerHTML = `
       <div class="dictation-notebook" style="max-height:680px;background:${bg};border-color:var(--border)" onclick="event.stopPropagation()">
@@ -11919,6 +12064,12 @@ function openNoteModal(noteId = null){
             <b style="font-size:15px">${existing ? 'تعديل الملاحظة' : 'ملاحظة جديدة'}</b>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
+            <button type="button" class="mini" id="noteModalShareBtn" style="font-size:12px;padding:4px 8px;background:${isSharedWithPartner ? '#EFF6FF' : 'rgba(0,0,0,0.06)'};color:${isSharedWithPartner ? '#1D4ED8' : 'inherit'};border:1px solid ${isSharedWithPartner ? '#93C5FD' : 'rgba(0,0,0,0.12)'}" title="المشاركة مع الشريك">
+              ${isSharedWithPartner ? '👥 مشترك مع الشريك' : '🔒 خاص بي (مشاركة؟)'}
+            </button>
+            <button type="button" class="mini" id="noteModalRuleBtn" style="font-size:12px;padding:4px 8px;background:${showRuling ? 'rgba(0,0,0,0.09)' : 'transparent'};border:1px solid rgba(0,0,0,0.15)" title="إظهار / إخفاء السطور">
+              ${showRuling ? '≡ سطور' : '▭ بيضاء'}
+            </button>
             <button type="button" class="mini" id="noteModalPinBtn" style="font-size:13px;padding:4px 8px">
               ${isPinned ? '📌 مثبتة' : '📍 تثبيت'}
             </button>
@@ -11937,7 +12088,7 @@ function openNoteModal(noteId = null){
             style="border:none;background:transparent;outline:none;font-size:17px;font-weight:700;color:inherit;font-family:inherit;width:100%">
           <div style="height:1px;background:rgba(0,0,0,0.08)"></div>
           <textarea id="noteEditBody" placeholder="اكتب ملاحظتك هنا..."
-            style="flex:1;border:none;background:transparent;outline:none;font-size:14.5px;line-height:1.6;color:inherit;font-family:inherit;width:100%;resize:none;min-height:220px">${esc(currentBody)}</textarea>
+            style="flex:1;border:none;background:${showRuling ? `repeating-linear-gradient(to bottom, transparent, transparent 31px, ${ruleLineColor} 32px)` : 'transparent'};outline:none;font-size:15px;line-height:32px;color:inherit;font-family:inherit;width:100%;resize:none;min-height:220px">${esc(currentBody)}</textarea>
         </div>
 
         <!-- Color Palette Picker -->
@@ -11970,10 +12121,25 @@ function openNoteModal(noteId = null){
     if(titleInp) titleInp.oninput = () => { currentTitle = titleInp.value; };
     if(bodyInp) bodyInp.oninput = () => { currentBody = bodyInp.value; };
 
+    if(modal.querySelector('#noteModalShareBtn')){
+      modal.querySelector('#noteModalShareBtn').onclick = () => {
+        isSharedWithPartner = !isSharedWithPartner;
+        renderModalContent();
+      };
+    }
+
     modal.querySelector('#noteModalPinBtn').onclick = () => {
       isPinned = !isPinned;
       renderModalContent();
     };
+
+    if(modal.querySelector('#noteModalRuleBtn')){
+      modal.querySelector('#noteModalRuleBtn').onclick = () => {
+        showRuling = !showRuling;
+        localStorage.setItem('note_show_ruling', showRuling);
+        renderModalContent();
+      };
+    }
 
     modal.querySelectorAll('.note-color-chip').forEach(chip => {
       chip.onclick = () => {
@@ -12032,12 +12198,13 @@ function openNoteModal(noteId = null){
           title: t,
           body: b,
           color_index: currentColorIndex,
-          pinned: isPinned
+          pinned: isPinned,
+          shared_with_partner: isSharedWithPartner
         });
         toast('تم تحديث الملاحظة ✓');
       } else {
         const n = createNoteFromText(b, t, currentColorIndex);
-        if(isPinned) updateNoteItem(n.id, { pinned: true });
+        updateNoteItem(n.id, { pinned: isPinned, shared_with_partner: isSharedWithPartner });
         toast('تمت إضافة الملاحظة بنجاح ✓');
       }
       modal.remove();
