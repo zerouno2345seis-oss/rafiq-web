@@ -852,7 +852,7 @@ html[dir="rtl"] .switch.on i{transform:translateX(-18px)}
 'use strict';
 /* ================= CONFIG (نفس مشروع Supabase الخاص بتطبيق Android) ================= */
 const APP_APK = '/rafiq.apk';
-const APP_VERSION = '1.4.22';
+const APP_VERSION = '1.4.23';
 const IS_IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 const ARABIC_FONTS = [
@@ -2452,6 +2452,54 @@ const DASH_TILES = {
       `;
     }
   },
+  med_timer: {
+    key: 'med_timer',
+    emoji: '⏱️',
+    title: 'مؤقت الدواء',
+    desc: 'مؤقت زمني تصاعدي وتنازلي لجرعات الأدوية الحساسة',
+    light: { bg: '#F0FDF4', border: '#BBF7D0', accent: '#10B981' },
+    dark:  { bg: '#13281E', border: '#1E4D36', accent: '#34D399' },
+    actionLabel: '+ دواء بمؤقت ⏱️',
+    actionAct: 'gotoMeds',
+    renderBody: function(){
+      // أدوية الفاصل الزمني الخاصة بي أو المشتركة معي حصراً (خصوصية تامة)
+      const timerMeds = (medsOf() || []).filter(m => m.isInterval);
+      if(!timerMeds.length){
+        return `
+          <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">لا أدوية بمؤقت زمني</div>
+          <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">سجل دواءك الحساس بالفاصل الزمني ⏱️</div>
+        `;
+      }
+      const curMed = timerMeds[0];
+      const doses = parseDosesForMed(curMed.item.id, data.entries);
+      const last = doses.length ? doses[doses.length - 1] : null;
+      const status = last ? calculateIntervalStatus(last.dt, curMed.intervalHours) : null;
+      const elapsed = last ? formatDoseElapsedTime(last.dt) : '';
+      const isMine = curMed.item.visibility === 'PRIVATE' || curMed.patient === 'me';
+      const privBadge = isMine ? '🔒 خاص بي' : (curMed.patient === 'companion' ? '👥 الشريك' : '🌐 كلانا');
+
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">💊 ${esc(curMed.item.title)}</div>
+          <span class="badge" style="font-size:9.5px;padding:1px 5px">${privBadge}</span>
+        </div>
+        ${last ? `
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:3px">⏱️ ${elapsed} <span style="font-size:9.5px;opacity:.8">(${last.timeStr})</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+            <span style="font-size:11.5px;font-weight:800;color:${status && status.isOverdue ? 'var(--error)' : '#10B981'}">${status ? status.text : ''}</span>
+            <button class="mini" data-act="logDose" data-id="${curMed.item.id}" onclick="event.stopPropagation()" style="background:${status && status.isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'};color:${status && status.isOverdue ? 'var(--error)' : '#10B981'};border:1px solid currentColor;font-weight:700;border-radius:6px;padding:2px 7px;font-size:10px">
+              أخذت الجرعة ✓
+            </button>
+          </div>
+        ` : `
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">لم تُسجّل جرعة بعد</div>
+          <button class="mini" data-act="logDose" data-id="${curMed.item.id}" onclick="event.stopPropagation()" style="background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);font-weight:700;border-radius:6px;padding:3px 8px;font-size:10.5px">
+            ابدأ الجرعة 🚀
+          </button>
+        `}
+      `;
+    }
+  },
   mood: {
     key: 'mood',
     emoji: '🌤',
@@ -2843,7 +2891,7 @@ function onDashboardCardClick(key){
   else if(key === 'schedule') { view = 'schedule'; renderApp(); }
   else if(key === 'habits') { view = 'habits'; renderApp(); }
   else if(key === 'shopping') { view = 'shopping'; renderApp(); }
-  else if(key === 'meds') { view = 'meds'; renderApp(); }
+  else if(key === 'meds' || key === 'med_timer') { view = 'meds'; renderApp(); }
   else if(key === 'lifetracker') { view = 'lifetracker'; renderApp(); }
   else if(key === 'media') { view = 'media'; renderApp(); }
   else if(key === 'places') { view = 'places'; renderApp(); }
@@ -6490,17 +6538,35 @@ function parseMed(it){
   const f=it.frequency||''; if(!f.startsWith('MED|')) return null;
   const desc=(it.description||'').split('|');
   const g=k=>{ const p=desc.find(x=>x.startsWith(k+'=')); return p? p.slice(k.length+1):''; };
-  return {item:it, schedule:f.slice(4),
-    start:g('start'), end:g('end'), ongoing:g('ongoing')==='1', patient:g('patient'),
-    perDay:Math.max(1,Math.round((it.target_value||1))),
-    scheduleAr(){ if(this.schedule.endsWith('x')) return this.schedule.slice(0,-1)+' مرات يوميًا';
-      if(this.schedule.startsWith('weekly:')) return 'أيام: '+this.schedule.slice(7); return this.schedule; },
-    statusAr(){ if(this.ongoing) return 'مستمر مدى الحياة';
-      if(!this.end) return ''; const d=Math.ceil((new Date(this.end)-new Date())/86400000);
-      return d<0?'انتهى':(d===0?'آخر يوم':('ينتهي بعد '+d+' يومًا')); },
-    activeToday(){ const t=new Date().toISOString().slice(0,10);
+  const schedule = f.slice(4);
+  const isInterval = schedule.startsWith('interval:');
+  const intervalHours = isInterval ? (parseInt(schedule.replace('interval:','').replace('h',''), 10) || 8) : 0;
+  return {
+    item: it,
+    schedule: schedule,
+    isInterval: isInterval,
+    intervalHours: intervalHours,
+    start: g('start'), end: g('end'), ongoing: g('ongoing')==='1', patient: g('patient'),
+    perDay: Math.max(1, Math.round((it.target_value||1))),
+    scheduleAr(){
+      if(this.isInterval) return 'كل ' + this.intervalHours + ' ساعات ⏳';
+      if(this.schedule.endsWith('x')) return this.schedule.slice(0,-1)+' مرات يوميًا';
+      if(this.schedule.startsWith('weekly:')) return 'أيام: '+this.schedule.slice(7);
+      return this.schedule;
+    },
+    statusAr(){
+      if(this.ongoing) return 'مستمر مدى الحياة';
+      if(!this.end) return '';
+      const d=Math.ceil((new Date(this.end)-new Date())/86400000);
+      return d<0?'انتهى':(d===0?'آخر يوم':('ينتهي بعد '+d+' يومًا'));
+    },
+    activeToday(){
+      const t=new Date().toISOString().slice(0,10);
       if(this.start&&t<this.start) return false;
-      if(!this.ongoing&&this.end&&t>this.end) return false; return true; } };
+      if(!this.ongoing&&this.end&&t>this.end) return false;
+      return true;
+    }
+  };
 }
 let medsTable=false;
 function ytThumb(u){ if(!u) return null; u=String(u).trim();
@@ -6566,52 +6632,150 @@ function openAddMed(){
     initPatient = 'both';
   }
   openSheet(sheetHead('💊 دواء جديد')+`
-    <div class="field"><label>اسم الدواء</label><input id="mdName" placeholder="مثال: كونكور"></div>
-    <div class="field"><label>الجرعة</label><input id="mdDose" value="حبة"></div>
-    <div class="field"><label>عدد المرات يوميًا</label><div class="chips" id="mdPer">
+    <div class="field"><label>اسم الدواء</label><input id="mdName" placeholder="مثال: هرمون الغدة / كونكور"></div>
+    <div class="field"><label>الجرعة</label><input id="mdDose" value="حبة" placeholder="مثال: 100mcg / حبة"></div>
+    <div class="field"><label>طريقة الجدولة والمتابعة</label><div class="chips" id="mdSchedType">
+      <button class="chip on" data-t="daily">يوميًا</button>
+      <button class="chip" data-t="interval">⏳ مؤقت بالساعات</button>
+      <button class="chip" data-t="weekly">أسبوعيًا</button>
+    </div></div>
+    
+    <div class="field" id="mdDailyWrap"><label>عدد المرات يوميًا</label><div class="chips" id="mdPer">
       ${[1,2,3,4].map((n,i)=>`<button class="chip ${i===0?'on':''}" data-n="${n}">${n}</button>`).join('')}
-      <button class="chip" data-n="w">أسبوعيًا</button></div></div>
+    </div></div>
+
+    <div class="field" id="mdIntervalWrap" style="display:none">
+      <label>تكرار الجرعة كل كم ساعة؟ (مؤقت تصاعدي وتنازلي)</label>
+      <div class="chips" id="mdIntervalPreset">
+        <button class="chip" data-h="6">كل 6 س</button>
+        <button class="chip" data-h="8">كل 8 س</button>
+        <button class="chip on" data-h="12">كل 12 س</button>
+        <button class="chip" data-h="24">كل 24 س</button>
+      </div>
+      <div style="height:6px"></div>
+      <input id="mdIntervalCustom" placeholder="أو اكتب عدد ساعات مخصص (مثال: 16)" type="number" min="1">
+    </div>
+
     <div class="field" id="mdWeeklyWrap" style="display:none"><label>أي أيام؟</label><input id="mdWeekly" placeholder="مثال: السبت والثلاثاء"></div>
+
     <div class="field"><label>المدة</label><div class="chips" id="mdDur">
       <button class="chip on" data-v="ongoing">مستمر مدى الحياة</button>
       <button class="chip" data-v="until">حتى تاريخ</button></div></div>
     <div class="field" id="mdEndWrap" style="display:none"><label>تاريخ النهاية</label><input id="mdEnd" type="date"></div>
-    <div class="field"><label>لمن هذا الدواء؟</label><div class="chips" id="mdPatient">
-      <button class="chip ${initPatient==='me'?'on':''}" data-v="me">أنا</button>
-      ${comp?`<button class="chip ${initPatient==='companion'?'on':''}" data-v="companion">رفيقي</button>`:''}
-      <button class="chip ${initPatient==='both'?'on':''}" data-v="both">كلانا</button></div></div>
-    <p style="font-size:11.5px;color:var(--text-3)">التذكير مشترك: سيصلكم إشعار حسب الجدول.</p>
+
+    <div class="field"><label>لمن هذا الدواء والخصوصية؟</label><div class="chips" id="mdPatient">
+      <button class="chip ${initPatient==='me'?'on':''}" data-v="me">🔒 أنا (خاص بي فقط)</button>
+      ${comp?`<button class="chip ${initPatient==='companion'?'on':''}" data-v="companion">👥 رفيقي (مساحة الشريك)</button>`:''}
+      <button class="chip ${initPatient==='both'?'on':''}" data-v="both">🌐 كلانا (مشترك)</button>
+    </div></div>
+    <div id="mdPrivNote" style="font-size:11.5px;color:var(--accent-dark);margin-bottom:8px">
+      🔒 افتراضي صارم: خاص بك تمامًا ولن يطّلع عليه رفيقك أو يظهر له في الواجهة إلا إذا اخترت مشاركته.
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;background:var(--surface-2);border-radius:10px;margin-bottom:12px">
+      <input type="checkbox" id="mdPinDash" style="width:16px;height:16px;accent-color:var(--accent)">
+      <span style="font-size:12.5px;font-weight:700;color:var(--text-1)">📌 تثبيت كبلاطة منفصلة في لوحة الإنجاز السريع</span>
+    </label>
+
     <button class="btn" data-act="saveMed">حفظ الدواء</button>`);
-  window._mdPer=1; window._mdWeekly=false; window._mdOngoing=true; window._mdPatient=initPatient;
-  const wp=$('#mdPer'); if(wp) wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
-    wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    if(b.dataset.n==='w'){ window._mdWeekly=true; setDisplay('mdWeeklyWrap','block'); }
-    else { window._mdWeekly=false; window._mdPer=parseInt(b.dataset.n,10); setDisplay('mdWeeklyWrap','none'); } });
-  const wd=$('#mdDur'); if(wd) wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
-    wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    window._mdOngoing=(b.dataset.v==='ongoing'); setDisplay('mdEndWrap', window._mdOngoing?'none':'block'); });
-  const wm=$('#mdPatient'); if(wm) wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
-    wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._mdPatient=b.dataset.v; });
+
+  window._mdSchedType = 'daily';
+  window._mdPer = 1;
+  window._mdIntervalHours = 12;
+  window._mdWeekly = false;
+  window._mdOngoing = true;
+  window._mdPatient = initPatient;
+
+  const st = $('#mdSchedType');
+  if(st) st.addEventListener('click', e => {
+    const b = e.target.closest('[data-t]'); if(!b) return;
+    st.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._mdSchedType = b.dataset.t;
+    setDisplay('mdDailyWrap', window._mdSchedType === 'daily' ? 'block' : 'none');
+    setDisplay('mdIntervalWrap', window._mdSchedType === 'interval' ? 'block' : 'none');
+    setDisplay('mdWeeklyWrap', window._mdSchedType === 'weekly' ? 'block' : 'none');
+    if(window._mdSchedType === 'interval'){
+      const pinChk = $('#mdPinDash'); if(pinChk) pinChk.checked = true;
+    }
+  });
+
+  const ip = $('#mdIntervalPreset');
+  if(ip) ip.addEventListener('click', e => {
+    const b = e.target.closest('[data-h]'); if(!b) return;
+    ip.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._mdIntervalHours = parseInt(b.dataset.h, 10);
+    const inp = $('#mdIntervalCustom'); if(inp) inp.value = '';
+  });
+
+  const wp = $('#mdPer');
+  if(wp) wp.addEventListener('click', e => {
+    const b = e.target.closest('[data-n]'); if(!b) return;
+    wp.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._mdPer = parseInt(b.dataset.n, 10);
+  });
+
+  const wd = $('#mdDur');
+  if(wd) wd.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if(!b) return;
+    wd.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._mdOngoing = (b.dataset.v === 'ongoing');
+    setDisplay('mdEndWrap', window._mdOngoing ? 'none' : 'block');
+  });
+
+  const wm = $('#mdPatient');
+  if(wm) wm.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if(!b) return;
+    wm.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._mdPatient = b.dataset.v;
+    const n = $('#mdPrivNote');
+    if(n){
+      if(window._mdPatient === 'companion') n.textContent = '👥 مخصص للشريك في مساحتكم المشتركة — سيصلكما تنبيه الجرعات.';
+      else if(window._mdPatient === 'both') n.textContent = '🌐 دواء مشترك يظهر في الجدول لكليكما.';
+      else n.textContent = '🔒 افتراضي صارم: خاص بك تمامًا ولن يطّلع عليه رفيقك أو يظهر له في الواجهة إلا إذا اخترت مشاركته.';
+    }
+  });
 }
 async function saveMed(){
   try{
     const name=($('#mdName')||{}).value||''; if(!name.trim()){ toast('اكتب اسم الدواء'); return; }
     const dose=($('#mdDose')||{}).value||'حبة';
-    const perDay=window._mdWeekly?1:window._mdPer;
-    const schedule=window._mdWeekly?('weekly:'+(($('#mdWeekly')||{}).value||'غير محدد')):(perDay+'x');
     const ongoing=window._mdOngoing; const end=ongoing?null:(($('#mdEnd')||{}).value||null);
     const patient=window._mdPatient||'me';
+    const isInterval = window._mdSchedType === 'interval';
+    const isWeekly = window._mdSchedType === 'weekly';
+
+    let customH = parseInt(($('#mdIntervalCustom')||{}).value, 10);
+    let finalIntervalH = (customH && customH > 0) ? customH : (window._mdIntervalHours || 12);
+    let perDay = isInterval ? Math.max(1, Math.round(24 / finalIntervalH)) : (isWeekly ? 1 : window._mdPer);
+    let schedule = isInterval ? ('interval:' + finalIntervalH + 'h') : (isWeekly ? ('weekly:' + (($('#mdWeekly')||{}).value||'غير محدد')) : (perDay + 'x'));
+
     const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).m:null;
     let cid=sh?sh.circle.id:((data.circles||[]).find(c=>c.circle.type==='PERSONAL')||{}).circle?.id;
     if(!cid){ toast('لا توجد دائرة متاحة'); return; }
-    const vis=(patient==='companion'&&comp)?'SELECTED_MEMBERS':'CIRCLE';
+
+    // الخصوصية الصارمة: الافتراضي أنا فقط = PRIVATE تماماً
+    const vis = (patient === 'me') ? 'PRIVATE' : ((patient === 'companion' && comp) ? 'SELECTED_MEMBERS' : 'CIRCLE');
     const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
     const medId=uuid();
+
     await rest('POST','items',{id:medId,owner_id:meId(),circle_id:cid,type:'HABIT',title:name.trim(),
       description:desc,visibility:vis,unit:dose,target_value:perDay,frequency:'MED|'+schedule,status:'ACTIVE'},'return=minimal');
-    if(vis==='SELECTED_MEMBERS'&&comp){ try{ await rest('POST','item_recipients',{id:uuid(),item_id:medId,user_id:comp.user_id},'return=minimal'); }catch(e){} }
+
+    if(vis==='SELECTED_MEMBERS'&&comp){
+      try{ await rest('POST','item_recipients',{id:uuid(),item_id:medId,user_id:comp.user_id},'return=minimal'); }catch(e){}
+    }
     try{ await rest('POST','activity_events',{id:uuid(),circle_id:cid,user_id:meId(),kind:'MED_ADDED',payload:name.trim()}); }catch(e){}
-    await refreshAll(); closeSheet(); renderApp(); toast('أُضيف الدواء 💊');
+
+    const pinDash = ($('#mdPinDash')||{}).checked;
+    if(pinDash){
+      const keys = getDashboardKeys();
+      if(!keys.includes('med_timer')){
+        setDashboardKeys([...keys, 'med_timer']);
+      }
+    }
+
+    await refreshAll(); closeSheet(); renderApp();
+    toast('أُضيف الدواء 💊 ' + (patient === 'me' ? '🔒 (خاص بك)' : '👥 (مشترك)'));
   }catch(e){ toast('تعذر الحفظ: '+(e&&e.message?e.message:'')); }
 }
 
@@ -6619,46 +6783,147 @@ function openEditMedSheet(id){
   const m=medsOf().find(x=>x.item.id===id); if(!m) return;
   const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).p:null;
   const isWeekly = m.schedule.startsWith('weekly:');
+  const isInterval = m.isInterval;
   const curPer = isWeekly ? 1 : m.perDay;
   const curWeekly = isWeekly ? m.schedule.slice(7) : '';
+  const initType = isInterval ? 'interval' : (isWeekly ? 'weekly' : 'daily');
+
   openSheet(sheetHead('✏️ تعديل الدواء')+`
     <div class="field"><label>اسم الدواء</label><input id="emdName" value="${esc(m.item.title)}"></div>
     <div class="field"><label>الجرعة</label><input id="emdDose" value="${esc(m.item.unit||'حبة')}"></div>
-    <div class="field"><label>عدد المرات يوميًا</label><div class="chips" id="emdPer">
-      ${[1,2,3,4].map(n=>`<button class="chip ${(!isWeekly&&curPer===n)?'on':''}" data-n="${n}">${n}</button>`).join('')}
-      <button class="chip ${isWeekly?'on':''}" data-n="w">أسبوعيًا</button></div></div>
-    <div class="field" id="emdWeeklyWrap" style="display:${isWeekly?'block':'none'}"><label>أي أيام؟</label><input id="emdWeekly" value="${esc(curWeekly)}" placeholder="مثال: السبت والثلاثاء"></div>
+    <div class="field"><label>طريقة الجدولة والمتابعة</label><div class="chips" id="emdSchedType">
+      <button class="chip ${initType==='daily'?'on':''}" data-t="daily">يوميًا</button>
+      <button class="chip ${initType==='interval'?'on':''}" data-t="interval">⏳ مؤقت بالساعات</button>
+      <button class="chip ${initType==='weekly'?'on':''}" data-t="weekly">أسبوعيًا</button>
+    </div></div>
+    
+    <div class="field" id="emdDailyWrap" style="display:${initType==='daily'?'block':'none'}"><label>مرات الجرعة يوميًا</label><div class="chips" id="emdPer">
+      ${[1,2,3,4].map(n=>`<button class="chip ${(!isWeekly&&!isInterval&&curPer===n)?'on':''}" data-n="${n}">${n}</button>`).join('')}
+    </div></div>
+
+    <div class="field" id="emdIntervalWrap" style="display:${initType==='interval'?'block':'none'}">
+      <label>تكرار الجرعة كل كم ساعة؟ (مؤقت تصاعدي وتنازلي)</label>
+      <div class="chips" id="emdIntervalPreset">
+        <button class="chip ${m.intervalHours===6?'on':''}" data-h="6">كل 6 س</button>
+        <button class="chip ${m.intervalHours===8?'on':''}" data-h="8">كل 8 س</button>
+        <button class="chip ${(m.intervalHours===12||!m.intervalHours)?'on':''}" data-h="12">كل 12 س</button>
+        <button class="chip ${m.intervalHours===24?'on':''}" data-h="24">كل 24 س</button>
+      </div>
+      <div style="height:6px"></div>
+      <input id="emdIntervalCustom" value="${(![6,8,12,24].includes(m.intervalHours)&&m.intervalHours)?m.intervalHours:''}" placeholder="أو اكتب عدد ساعات مخصص (مثال: 16)" type="number" min="1">
+    </div>
+
+    <div class="field" id="emdWeeklyWrap" style="display:${initType==='weekly'?'block':'none'}"><label>أي أيام؟</label><input id="emdWeekly" value="${esc(curWeekly)}" placeholder="مثال: السبت والثلاثاء"></div>
+
     <div class="field"><label>المدة</label><div class="chips" id="emdDur">
       <button class="chip ${m.ongoing?'on':''}" data-v="ongoing">مستمر مدى الحياة</button>
       <button class="chip ${!m.ongoing?'on':''}" data-v="until">حتى تاريخ</button></div></div>
     <div class="field" id="emdEndWrap" style="display:${m.ongoing?'none':'block'}"><label>تاريخ النهاية</label><input id="emdEnd" type="date" value="${esc(m.end||'')}"></div>
-    <div class="field"><label>لمن هذا الدواء؟</label><div class="chips" id="emdPatient">
-      <button class="chip ${m.patient==='me'?'on':''}" data-v="me">أنا</button>
-      ${comp?`<button class="chip ${m.patient==='companion'?'on':''}" data-v="companion">رفيقي</button>`:''}
-      <button class="chip ${m.patient==='both'?'on':''}" data-v="both">كلانا</button></div></div>
+
+    <div class="field"><label>لمن هذا الدواء والخصوصية؟</label><div class="chips" id="emdPatient">
+      <button class="chip ${m.patient==='me'?'on':''}" data-v="me">🔒 أنا (خاص بي)</button>
+      ${comp?`<button class="chip ${m.patient==='companion'?'on':''}" data-v="companion">👥 رفيقي (مساحة الشريك)</button>`:''}
+      <button class="chip ${m.patient==='both'?'on':''}" data-v="both">🌐 كلانا (مشترك)</button>
+    </div></div>
+
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;background:var(--surface-2);border-radius:10px;margin-bottom:12px">
+      <input type="checkbox" id="emdPinDash" ${getDashboardKeys().includes('med_timer')?'checked':''} style="width:16px;height:16px;accent-color:var(--accent)">
+      <span style="font-size:12.5px;font-weight:700;color:var(--text-1)">📌 تثبيت كبلاطة منفصلة في لوحة الإنجاز السريع</span>
+    </label>
+
     <button class="btn" data-act="saveEditMed" data-id="${m.item.id}">حفظ التعديلات</button>`);
-  window._emdPer=curPer; window._emdWeekly=isWeekly; window._emdOngoing=m.ongoing; window._emdPatient=m.patient||'me';
-  const wp=$('#emdPer'); if(wp) wp.addEventListener('click',e=>{ const b=e.target.closest('[data-n]'); if(!b) return;
-    wp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    if(b.dataset.n==='w'){ window._emdWeekly=true; setDisplay('emdWeeklyWrap','block'); }
-    else { window._emdWeekly=false; window._emdPer=parseInt(b.dataset.n,10); setDisplay('emdWeeklyWrap','none'); } });
-  const wd=$('#emdDur'); if(wd) wd.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
-    wd.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-    window._emdOngoing=(b.dataset.v==='ongoing'); setDisplay('emdEndWrap', window._emdOngoing?'none':'block'); });
-  const wm=$('#emdPatient'); if(wm) wm.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
-    wm.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b)); window._emdPatient=b.dataset.v; });
+
+  window._emdSchedType = initType;
+  window._emdPer = curPer;
+  window._emdIntervalHours = m.intervalHours || 12;
+  window._emdWeekly = isWeekly;
+  window._emdOngoing = m.ongoing;
+  window._emdPatient = m.patient || 'me';
+
+  const st = $('#emdSchedType');
+  if(st) st.addEventListener('click', e => {
+    const b = e.target.closest('[data-t]'); if(!b) return;
+    st.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._emdSchedType = b.dataset.t;
+    setDisplay('emdDailyWrap', window._emdSchedType === 'daily' ? 'block' : 'none');
+    setDisplay('emdIntervalWrap', window._emdSchedType === 'interval' ? 'block' : 'none');
+    setDisplay('emdWeeklyWrap', window._emdSchedType === 'weekly' ? 'block' : 'none');
+    if(window._emdSchedType === 'interval'){
+      const pinChk = $('#emdPinDash'); if(pinChk) pinChk.checked = true;
+    }
+  });
+
+  const ip = $('#emdIntervalPreset');
+  if(ip) ip.addEventListener('click', e => {
+    const b = e.target.closest('[data-h]'); if(!b) return;
+    ip.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._emdIntervalHours = parseInt(b.dataset.h, 10);
+    const inp = $('#emdIntervalCustom'); if(inp) inp.value = '';
+  });
+
+  const wp = $('#emdPer');
+  if(wp) wp.addEventListener('click', e => {
+    const b = e.target.closest('[data-n]'); if(!b) return;
+    wp.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._emdPer = parseInt(b.dataset.n, 10);
+  });
+
+  const wd = $('#emdDur');
+  if(wd) wd.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if(!b) return;
+    wd.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._emdOngoing = (b.dataset.v === 'ongoing');
+    setDisplay('emdEndWrap', window._emdOngoing ? 'none' : 'block');
+  });
+
+  const wm = $('#emdPatient');
+  if(wm) wm.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if(!b) return;
+    wm.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+    window._emdPatient = b.dataset.v;
+  });
 }
 
 async function saveEditMed(itemId){
   try{
     const name=($('#emdName')||{}).value||''; if(!name.trim()){ toast('اكتب اسم الدواء'); return; }
     const dose=($('#emdDose')||{}).value||'حبة';
-    const perDay=window._emdWeekly?1:window._emdPer;
-    const schedule=window._emdWeekly?('weekly:'+(($('#emdWeekly')||{}).value||'غير محدد')):(perDay+'x');
     const ongoing=window._emdOngoing; const end=ongoing?null:(($('#emdEnd')||{}).value||null);
     const patient=window._emdPatient||'me';
+    const isInterval = window._emdSchedType === 'interval';
+    const isWeekly = window._emdSchedType === 'weekly';
+
+    let customH = parseInt(($('#emdIntervalCustom')||{}).value, 10);
+    let finalIntervalH = (customH && customH > 0) ? customH : (window._emdIntervalHours || 12);
+    let perDay = isInterval ? Math.max(1, Math.round(24 / finalIntervalH)) : (isWeekly ? 1 : (window._emdPer || 1));
+    let schedule = isInterval ? ('interval:' + finalIntervalH + 'h') : (isWeekly ? ('weekly:' + (($('#emdWeekly')||{}).value||'غير محدد')) : (perDay + 'x'));
+
+    const sh=sharedFirst(); const comp=sh? (sh.members.find(x=>x.m.user_id!==meId())||{}).m:null;
+    // الخصوصية الصارمة: أنا فقط = PRIVATE
+    const vis = (patient === 'me') ? 'PRIVATE' : ((patient === 'companion' && comp) ? 'SELECTED_MEMBERS' : 'CIRCLE');
     const desc='MED|start='+new Date().toISOString().slice(0,10)+'|end='+(end||'')+'|ongoing='+(ongoing?'1':'0')+'|patient='+patient;
-    await restWithRefresh('PATCH','items',{title:name.trim(),unit:dose,target_value:perDay,frequency:'MED|'+schedule,description:desc},'id=eq.'+itemId);
+
+    await restWithRefresh('PATCH','items',{
+      title:name.trim(),
+      unit:dose.trim()||'حبة',
+      target_value:perDay,
+      frequency:'MED|'+schedule,
+      description:desc,
+      visibility:vis
+    },'id=eq.'+itemId);
+
+    if(vis==='SELECTED_MEMBERS'&&comp){
+      try{ await rest('POST','item_recipients',{id:uuid(),item_id:itemId,user_id:comp.user_id},'return=minimal'); }catch(e){}
+    }
+
+    const pinDash = ($('#emdPinDash')||{}).checked;
+    if(pinDash){
+      const keys = getDashboardKeys();
+      if(!keys.includes('med_timer')){
+        setDashboardKeys([...keys, 'med_timer']);
+      }
+    }
+
     await refreshAll(); closeSheet(); renderApp(); toast('تم تعديل الدواء ✓');
   }catch(e){ toast('تعذر التعديل: '+(e&&e.message?e.message:'')); }
 }
@@ -6711,6 +6976,62 @@ function lastDoseFormatted(doses, todayIso){
   return last.date + ' • ' + last.timeStr;
 }
 
+function formatDoseElapsedTime(doseTime, now = new Date()) {
+  const dt = (doseTime instanceof Date) ? doseTime : new Date(doseTime);
+  const nowDate = (now instanceof Date) ? now : new Date(now);
+  const diffSec = Math.max(0, Math.floor((nowDate.getTime() - dt.getTime()) / 1000));
+  const totalMinutes = Math.floor(diffSec / 60);
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (totalMinutes < 1) return 'الآن (منذ لحظات)';
+
+  if (days > 0) {
+    const dStr = days === 1 ? 'يوم' : (days === 2 ? 'يومين' : (days >= 3 && days <= 10 ? `${days} أيام` : `${days} يومًا`));
+    const hStr = hours === 0 ? '' : (hours === 1 ? ' و ساعة' : (hours === 2 ? ' و ساعتين' : (hours >= 3 && hours <= 10 ? ` و ${hours} ساعات` : ` و ${hours} ساعة`)));
+    const mStr = minutes === 0 ? '' : (minutes === 1 ? ' و دقيقة' : (minutes === 2 ? ' و دقيقتين' : (minutes >= 3 && minutes <= 10 ? ` و ${minutes} دقائق` : ` و ${minutes} دقيقة`)));
+    return `منذ ${dStr}${hStr}${mStr}`;
+  }
+
+  if (hours > 0) {
+    const hStr = hours === 1 ? 'ساعة' : (hours === 2 ? 'ساعتين' : (hours >= 3 && hours <= 10 ? `${hours} ساعات` : `${hours} ساعة`));
+    const mStr = minutes === 0 ? '' : (minutes === 1 ? ' و دقيقة واحدة' : (minutes === 2 ? ' و دقيقتين' : (minutes >= 3 && minutes <= 10 ? ` و ${minutes} دقائق` : ` و ${minutes} دقيقة`)));
+    return `منذ ${hStr}${mStr}`;
+  }
+
+  const mStr = minutes === 1 ? 'دقيقة واحدة' : (minutes === 2 ? 'دقيقتين' : (minutes >= 3 && minutes <= 10 ? `${minutes} دقائق` : `${minutes} دقيقة`));
+  return `منذ ${mStr}`;
+}
+
+function calculateIntervalStatus(lastDoseTime, intervalHours, now = new Date()) {
+  const dt = (lastDoseTime instanceof Date) ? lastDoseTime : new Date(lastDoseTime);
+  const nowDate = (now instanceof Date) ? now : new Date(now);
+  const targetMs = dt.getTime() + (intervalHours || 12) * 3600 * 1000;
+  const isOverdue = nowDate.getTime() > targetMs;
+  const diffSec = Math.max(0, Math.floor(Math.abs(nowDate.getTime() - targetMs) / 1000));
+  const totalMinutes = Math.floor(diffSec / 60);
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+
+  let timeSpanStr = '';
+  if (days > 0) {
+    const dStr = days === 1 ? 'يوم' : (days === 2 ? 'يومين' : `${days} أيام`);
+    const hStr = hours > 0 ? ` و ${hours} س` : '';
+    timeSpanStr = `${dStr}${hStr}`;
+  } else if (hours > 0) {
+    const hStr = hours === 1 ? 'ساعة' : (hours === 2 ? 'ساعتين' : `${hours} ساعات`);
+    const mStr = minutes > 0 ? ` و ${minutes} د` : '';
+    timeSpanStr = `${hStr}${mStr}`;
+  } else {
+    timeSpanStr = minutes <= 1 ? 'دقيقة واحدة' : `${minutes} دقائق`;
+  }
+
+  const text = isOverdue ? `متأخر بـ ${timeSpanStr} ⚠️` : `باقٍ ${timeSpanStr} ⏳`;
+  return { isOverdue, text, timeSpanStr, targetMs };
+}
+
 async function undoLastDose(itemId){
   try {
     const todayIso = new Date().toISOString().slice(0, 10);
@@ -6758,6 +7079,9 @@ function renderMeds(){
       const doses = parseDosesForMed(m.item.id, data.entries);
       const todayDoses = doses.filter(d => d.date === todayIso);
       const lastDoseTxt = lastDoseFormatted(doses, todayIso);
+      const last = doses.length ? doses[doses.length - 1] : null;
+      const status = (m.isInterval && last) ? calculateIntervalStatus(last.dt, m.intervalHours) : null;
+      const elapsed = last ? formatDoseElapsedTime(last.dt) : '';
       const patCol = medColor(m.patient);
       const patLbl = medWho(m.patient);
 
@@ -6770,6 +7094,7 @@ function renderMeds(){
               ${spaceDot(getItemSpace('med', m))}
               <span style="font-size:15px;font-weight:700;color:var(--text-1)">${esc(m.item.title)}</span>
               <span class="badge" style="background:var(--surface-2);color:var(--text-2);font-size:11px">${esc(m.item.unit||'حبة')}</span>
+              ${m.isInterval ? `<span class="badge" style="background:var(--accent-soft);color:var(--accent-dark);font-size:10px;font-weight:700">⏱️ كل ${m.intervalHours} س</span>` : ''}
             </div>
             <div style="font-size:11px;color:var(--text-3);margin-top:2px">
               آخر جرعة: ${lastDoseTxt} • لمن: <span style="color:${patCol};font-weight:600">${patLbl}</span>
@@ -6777,6 +7102,13 @@ function renderMeds(){
           </div>
           ${spaceMenuBtn('med', m.item.id)}
         </div>
+
+        ${last ? `
+          <div style="margin-top:8px;padding:6px 10px;border-radius:8px;background:${status && status.isOverdue ? 'rgba(239,68,68,0.08)' : 'var(--surface-2)'};border:1px solid ${status && status.isOverdue ? 'rgba(239,68,68,0.25)' : 'var(--border)'};display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:11.5px;color:var(--text-2)">⏱️ ${elapsed}</div>
+            ${status ? `<div style="font-size:11.5px;font-weight:700;color:${status.isOverdue ? 'var(--error)' : '#10B981'}">${status.text}</div>` : ''}
+          </div>
+        ` : ''}
 
         <div style="margin-top:10px">
           ${!todayDoses.length ? `
